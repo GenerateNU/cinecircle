@@ -1,58 +1,72 @@
-# Software Fall 2025 Template
+# CineCircle
 
-You are free to delete, remove, and shape the layout of your repository in whichever way you like. The provided setup files are there to use at your own convenience.
+A full-stack React Native app with Express backend and PostgreSQL database, all running in Docker.
 
-## Table of Contents
+## Quick Start
 
-1. [File Structure](#file-structure)
-2. [Deployments](#deployments)
+### Prerequisites
+- Docker and Docker Compose
+- Node.js (for frontend development)
 
-### File-Structure
+### Running the Application
 
-The template repository is laid out as follows below.
+1. **Start the backend and database:**
+   ```bash
+   docker-compose up
+   ```
 
-```bash
-├── .github # Place workflows here
-│   ├── pull_request_template.md
-│   └── workflows
-│       └── backend-deploy.yml
-├── backend # Backend source code
-├── backend.Dockerfile # Backend dockerfile
-├── CONTRIBUTING.md # Contribution documentation for engineers
-├── frontend # Frontend source code
-├── LICENSE
-├── README.md
-└── sample_backend # DELETE THIS, PURELY FOR TESTING PURPOSES ONLY
-    ├── .gitignore
-    ├── bun.lock
-    ├── index.ts
-    ├── package.json
-    ├── README.md
-    └── tsconfig.json
-```
+2. **Start the frontend (in a separate terminal):**
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
 
-### Deployments
+3. **Test the setup:**
+   - Open the Expo app on your phone or simulator
+   - Click "Ping Backend" to test the backend connection
+   - Click "Test Database" to test the PostgreSQL connection
 
-A sample deployment will be found in the workflows folder. Each workflow calls a reusable workflow upstream to deploy container images to digital ocean.
+## Architecture
 
-Please provide the following repository secrets to utilize the deployment workflow:
+- **Frontend**: React Native with Expo
+- **Backend**: Express.js with TypeScript
+- **Database**: PostgreSQL 15
+- **Containerization**: Docker Compose
 
-- `DO_TOKEN` _For authentication into the digital ocean container registry_
+## API Endpoints
 
-You are not _required_ to utilize this workflow, indeed you can delete the provided workflow if you would like to employ your own deployment structure.
+- `GET /` - Backend health check
+- `GET /api/ping` - Simple ping endpoint
+- `GET /api/db-test` - Test database connection
 
-Additionally you will need to modify the caller script to provide a repo name of your choice. An example is given to you here:
+## Development
 
-```yaml
-jobs:
-  deploy:
-    uses: GenerateNU/shiperate/.github/workflows/backend-deploy.yml@main # Do not change this
-    with:
-      context: . # Current working directory
-      dockerfile: backend.Dockerfile # Path to the dockerfile relative to the current working directory
-      repo: registry.digitalocean.com/gen-sw-fall-2025/test # The last slash is your repository name
-      tag: latest # Whatever tag you want, but make sure your deployment platform is setup to listen to the necessary tags.
-    secrets: inherit
-```
+### Backend Development
+The backend runs in development mode with hot reloading when using Docker Compose. Changes to the source code will automatically restart the server.
 
-Good Luck!
+### Database
+- **Host**: localhost:5432
+- **Database**: cinecircle
+- **Username**: postgres
+- **Password**: password
+
+### Environment Variables
+The backend uses the following environment variables:
+- `DATABASE_URL`: PostgreSQL connection string
+- `PORT`: Server port (default: 3001)
+- `NODE_ENV`: Environment (development/production)
+
+## Production Deployment
+
+To build for production:
+
+1. Update the Dockerfile to build the TypeScript code
+2. Use `npm start` instead of `npm run dev`
+3. Set appropriate environment variables
+
+## Troubleshooting
+
+- If the backend can't connect to the database, make sure PostgreSQL is fully started (check the health check in docker-compose.yml)
+- If the frontend can't reach the backend, ensure the backend is running on port 3001
+- Check Docker logs: `docker-compose logs backend` or `docker-compose logs postgres`
