@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npm run docs && npm run build && node dist/index.js",
+    "dev": "ts-node src/server.ts",
     "docs": "node scripts/generate-docs.js",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -18,14 +18,14 @@
     "@scalar/express-api-reference": "^0.8.16",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0",
+    "express": "^4.21.2",
     "pg": "^8.16.3",
     "prisma": "^6.15.0",
     "swagger-autogen": "^2.23.7"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
+    "@types/express": "^4.17.23",
     "@types/node": "^24.3.0",
     "@types/pg": "^8.11.10",
     "ts-node": "^10.9.2",

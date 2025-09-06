@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "node16",
+    "moduleResolution": "node16",
     "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["esnext"],
     "types": ["node"],
+    "allowImportingTsExtensions": true, 
+    "noEmit": true,
 
     "sourceMap": true,
     "declaration": true,
