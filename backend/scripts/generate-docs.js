@@ -12,8 +12,8 @@ const doc = {
   produces: ['application/json'],
 };
 
-const outputFile = './src/swagger-output.json';
-const endpointsFiles = ['./src/index.ts'];
+const outputFile = './src/docs/swagger-output.json';
+const endpointsFiles = ['./src/app.ts'];
 
 // auto-generate from Express routes
 swaggerAutogen()(outputFile, endpointsFiles, doc);
