@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { prisma } from '../services/db.ts';
 import path from 'path';
 import fs from 'fs';
+import type { AuthenticatedRequest } from '../middleware/auth.ts';
 
 export const ping = (_req: Request, res: Response) => {
   res.json({ message: 'pong from backend!' });
