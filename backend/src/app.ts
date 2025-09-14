@@ -2,9 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import { apiReference } from '@scalar/express-api-reference';
 import routes from './routes/index.ts';
-import { authenticateUser } from './middleware/auth.ts';
+import { requestLogger, errorLogger } from './utils/logger.ts';
 
 const app = express();
+
+// Add logging middleware
+app.use(requestLogger);
 
 app.use(cors());
 app.use(express.json());
@@ -13,7 +16,8 @@ app.get('/', (_req, res) => {
   res.send('CineCircle backend is running!');
 });
 
-app.use(authenticateUser)
+// Add error logging
+app.use(errorLogger);
 
 // Register all routes
 app.use(routes);
