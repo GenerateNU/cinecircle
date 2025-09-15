@@ -15,14 +15,16 @@ model Bootcamp {
   fav_food   Json?    @db.Json
 
   @@map("bootcamp")
+}
 
-  model Movie {
-    movieId     String @id @default(uuid())
-    localRating Int
-    imdbRating  Int
-    languages   String[]
-    title       String
-    description String
-    numRatings  Int
-  }
+model Movie {
+  movieId     String   @id @default(uuid()) @db.Uuid
+  localRating Int
+  imdbRating  Int
+  languages   String[]
+  title       String
+  description String
+  numRatings  Int
+
+  @@map("movies")
 }
