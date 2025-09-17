@@ -1,5 +1,6 @@
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
+import { profile } from 'console';
 
 export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -16,9 +17,12 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
     }
     
     const userProfile = {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role
+      uid: req.user.id,
+      id: req.user.profile.id,
+      email: req.user.profile.email,
+      role: req.user.profile.role,
+      bio: req.user.profile.bio,
+      favoriteMovies: req.user.profile.favoriteMovies
     };
     
     console.log(`[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`);
@@ -54,9 +58,12 @@ export const updateUserProfile = (req: AuthenticatedRequest, res: Response) => {
     }
 
     const updatedUserProfile = {
-      id: req.user.id,
-      email: req.body.email || req.user.email,
-      role: req.body.role || req.user.role,
+      uid: req.user.id,
+      id: req.user.profile.id,
+      email: req.body.email,
+      role: req.body.role,
+      bio: req.body.bio,
+      favoriteMovies: req.body.favoriteMovies,
     }
 
     console.log(`[${timestamp}] updateUserProfile success: Updated profile for user ${req.user.id}`);
