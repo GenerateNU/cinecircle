@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ping, dbTest, serveSwagger } from '../controllers/health.ts';
-import { getUserProfile } from '../controllers/user.ts';
+import { getUserProfile, updateUserProfile } from '../controllers/user.ts';
 import { authenticateUser } from '../middleware/auth.ts';
 
 const router = Router();
@@ -35,5 +35,6 @@ router.get('/api/protected', authenticateUser, (req, res) => {
 })
 
 router.get('/api/user/profile', authenticateUser, getUserProfile);
+router.put('/api/user/profile', authenticateUser, updateUserProfile);
 
 export default router;
