@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 import { prisma, } from "../services/db.ts";
-import { Prisma } from "@prisma/client"; // for types
+import { Prisma } from "@prisma/client";
 
 type TmdbMovie = {
   id: number;
   title: string;
   overview?: string;
-  vote_average?: number; // 0..10
+  vote_average?: number;
   spoken_languages?: Array<{ english_name?: string }>;
 };
 
@@ -46,7 +46,7 @@ export function mapTmdbToMovie(
   };
 }
 
-// 3) Persist to DB without unique tmdbId
+// Persist to DB without unique tmdbId
 //    - Try to locate an existing row using a heuristic (title + description).
 //    - If found, update by primary key (movieId).
 //    - If not, create a new row (movieId auto-UUID).
@@ -70,11 +70,11 @@ export async function saveMovie(mapped: MovieInsert) {
   }
 
   return prisma.movie.create({
-    data: mapped, // languages can be a string[] on create
+    data: mapped,
   });
 }
 
-// 4) Express handler
+// Express handler
 export const getMovie = async (req: Request, res: Response) => {
   const { movieId: tmdbId } = req.params; // route: /movies/:movieId (TMDB id)
 
