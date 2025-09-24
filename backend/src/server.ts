@@ -1,6 +1,9 @@
 import app from './app.ts';
 import { connectDatabase, prisma } from './services/db.ts';
 import { PORT } from './config/env.ts';
+import { getMovie } from "./controllers/tmdb.ts"; // <-- add this
+
+app.get("/movies/:movieId", getMovie); // <-- add this
 
 const server = app.listen(PORT, async () => {
   await connectDatabase();
