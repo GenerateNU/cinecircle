@@ -7,8 +7,8 @@
     "outDir": "./dist",
     "lib": ["esnext"],
     "types": ["node"],
-    "allowImportingTsExtensions": true, 
-    "noEmit": true,
+    "allowImportingTsExtensions": false, 
+    "noEmit": false,
 
     "sourceMap": true,
     "declaration": true,

@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import { ping, dbTest, serveSwagger } from '../controllers/health.ts';
-import { getMovie } from '../controllers/tmdb.ts';
-import { getMovie } from '../controllers/tmdb.ts';
 
 const router = Router();
 

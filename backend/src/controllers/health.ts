@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { prisma } from '../services/db.ts';
+import { prisma } from '../services/db.js';
 import path from 'path';
 import fs from 'fs';
 
