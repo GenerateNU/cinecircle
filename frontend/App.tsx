@@ -20,53 +20,46 @@ export default function App() {
     })
   }, [])
 
-  const signUp = async () => {
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        emailRedirectTo: 'https://your-app.com/auth/callback'
+    const signIn = async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) {
+        setMessage(`Sign-in error: ${error.message}`)
+        return
       }
-    })
 
-    if (error) {
-      console.error('Sign-up error:', error.message)
-      setMessage(`Sign-up error: ${error.message}`)
-      return
+      if (data.user) {
+        setUser(data.user)
+        setMessage('Signed in successfully!')
+        console.log('Signed in:', data)
+      } else {
+        setMessage('Signed in — no user returned (maybe needs confirmation)');
+      }
     }
 
-    if (data.user && !data.user.email_confirmed_at) {
-      setMessage('Please check your email for the confirmation link!')
-    } else {
-      setUser(data.user)
-      setMessage('Account created successfully!')
+    const signUp = async () => {
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: 'https://your-app.com/auth/callback'
+        }
+      })
+
+      if (error) {
+        console.error('Sign-up error:', error.message)
+        setMessage(`Sign-up error: ${error.message}`)
+        return
+      }
+
+      if (data.user && !data.user.email_confirmed_at) {
+        setMessage('Please check your email for the confirmation link!')
+      } else {
+        setUser(data.user)
+        setMessage('Account created successfully!')
+      }
+      console.log('Signed up:', data)
     }
-    console.log('Signed up:', data)
-  }
-
-  const signIn = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (error) {
-      console.error('Sign-in error:', error.message)
-      setMessage(`Sign-in error: ${error.message}`)
-      return
-    }
-
-    setUser(data.user)
-    setMessage('Signed in successfully!')
-    console.log('Signed in:', data)
-  }
-
-  const pingBackend = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/api/ping');
-      const data = await response.json();
-      setMessage(data.message);
-    } catch (error) {
-      setMessage('Failed to connect to backend');
-    }
-  };
 
   const callProtectedBackend = async () => {
     const {
@@ -126,9 +119,52 @@ export default function App() {
     }
   };
 
+  const pingBackend = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/ping');
+      const data = await response.json();
+      setMessage(data.message);
+    } catch (error) {
+      setMessage('Failed to connect to backend');
+    }
+  };
+
   return (
-<View style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>CineCircle Frontend</Text>
+
+      {!user ? (
+        <>
+          <TextInput
+            placeholder='Email'
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize='none'
+            keyboardType='email-address'
+            style={styles.input}
+          />
+          <TextInput
+            placeholder='Password'
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.input}
+          />
+          <View style={styles.buttonContainer}>
+            <Button title="Sign Up" onPress={signUp} />
+            <Button title="Sign In" onPress={signIn} />
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={{ marginBottom: 10 }}>Welcome, {user?.email}</Text>
+          <Button title="Sign Out" onPress={async () => {
+            await supabase.auth.signOut()
+            setUser(null)
+            setBackendMessage('')
+          }} />
+        </>
+      )}
       <Button title="Ping Backend" onPress={pingBackend} />
       <Text style={styles.result}>{message}</Text>
       <Button title="Test Database" onPress={testDatabase} />
@@ -137,9 +173,15 @@ export default function App() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
   input: {
     width: '100%',
     borderWidth: 1,
@@ -148,9 +190,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  title: {
+    fontSize: 20,
     marginBottom: 20,
   },
   message: {
@@ -159,10 +200,15 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+    gap: 12,
+  },
   result: {
     marginTop: 20,
     fontSize: 16,
     color: 'green',
-    textAlign: 'center',
   },
-})
+});

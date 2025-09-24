@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import type { AuthenticatedRequest } from '../middleware/auth.ts';
+import type { AuthenticatedRequest } from '../middleware/auth';
 import { profile } from 'console';
 
 export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {

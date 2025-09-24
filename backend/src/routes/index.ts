@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { ping, dbTest, serveSwagger } from '../controllers/health.ts';
-import { getUserProfile, updateUserProfile } from '../controllers/user.ts';
-import { authenticateUser } from '../middleware/auth.ts';
-import profileRoutes from './profileRoutes.ts';
+import { ping, dbTest, serveSwagger } from '../controllers/health';
+import { getUserProfile, updateUserProfile } from '../controllers/user';
+import { authenticateUser } from '../middleware/auth';
+import profileRoutes from './profileRoutes';
 
 
 const router = Router();

@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import { apiReference } from '@scalar/express-api-reference';
-import routes from './routes/index.ts';
-import { requestLogger, errorLogger } from './utils/logger.ts';
-import profileRoutes from './routes/profileRoutes.ts';
+import routes from './routes/index';
+import { requestLogger, errorLogger } from './utils/logger';
+import profileRoutes from './routes/profileRoutes';
 
 const app = express();
 
