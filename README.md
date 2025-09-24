@@ -4,98 +4,132 @@ A user-friendly, community-oriented app for South Indian movie fans to stay upda
 
 ## Quick Start
 
-### Prerequisites
+**Requirements:** Docker Desktop
 
-- Docker and Docker Compose
-- Node.js 18+
-- Supabase account
-- Expo CLI
-
-### Running the Application
-
-1. **Setup environment variables:**
-
-   ```bash
-   cd backend
-   cp .env.example .env
-   # Add Supabase connection string to .env
-   ```
-
-2. **Install and start the backend:**
-
-   ```bash
-   cd backend
-   npm install
-   npm run dev
-   ```
-
-3. **Start the frontend (in a separate terminal):**
-
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
-
-4. **Test the setup:**
-   - Open the Expo app on your phone or simulator / web at http://localhost:8081
-   - Click "Ping Backend" to test the backend connection
-   - Click "Test Database" to test the Supabase connection
-
-## Architecture
-
-- **Frontend**: React Native with Expo
-- **Backend**: Express.js with TypeScript
-- **Database**: Supabase PostgreSQL
-- **ORM**: Prisma for type-safe database operations
-- **Containerization**: Docker Compose
-- **Authentication**: Supabase Auth integration
-
-## API Endpoints
-
-- `GET /` - Backend health check
-- `GET /api/ping` - Simple ping endpoint
-- `GET /api/db-test` - Test Supabase connection via Prisma
-- `GET /api/bootcamps` - Get all bootcamps (example endpoint)
-- `GET /api/bootcamps/:id` - Get specific bootcamp
-- `POST /api/bootcamps` - Create new bootcamp
-
-## Development
-
-### Backend Development
-
-**Key Commands:**
+Enter repo directory then run:
 
 ```bash
-# Install dependencies
-npm install
+npm start
+```
 
-# Start development server (builds + runs)
-npm run dev
+**Test it works:** http://localhost:3001/api/ping  
+**Stop everything:** `npm stop`
 
-# Build TypeScript
-npm run build
+## Commands Reference
 
-# Start production server
+### **Development**
+
+```bash
+npm start          # Start development environment (backend + database)
+npm stop           # Stop all containers and clean up
+npm run shell      # Get shell inside backend container for debugging
+npm run logs       # View real-time container logs
+npm run clean      # Clean restart if things break
+```
+
+### **Testing**
+
+```bash
+npm test           # Run all tests in development environment
+npm run test:watch # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+```
+
+### **Code Quality**
+
+```bash
+npm run lint       # Check code style and quality
+npm run format     # Auto-format code with Prettier
+npm run build      # Build TypeScript to JavaScript
+```
+
+### **Database Operations**
+
+```bash
+# Open database GUI (accessible from your browser):
+npm run shell             # Get container shell, then:
+npx prisma studio         # Start Prisma Studio
+# Then visit: http://localhost:5555 in your browser
+
+# Other database commands:
+npx prisma db push        # Push schema changes to database
+npx prisma generate       # Regenerate Prisma client
+npm run db:seed           # Seed database with sample data
+npm run db:reset          # Reset database completely
+```
+
+## 🗄️ Database: Local PostgreSQL Only
+
+**In development, you ONLY use local PostgreSQL:**
+
+- **Local Database**: Runs in Docker container (`postgres:5432`)
+- **Production Database**: Completely separate, never touched from development
+- **Schema Sync**: Manual - you push schema changes when ready
+
+### **How It Works:**
+
+1. **Development**: Local PostgreSQL container with your own data
+2. **Schema**: Sync from production with `npx prisma db pull`
+3. **Data**: Seed with `npm run db:seed` or add manually via Prisma Studio
+4. **Testing**: Uses same local database, resets data between test runs
+
+### **First Time Setup:**
+
+```bash
+npm start                     # Start containers
+npm run shell                 # Get into container
+npx prisma db pull            # Pull latest schema from production
+npm run db:setup              # Push schema + seed data
+```
+
+### **Interacting with Local Database:**
+
+```bash
+# Start development environment
 npm start
 
-# Generate Prisma client (after schema changes)
-npx prisma generate
+# Open database GUI in browser
+npm run shell
+npx prisma studio  # Opens localhost:5555
 
-# Sync database schema with Prisma (introspect existing DB)
-npx prisma db pull
-
-# Apply schema changes to database (migrations)
-npx prisma db push
-
-# Open Prisma Studio (database GUI)
-npx prisma studio
+# View/edit data, run queries, etc.
+# All changes stay local - production untouched
 ```
 
-### Environment Variables
+### **Schema Changes Workflow:**
 
 ```bash
-DATABASE_URL=    # Supabase connection string (pooled)
-DIRECT_URL=      # Supabase direct connection (for migrations)
-PORT=3001        # Server port
+# 1. Edit backend/prisma/schema.prisma
+# 2. Push to local database
+npm run shell
+npx prisma db push
+
+# 3. Generate new Prisma client
+npx prisma generate
+
+# 4. Test your changes
+npm test
+
+# 5. When ready, deploy to production (separate process)
 ```
+
+## Project Structure
+
+```
+cinecircle/
+├── backend/                   # Node.js API
+│   ├── src/                   # Source code
+│   ├── prisma/                # Database schema & migrations
+│   ├── .env                   # Local development config
+│   ├── .env.production        # Production config (for deployment)
+│   └── Dockerfile.production  # Production Docker image
+├── frontend/                  # React Native App (coming soon)
+└── docker-compose.dev.yml     # Development environment
+```
+
+## Environment Files
+
+- **`.env`**: Local development (points to Docker PostgreSQL)
+- **`.env.production`**: Production deployment (points to Supabase)
+
+**Development uses Docker PostgreSQL, Production uses Supabase.** Never mix them.
