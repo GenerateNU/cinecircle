@@ -62,6 +62,19 @@
           }
         }
       }
+    },
+    "/api/test-tmdb/:movieId": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Movie data retrieved successfully"
+          },
+          "500": {
+            "description": "Failed to fetch movie data"
+          }
+        }
+      }
     }
   }
 }
