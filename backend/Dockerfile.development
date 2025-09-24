@@ -1,0 +1,40 @@
+# Development Dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install development dependencies for better debugging and PostgreSQL client
+RUN apk add --no-cache git postgresql-client
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Copy and set up entrypoint script
+COPY scripts/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Generate Prisma client (initial generation)
+RUN npx prisma generate
+
+# Create non-root user for development
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S backend -u 1001
+
+# Change ownership of the app directory
+RUN chown -R backend:nodejs /app
+RUN chown backend:nodejs /usr/local/bin/docker-entrypoint.sh
+
+# Switch to non-root user
+USER backend
+
+EXPOSE 3001
+
+# Use our custom entrypoint that handles database setup
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["npm", "run", "dev"]

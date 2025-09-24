@@ -129,45 +129,11 @@ export default function App() {
   return (
 <View style={styles.container}>
       <Text style={styles.title}>CineCircle Frontend</Text>
-
-      {!user ? (
-        <>
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={styles.input}
-          />
-          <View style={styles.buttonContainer}>
-            <Button title="Sign Up" onPress={signUp} />
-            <Button title="Sign In" onPress={signIn} />
-          </View>
-          {message ? <Text style={styles.message}>{message}</Text> : null}
-        </>
-      ) : (
-        <>
-          <Text style={{ marginBottom: 10 }}>Welcome, {user.email}</Text>
-          <View style={styles.buttonContainer}>
-            <Button title="Call Protected Backend" onPress={callProtectedBackend} />
-            <Button title="Get User Profile" onPress={getUserProfile} />
-          </View>
-          <Text style={styles.result}>{backendMessage}</Text>
-          <Button title="Sign Out" onPress={async () => {
-            await supabase.auth.signOut()
-            setUser(null)
-            setBackendMessage('')
-          }} />
-        </>
-      )}
+      <Button title="Ping Backend" onPress={pingBackend} />
+      <Text style={styles.result}>{message}</Text>
+      <Button title="Test Database" onPress={testDatabase} />
+      <Text style={styles.result}>{dbMessage}</Text>
+      <StatusBar style="auto" />
     </View>
   );
 }
