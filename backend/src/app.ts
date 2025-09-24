@@ -3,6 +3,7 @@ import cors from 'cors';
 import { apiReference } from '@scalar/express-api-reference';
 import routes from './routes/index.ts';
 import { requestLogger, errorLogger } from './utils/logger.ts';
+import profileRoutes from './routes/profileRoutes.ts';
 
 const app = express();
 
@@ -21,6 +22,9 @@ app.use(errorLogger);
 
 // Register all routes
 app.use(routes);
+
+// User profile routes
+app.use('/api/user', profileRoutes);
 
 // Scalar API Docs
 app.use(

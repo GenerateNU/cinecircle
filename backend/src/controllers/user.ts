@@ -85,3 +85,65 @@ export const updateUserProfile = (req: AuthenticatedRequest, res: Response) => {
     });
   }
 }
+
+export const updateUserBio = (req: AuthenticatedRequest, res: Response) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] updateUserBio called by user: ${req.user?.id || 'unknown'}`);
+
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/user/profile/bio'
+      });
+    }
+
+    req.user.profile.bio = req.body.bio;
+
+    res.json({
+      message: 'User bio updated successfully',
+      bio: req.body.bio,
+      timestamp,
+      endpoint: '/api/user/profile/bio'
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Internal server error while updating bio',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp,
+      endpoint: '/api/user/profile/bio'
+    });
+  }
+};
+
+export const updateUserFavorites = (req: AuthenticatedRequest, res: Response) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] updateUserFavorites called by user: ${req.user?.id || 'unknown'}`);
+
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/user/profile/favorites'
+      });
+    }
+
+    req.user.profile.favoriteMovies = req.body.favoriteMovies;
+
+    res.json({
+      message: 'Favorite movies updated successfully',
+      favoriteMovies: req.body.favoriteMovies,
+      timestamp,
+      endpoint: '/api/user/profile/favorites'
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Internal server error while updating favorites',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp,
+      endpoint: '/api/user/profile/favorites'
+    });
+  }
+};
