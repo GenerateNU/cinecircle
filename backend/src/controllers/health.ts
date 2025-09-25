@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { prisma } from '../services/db';
 import path from 'path';
 import fs from 'fs';
-import type { AuthenticatedRequest } from '../middleware/auth.ts';
+import type { AuthenticatedRequest } from '../middleware/auth';
 
 export const ping = (req: Request, res: Response) => {
   const timestamp = new Date().toISOString();

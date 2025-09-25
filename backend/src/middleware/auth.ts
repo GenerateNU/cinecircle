@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import jwksClient from 'jwks-rsa'
-import { SUPABASE_JWT_SECRET, SUPABASE_URL } from '../config/env.ts'
+import { SUPABASE_JWT_SECRET, SUPABASE_URL } from '../config/env'
 
 export interface AuthenticatedRequest extends Request {
   user?: {

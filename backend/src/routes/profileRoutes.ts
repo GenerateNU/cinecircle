@@ -4,14 +4,14 @@ import {
   updateUserProfile,
   updateUserBio,
   updateUserFavorites
-} from '../controllers/user.ts';
-import { authenticate } from '../middleware/auth.ts';
+} from '../controllers/user';
+import { authenticateUser } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/profile', authenticate, getUserProfile);
-router.put('/profile', authenticate, updateUserProfile);
-router.patch('/profile/bio', authenticate, updateUserBio);
-router.patch('/profile/favorites', authenticate, updateUserFavorites);
+router.get('/profile', authenticateUser, getUserProfile);
+router.put('/profile', authenticateUser, updateUserProfile);
+router.patch('/profile/bio', authenticateUser, updateUserBio);
+router.patch('/profile/favorites', authenticateUser, updateUserFavorites);
 
 export default router;
