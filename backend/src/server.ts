@@ -1,6 +1,6 @@
-import app from './app.js';
-import { connectDatabase, prisma } from './services/db.js';
-import { PORT } from './config/env.js';
+import app from './app';
+import { connectDatabase, prisma } from './services/db';
+import { PORT } from './config/env';
 
 const server = app.listen(PORT, async () => {
   await connectDatabase();
