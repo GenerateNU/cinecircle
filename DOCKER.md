@@ -46,8 +46,5 @@ docker build -f backend/Dockerfile.production -t cinecircle-backend .
 # Tag
 docker tag cinecircle-backend registry.digitalocean.com/your-registry/cinecircle
 
-# Push
-docker push registry.digitalocean.com/your-registry/cinecircle
-
 # Deploy trivially
 ```

@@ -3,14 +3,6 @@ set -e
 
 echo "Starting Backend Development Environment..."
 
-# Wait for database to be ready
-echo "Waiting for database connection..."
-until pg_isready -h postgres -p 5432 -U devuser -d devdb; do
-  echo "   Database not ready, waiting..."
-  sleep 2
-done
-echo "Database connection established"
-
 # Check if we should sync from production
 if [ "${SYNC_FROM_PRODUCTION:-true}" = "true" ]; then
   echo "Syncing schema from production..."
