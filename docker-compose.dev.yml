@@ -1,6 +1,19 @@
 version: "3.8"
 
 services:
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.development
+    environment:
+      - NODE_ENV=test
+      - DATABASE_URL=postgresql://devuser:devpassword@localhost:5432/devdb
+      - DIRECT_URL=postgresql://devuser:devpassword@localhost:5432/devdb
+    network_mode: host
+    command: npm run test
+    depends_on:
+      postgres:
+        condition: service_healthy
   backend:
     build:
       context: ./backend
