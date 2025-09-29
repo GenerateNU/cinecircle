@@ -6,7 +6,7 @@
     "start": "docker-compose -f docker-compose.dev.yml up --build",
     "stop": "docker-compose -f docker-compose.dev.yml down --volumes",
     "test": "docker-compose -f docker-compose.dev.yml run test",
-    "test:dev": "docker exec cinecircle-backend-1 npm test",
+    "test:dev": "docker exec cinecircle-backend-1 npm run test",
     "test:watch": "docker exec -it cinecircle-backend-1 npm run test:watch",
     "test:coverage": "docker exec cinecircle-backend-1 npm run test:coverage",
     "lint": "docker exec cinecircle-backend-1 npm run lint",
@@ -19,6 +19,6 @@
   "workspaces": [
     "backend",
     "frontend"
-  ],
-  "private": true
+  ]
+
 }

@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import routes from '../../routes/index';
+import { createApp } from '../../app'
 
 /**
  * API Integration Tests
@@ -11,19 +11,7 @@ describe('Health API Integration Tests', () => {
   let app: express.Express;
 
   beforeAll(async () => {
-    // Create Express app with routes
-    app = express();
-    app.use(express.json());
-    app.use(routes);
-
-    // Add root endpoint for testing
-    app.get('/', (_req, res) => {
-      res.json({
-        status: 'success',
-        message: 'CineCircle test API is running',
-        environment: 'test',
-      });
-    });
+    app = createApp();
   });
 
   describe('GET /api/ping', () => {
@@ -84,8 +72,7 @@ describe('Health API Integration Tests', () => {
 
       expect(response.body).toEqual({
         status: 'success',
-        message: 'CineCircle test API is running',
-        environment: 'test',
+        message: 'CineCircle backend is running!',
       });
     });
   });

@@ -1,27 +1,40 @@
 import express from 'express';
 import cors from 'cors';
-import { apiReference } from '@scalar/express-api-reference';
 import routes from './routes/index';
+import { PrismaClient } from '@prisma/client';
 
-const app = express();
+export function createApp() {
+  const app = express();
 
-app.use(cors());
-app.use(express.json());
+  app.use(cors());
+  app.use(express.json());
 
-app.get('/', (_req, res) => {
-  res.send('CineCircle backend is running!');
-});
+  // Root endpoint (JSON response for consistency)
+  app.get('/', (_req, res) => {
+    res.json({
+      status: 'success',
+      message: 'CineCircle backend is running!',
+    });
+  });
 
-// Register all routes
-app.use(routes);
+  app.use('/docs', async (req, res) => {
+    const apiReference = PrismaClient;
+    return apiReference({
+      url: '/swagger-output.json',
+      theme: 'laserwave',
+    })(req, res);
+  });
 
-// Scalar API Docs
-app.use(
-  '/docs',
-  apiReference({
-    url: '/swagger-output.json',
-    theme: 'laserwave',
-  })
-);
+  // Register all API routes
+  app.use(routes);
 
-export default app;
+  // 404 Handler (for undefined routes)
+  app.use((_req, res) => {
+    res.status(404).json({
+      status: 'error',
+      message: 'Not Found',
+    });
+  });
+
+  return app;
+}

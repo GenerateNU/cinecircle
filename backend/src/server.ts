@@ -1,6 +1,8 @@
-import app from './app';
+import { createApp } from './app';
 import { connectDatabase, prisma } from './services/db';
 import { PORT } from './config/env';
+
+const app = createApp();
 
 const server = app.listen(PORT, async () => {
   await connectDatabase();
