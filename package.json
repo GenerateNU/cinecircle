@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "CineCircle - Movie discovery and social platform",
   "scripts": {
-    "start": "docker-compose -f docker-compose.dev.yml up --build",
+    "start": "docker-compose -f docker-compose.dev.yml up --build backend postgres",
     "stop": "docker-compose -f docker-compose.dev.yml down --volumes",
     "test": "docker-compose -f docker-compose.dev.yml run test",
     "test:dev": "docker exec cinecircle-backend-1 npm run test",
