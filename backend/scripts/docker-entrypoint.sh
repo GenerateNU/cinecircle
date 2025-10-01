@@ -23,10 +23,6 @@ if [ "${SYNC_FROM_PRODUCTION:-true}" = "true" ]; then
   echo "Generating Prisma client..."
   npx prisma generate
   
-  # Seed database (Prisma's automatic seeding)
-  echo "Seeding database with development data..."
-  npx prisma db seed
-  
   echo "Database setup complete!"
 else
   echo "Skipping production sync (SYNC_FROM_PRODUCTION=false)"
@@ -35,10 +31,6 @@ else
   echo "Ensuring database is up to date..."
   npx prisma db push
   npx prisma generate
-  
-  # Only seed if database is empty
-  echo "Seeding database if needed..."
-  npx prisma db seed 2>/dev/null || echo "Database already seeded or seed failed"
 fi
 
 echo ""

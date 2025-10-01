@@ -17,7 +17,6 @@
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset --force",
     "db:push": "prisma db push",
-    "db:seed": "npx tsx prisma/seed.ts",
     "db:setup": "npm run db:push && npm run db:seed",
     "db:pull-prod": "prisma db pull --force",
     "db:sync-dev": "npm run db:push && npm run db:generate && npm run db:seed",

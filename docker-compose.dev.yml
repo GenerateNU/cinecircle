@@ -5,10 +5,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.development
+    env_file: 
+      - ./backend/.env
     environment:
       - NODE_ENV=test
-      - DATABASE_URL=postgresql://devuser:devpassword@localhost:5432/devdb
-      - DIRECT_URL=postgresql://devuser:devpassword@localhost:5432/devdb
+      - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+      - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+      - SYNC_FROM_PRODUCTION=true
     network_mode: host
     command: npm run test
     depends_on:
@@ -21,10 +24,10 @@ services:
     ports:
       - "3001:3001" # Backend
       - "5555:5555" # Prisma Studio
+    env_file: 
+      - ./backend/.env
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
-      - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
       - SYNC_FROM_PRODUCTION=true
     volumes:
       - ./backend:/app
