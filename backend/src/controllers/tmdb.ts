@@ -99,3 +99,78 @@ export const getMovie = async (req: Request, res: Response) => {
     });
   }
 };
+
+// PUT /movies/:movieId
+export const updateMovie = async (req: Request, res: Response) => {
+    const { movieId } = req.params;
+
+    if (!movieId) {
+        return res.status(400).json({ message: "Movie ID is required" });
+    }
+
+    const { title, description, languages, imdbRating, localRating, numRatings } = req.body;
+
+    const updateData: Partial<Prisma.MovieUpdateInput> = {};
+
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (languages !== undefined) updateData.languages = languages;
+    if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
+    if (localRating !== undefined) updateData.localRating = localRating;
+    if (numRatings !== undefined) updateData.numRatings = numRatings;
+
+    if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ message: "No fields to update" });
+    }
+
+    try {
+        const updatedMovie = await prisma.movie.update({
+            where: { movieId: movieId },
+            data: updateData,
+        });
+
+        res.json({
+            message: "Movie updated successfully",
+            data: updatedMovie,
+        });
+    } catch (err) {
+        console.error("updateMovie error:", err);
+
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+            return res.status(404).json({ message: "Movie not found" });
+        }
+
+        res.status(500).json({
+            message: "Failed to update movie",
+            error: err instanceof Error ? err.message : "Unknown error",
+        });
+    }
+};
+
+// DELETE /movies/:movieId
+export const deleteMovie = async (req: Request, res: Response) => {
+    const { movieId } = req.params;
+
+    if (!movieId) {
+        return res.status(400).json({ message: "Movie ID is required" });
+    }
+
+    try {
+        await prisma.movie.delete({
+            where: { movieId: movieId },
+        });
+
+        res.json({ message: "Movie deleted successfully" });
+    } catch (err) {
+        console.error("deleteMovie error:", err);
+
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+            return res.status(404).json({ message: "Movie not found" });
+        }
+
+        res.status(500).json({
+            message: "Failed to delete movie",
+            error: err instanceof Error ? err.message : "Unknown error",
+        });
+    }
+};
