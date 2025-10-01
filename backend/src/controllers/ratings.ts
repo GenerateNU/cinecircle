@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import type { AuthenticatedRequest } from '../middleware/auth.js';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 const prisma = new PrismaClient();
 
@@ -23,6 +23,7 @@ export const createRating = async (req: AuthenticatedRequest, res: Response) => 
       return res.status(400).json({ message: 'Stars must be between 0 and 5', timestamp, endpoint: '/api/ratings' });
     }
 
+    
     const newRatingData = {
       userId: req.user.id,
       movieId: req.body.movieId,
@@ -34,8 +35,7 @@ export const createRating = async (req: AuthenticatedRequest, res: Response) => 
       threadedComments: [],
     };
 
-    // Save newRating to database here (Prisma or ORM call)
-    const newRating = await prisma.Rating.create({
+    const newRating = await prisma.rating.create({
       data: newRatingData,
     });
 
