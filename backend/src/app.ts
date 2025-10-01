@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { apiReference } from '@scalar/express-api-reference';
-import routes from './routes/index.ts';
+import routes from './routes/index.js';
 
 const app = express();
 
