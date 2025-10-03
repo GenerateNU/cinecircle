@@ -48,3 +48,25 @@ docker tag cinecircle-backend registry.digitalocean.com/your-registry/cinecircle
 
 # Deploy trivially
 ```
+--
+### Automatic Sync on Startup
+
+When `SYNC_FROM_PRODUCTION=true` in docker-compose, the container will:
+
+1. **Pull Schema**: Downloads the latest schema from production using `prisma db pull`
+2. **Apply Schema**: Resets and applies the schema to the local database
+3. **Copy Data**: Uses `pg_dump` to copy all data from production to local
+4. **Generate Client**: Regenerates the Prisma client
+
+**After startup, ALL database operations use the local PostgreSQL database.**
+
+### Environment Configuration
+
+#### Development (Docker)
+- `DATABASE_URL` → Local PostgreSQL (`postgresql://devuser:devpassword@postgres:5432/devdb`)
+- `PROD_DIRECT_URL` → Production Supabase (for syncing only)
+- Docker overrides ensure local database is used at runtime
+
+#### Production
+- `DATABASE_URL` → Production Supabase
+- No sync operations

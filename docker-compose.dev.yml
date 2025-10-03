@@ -1,11 +1,11 @@
-version: "3.8"
+version: '3.8'
 
 services:
   test:
     build:
       context: ./backend
       dockerfile: Dockerfile.development
-    env_file: 
+    env_file:
       - ./backend/.env
     environment:
       - NODE_ENV=test
@@ -22,15 +22,23 @@ services:
       context: ./backend
       dockerfile: Dockerfile.development
     ports:
-      - "3001:3001" # Backend
-      - "5555:5555" # Prisma Studio
-    env_file: 
+      - '3001:3001' # Backend
+      - '5555:5555' # Prisma Studio
+    env_file:
+      # Production URLs are still available from .env for syncing
       - ./backend/.env
     environment:
+      # Override for development runtime - use the local dev database
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+      - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+
       - SYNC_FROM_PRODUCTION=true
     volumes:
-      - ./backend:/app
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - ./backend/package.json:/app/package.json
+      - ./backend/tsconfig.json:/app/tsconfig.json
       - /app/node_modules
     depends_on:
       postgres:
@@ -46,13 +54,13 @@ services:
       POSTGRES_USER: devuser
       POSTGRES_PASSWORD: devpassword
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     networks:
       - dev_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U devuser -d devdb"]
+      test: ['CMD-SHELL', 'pg_isready -U devuser -d devdb']
       interval: 5s
       timeout: 5s
       retries: 5
