@@ -174,3 +174,57 @@ export const deleteMovie = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const getMovieById = async (req: Request, res: Response) => {
+    // Fetch movie from YOUR database using the local UUID
+    // No TMDB call needed
+    const { movieId } = req.params;
+    if (!movieId) {
+        return res.status(400).json({ message: “Movie ID is required” })
+    }
+    try {
+        const movie = await prisma.movie.findUnique({
+            where: { movieId : movieId },
+        });
+        if (!movie) {
+            return res.status(404).json({ message: “Movie not found.” })
+        }
+        res.json({
+            message: “Movie found successfully”,
+            data: movie,
+        });
+    } catch (err) {
+        console.error(“getMovieById error:“, err);
+        res.status(500).json({
+            message: “failed to retrieve movie”,
+            error: err instanceof Error ? err.message : “unknown”,
+        });
+    }
+};
+
+export const getMovieById = async (req: Request, res: Response) => {
+  // Fetch movie from YOUR database using the local UUID
+  // No TMDB call needed
+  const { movieId } = req.params;
+  if (!movieId) {
+      return res.status(400).json({ message: “Movie ID is required” })
+  }
+  try {
+      const movie = await prisma.movie.findUnique({
+          where: { movieId : movieId },
+      });
+      if (!movie) {
+          return res.status(404).json({ message: “Movie not found.” })
+      }
+      res.json({
+          message: “Movie found successfully”,
+          data: movie,
+      });
+  } catch (err) {
+      console.error(“getMovieById error:“, err);
+      res.status(500).json({
+          message: “failed to retrieve movie”,
+          error: err instanceof Error ? err.message : “unknown”,
+      });
+  }
+};
