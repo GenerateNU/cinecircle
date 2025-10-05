@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npx tsx src/server.ts",
+    "dev": "nodemon",
     "docs": "node scripts/generate-docs.js",
     "build": "tsc",
     "start": "node dist/server.js",
@@ -13,12 +13,12 @@
     "test:integration": "NODE_ENV=test jest --testPathPattern=integration",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:coverage": "NODE_ENV=test jest --coverage",
+    "db:studio": "npx prisma studio",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset --force",
     "db:push": "prisma db push",
-    "db:setup": "npm run db:push && npm run db:seed",
-    "db:sync-from-prod": "sh scripts/sync-from-prod.sh",
+    "db:sync": "sh scripts/sync-from-prod.sh",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -28,9 +28,6 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "@scalar/express-api-reference": "^0.8.16",
@@ -54,6 +51,7 @@
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
     "prettier": "^3.3.3",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",

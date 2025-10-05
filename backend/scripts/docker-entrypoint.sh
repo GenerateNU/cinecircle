@@ -16,28 +16,58 @@ if [ "${SYNC_FROM_PRODUCTION:-false}" = "true" ]; then
   # Pull schema from production using PROD_DIRECT_URL
   if [ -n "$PROD_DIRECT_URL" ]; then
     echo "[1/4] Pulling schema from production..."
-    # Temporarily use production URL to pull schema
     DATABASE_URL="$PROD_DIRECT_URL" DIRECT_URL="$PROD_DIRECT_URL" npx prisma db pull --force
-    echo "🥳 Schema pulled from production 🥳"
+    echo "Schema pulled from production"
+    
+    echo "[1.5/4] Sanitizing schema for local PostgreSQL..."
+    # Replace Supabase-specific functions with standard PostgreSQL equivalents
+    sed -i.bak \
+      -e 's/@default(dbgenerated("auth\\.uid()"))/@default(uuid())/g' \
+      -e 's/@default(dbgenerated("auth.uid()"))/@default(uuid())/g' \
+      -e 's/@default(dbgenerated("gen_random_uuid()"))/@default(uuid())/g' \
+      -e 's/@default(dbgenerated("uuid_generate_v4()"))/@default(uuid())/g' \
+      -e 's/@default(dbgenerated("lower((identity_data ->> .email.::text))"))//g' \
+      -e 's/@default(dbgenerated("LEAST(email_confirmed_at, phone_confirmed_at)"))//g' \
+      prisma/schema.prisma
+    # Remove backup file
+    rm -f prisma/schema.prisma.bak
+    echo "Schema sanitized"
     
     echo "[2/4] Applying schema to local database..."
-    # Use local DATABASE_URL to push schema (this will reset the local DB)
     DATABASE_URL="$LOCAL_DATABASE_URL" DIRECT_URL="$LOCAL_DIRECT_URL" npx prisma db push --force-reset
     echo "🥳 Schema applied to local database 🥳"
     
     echo "[3/4] Copying data from production..."
-
     echo "Dumping data from production (this may take a moment)..."
-    PGPASSWORD="${PROD_DIRECT_URL#*://}" 
     
-    # Direct approach: pipe pg_dump to psql
-    # pg_dump with --data-only to dump just the data
-    if pg_dump "$PROD_DIRECT_URL" --data-only --no-owner --no-privileges 2>/dev/null | \
-       PGPASSWORD=devpassword psql -h postgres -U devuser -d devdb -q 2>/dev/null; then
-      echo "🥳 Data copied from production 🥳"
-    else
-      echo "☝️😳 Warning: Could not copy data from production (this might be OK if tables are empty)"
-    fi
+    # Create auth schema in local database if it doesn't exist
+    PGPASSWORD=devpassword psql -h postgres -U devuser -d devdb -q -c "CREATE SCHEMA IF NOT EXISTS auth;" 2>/dev/null || true
+    
+    # Dump public schema and auth.users table
+    # Use --inserts for better compatibility and to avoid COPY command issues
+    (
+      # Dump public schema data
+      pg_dump "$PROD_DIRECT_URL" \
+        --data-only \
+        --no-owner \
+        --no-privileges \
+        --inserts \
+        --rows-per-insert=100 \
+        --schema=public \
+        --exclude-table-data='_prisma_migrations' 2>/dev/null || echo "-- No public schema data"
+      
+      # Dump auth.users table (keeping it in auth schema)
+      pg_dump "$PROD_DIRECT_URL" \
+        --data-only \
+        --no-owner \
+        --no-privileges \
+        --inserts \
+        --rows-per-insert=100 \
+        --table='auth.users' 2>/dev/null || echo "-- No auth.users data"
+    ) | PGPASSWORD=devpassword psql -h postgres -U devuser -d devdb -q 2>&1 | \
+      grep -v "does not exist" | grep -v "already exists" | grep -v "^$" || true
+    
+    echo "🥳 Data copied from production 🥳"
     
     echo "[4/4] Generating Prisma client..."
     npx prisma generate
@@ -61,19 +91,22 @@ else
   npx prisma generate
 fi
 
+# Restore local URLs for the running application
+export DATABASE_URL="$LOCAL_DATABASE_URL"
+export DIRECT_URL="$LOCAL_DIRECT_URL"
+
+# Start Prisma Studio in the background
+echo "Starting Prisma Studio on http://localhost:5555..."
+npx prisma studio &
+
 echo ""
 echo "=========================================="
 echo "Development Environment Ready"
 echo "=========================================="
-echo "Local Database: postgresql://devuser:***@postgres:5432/devdb"
 echo "API: http://localhost:3001"
 echo "Prisma Studio: http://localhost:5555"
 echo "=========================================="
 echo ""
-
-# Restore local URLs for the running application
-export DATABASE_URL="$LOCAL_DATABASE_URL"
-export DIRECT_URL="$LOCAL_DIRECT_URL"
 
 # Start the application
 exec "$@"

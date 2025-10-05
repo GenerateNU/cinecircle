@@ -39,7 +39,7 @@ services:
       - ./backend/prisma:/app/prisma
       - ./backend/package.json:/app/package.json
       - ./backend/tsconfig.json:/app/tsconfig.json
-      - /app/node_modules
+      - ./backend/nodemon.json:/app/nodemon.json
     depends_on:
       postgres:
         condition: service_healthy
