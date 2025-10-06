@@ -1,6 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button } from 'react-native';
 import { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
   const [message, setMessage] = useState('');
@@ -33,6 +35,11 @@ export default function App() {
       <Text style={styles.result}>{message}</Text>
       <Button title="Test Database" onPress={testDatabase} />
       <Text style={styles.result}>{dbMessage}</Text>
+
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+
       <StatusBar style="auto" />
     </View>
   );
