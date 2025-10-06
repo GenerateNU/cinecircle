@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { prisma, } from "../services/db.ts";
+import { prisma } from "../services/db.js";
 import { Prisma } from "@prisma/client";
+import { randomUUID } from "crypto";
 
 type TmdbMovie = {
   id: number;
@@ -26,8 +27,8 @@ export async function fetchTmdbMovie(tmdbId: string): Promise<TmdbMovie> {
   return resp.json() as Promise<TmdbMovie>;
 }
 
-// Map TMDB -> Prisma.Movie fields (exclude movieId, since it's auto-UUID)
-type MovieInsert = Omit<Prisma.MovieCreateInput, "movieId">;
+// Map TMDB -> Prisma.Movie fields (include movieId as UUID)
+type MovieInsert = Prisma.MovieCreateInput;
 
 export function mapTmdbToMovie(
   tmdb: TmdbMovie,
@@ -35,14 +36,15 @@ export function mapTmdbToMovie(
 ): MovieInsert {
   const defaults = opts?.defaults ?? {};
   return {
+    movieId: randomUUID(), // Generate UUID
     title: tmdb.title ?? "",
     description: tmdb.overview ?? "",
     languages: (tmdb.spoken_languages ?? [])
       .map(l => l.english_name)
       .filter(Boolean) as string[],
-    imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75
-    localRating: defaults.localRating ?? 0,
-    numRatings: defaults.numRatings ?? 0,
+    imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75 (stored as BigInt)
+    localRating: defaults.localRating ?? "0",
+    numRatings: defaults.numRatings ?? "0",
   };
 }
 
@@ -87,9 +89,15 @@ export const getMovie = async (req: Request, res: Response) => {
     const mapped = mapTmdbToMovie(tmdb);
     const saved = await saveMovie(mapped);
 
+    // Convert BigInt to number for JSON serialization
+    const movieResponse = {
+      ...saved,
+      imdbRating: saved.imdbRating ? Number(saved.imdbRating) : null,
+    };
+
     res.json({
       message: "Movie fetched from TMDB and saved to DB",
-      data: saved,
+      data: movieResponse,
     });
   } catch (err) {
     console.error("getMovie error:", err);
@@ -115,9 +123,9 @@ export const updateMovie = async (req: Request, res: Response) => {
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (languages !== undefined) updateData.languages = languages;
-    if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
-    if (localRating !== undefined) updateData.localRating = localRating;
-    if (numRatings !== undefined) updateData.numRatings = numRatings;
+    if (imdbRating !== undefined) updateData.imdbRating = imdbRating; 
+    if (localRating !== undefined) updateData.localRating = String(localRating); 
+    if (numRatings !== undefined) updateData.numRatings = String(numRatings); 
 
     if (Object.keys(updateData).length === 0) {
         return res.status(400).json({ message: "No fields to update" });
@@ -129,9 +137,15 @@ export const updateMovie = async (req: Request, res: Response) => {
             data: updateData,
         });
 
+        // Convert BigInt to number for JSON serialization
+        const movieResponse = {
+            ...updatedMovie,
+            imdbRating: updatedMovie.imdbRating ? Number(updatedMovie.imdbRating) : null,
+        };
+
         res.json({
             message: "Movie updated successfully",
-            data: updatedMovie,
+            data: movieResponse,
         });
     } catch (err) {
         console.error("updateMovie error:", err);
@@ -180,51 +194,31 @@ export const getMovieById = async (req: Request, res: Response) => {
     // No TMDB call needed
     const { movieId } = req.params;
     if (!movieId) {
-        return res.status(400).json({ message: “Movie ID is required” })
+        return res.status(400).json({ message: "Movie ID is required" })
     }
     try {
         const movie = await prisma.movie.findUnique({
             where: { movieId : movieId },
         });
         if (!movie) {
-            return res.status(404).json({ message: “Movie not found.” })
+            return res.status(404).json({ message: "Movie not found." })
         }
+        
+        // Convert BigInt to number for JSON serialization
+        const movieResponse = {
+            ...movie,
+            imdbRating: movie.imdbRating ? Number(movie.imdbRating) : null,
+        };
+        
         res.json({
-            message: “Movie found successfully”,
-            data: movie,
+            message: "Movie found successfully",
+            data: movieResponse,
         });
     } catch (err) {
-        console.error(“getMovieById error:“, err);
+        console.error("getMovieById error:", err);
         res.status(500).json({
-            message: “failed to retrieve movie”,
-            error: err instanceof Error ? err.message : “unknown”,
+            message: "failed to retrieve movie",
+            error: err instanceof Error ? err.message : "unknown",
         });
     }
-};
-
-export const getMovieById = async (req: Request, res: Response) => {
-  // Fetch movie from YOUR database using the local UUID
-  // No TMDB call needed
-  const { movieId } = req.params;
-  if (!movieId) {
-      return res.status(400).json({ message: “Movie ID is required” })
-  }
-  try {
-      const movie = await prisma.movie.findUnique({
-          where: { movieId : movieId },
-      });
-      if (!movie) {
-          return res.status(404).json({ message: “Movie not found.” })
-      }
-      res.json({
-          message: “Movie found successfully”,
-          data: movie,
-      });
-  } catch (err) {
-      console.error(“getMovieById error:“, err);
-      res.status(500).json({
-          message: “failed to retrieve movie”,
-          error: err instanceof Error ? err.message : “unknown”,
-      });
-  }
 };
