@@ -1,6 +1,6 @@
-import { createApp } from './app';
-import { connectDatabase, prisma } from './services/db';
-import { PORT } from './config/env';
+import { createApp } from "./app";
+import { connectDatabase, prisma } from "./services/db";
+import { PORT } from "./config/env";
 
 const app = createApp();
 
@@ -10,11 +10,11 @@ const server = app.listen(PORT, async () => {
 });
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\nShutting down gracefully...');
+process.on("SIGINT", async () => {
+  console.log("\nShutting down gracefully...");
   await prisma.$disconnect();
   server.close(() => {
-    console.log('Server closed');
+    console.log("Server closed");
     process.exit(0);
   });
 });

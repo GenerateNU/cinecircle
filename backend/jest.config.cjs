@@ -21,6 +21,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '@scalar/express-api-reference': '<rootDir>/src/tests/helpers/__mocks__/scalar.ts',
   },
   testPathIgnorePatterns: [
     '/node_modules/',

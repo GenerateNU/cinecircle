@@ -12,6 +12,14 @@ Enter repo directory then run:
 npm start
 ```
 
+**What happens when you run `npm start`:**
+- Spins up a PostgreSQL database container
+- Starts the backend development container
+- Automatically pulls the latest schema from production
+- Copies production data to your local database
+- Starts the API server at http://localhost:3001
+- Starts Prisma Studio at http://localhost:5555
+
 **Test it works:** http://localhost:3001/api/ping  
 **Stop everything:** `npm stop`
 
@@ -22,114 +30,70 @@ npm start
 ```bash
 npm start          # Start development environment (backend + database)
 npm stop           # Stop all containers and clean up
-npm run shell      # Get shell inside backend container for debugging
+npm run shell      # Get shell inside backend container for running commands
 npm run logs       # View real-time container logs
 npm run clean      # Clean restart if things break
 ```
 
+## **‼️Important‼️:** 
+All terminal actions (database commands, tests, etc.) should be run **inside the container shell** using `npm run shell` first.
+
 ### **Testing**
 
 ```bash
-npm test           # Run all tests in development environment
-npm run test:watch # Run tests in watch mode
+npm test              # Run all tests in development environment
+npm run test:watch    # Run tests in watch mode
 npm run test:coverage # Run tests with coverage report
 ```
 
 ### **Code Quality**
 
 ```bash
-npm run lint       # Check code style and quality
-npm run format     # Auto-format code with Prettier
-npm run build      # Build TypeScript to JavaScript
+npm run lint    # Check code style and quality
+npm run format  # Auto-format code with Prettier
+npm run build   # Build TypeScript to JavaScript
 ```
 
 ### **Database Operations**
 
-```bash
-# Open database GUI (accessible from your browser):
-npm run shell             # Get container shell, then:
-npx prisma studio         # Start Prisma Studio
-# Then visit: http://localhost:5555 in your browser
+All database commands must be run inside the container shell:
 
-# Other database commands:
-npx prisma db push        # Push schema changes to database
-npx prisma generate       # Regenerate Prisma client
-npm run db:seed           # Seed database with sample data
-npm run db:reset          # Reset database completely
+```bash
+# First, get into the container:
+npm run shell
+
+# Then run database commands:
+npm run db:sync          # Re-sync schema and data from production
+npx prisma studio        # Open Prisma Studio at http://localhost:5555
+npx prisma db push       # Push schema changes to local database
+npx prisma generate      # Regenerate Prisma client
 ```
 
-## 🗄️ Database: Local PostgreSQL Only
+## Database usage
 
-**In development, you ONLY use local PostgreSQL:**
+**In development, you ONLY use local PostgreSQL - production is never touched (😅):**
 
 - **Local Database**: Runs in Docker container (`postgres:5432`)
-- **Production Database**: Completely separate, never touched from development
-- **Schema Sync**: Manual - you push schema changes when ready
-
-### **How It Works:**
-
-1. **Development**: Local PostgreSQL container with your own data
-2. **Schema**: Sync from production with `npx prisma db pull`
-3. **Data**: Seed with `npm run db:seed` or add manually via Prisma Studio
-4. **Testing**: Uses same local database, resets data between test runs
-
-### **First Time Setup:**
-
-```bash
-npm start                     # Start containers
-npm run shell                 # Get into container
-npx prisma db pull            # Pull latest schema from production
-npm run db:setup              # Push schema + seed data
-```
-
-### **Interacting with Local Database:**
-
-```bash
-# Start development environment
-npm start
-
-# Open database GUI in browser
-npm run shell
-npx prisma studio  # Opens localhost:5555
-
-# View/edit data, run queries, etc.
-# All changes stay local - production untouched
-```
+- **Production Database**: Completely separate, read-only for development
+- **Auto-Sync on Startup**: Schema and data automatically pulled from production when you `npm start`
+- **Manual Re-Sync**: Run `npm run db:sync` inside container to sync again
 
 ### **Schema Changes Workflow:**
 
 ```bash
 # 1. Edit backend/prisma/schema.prisma
-# 2. Push to local database
+
+# 2. Get into container shell
 npm run shell
+
+# 3. Push to local database
 npx prisma db push
 
-# 3. Generate new Prisma client
+# 4. Generate new Prisma client
 npx prisma generate
 
-# 4. Test your changes
+# 5. Test your changes
 npm test
 
-# 5. When ready, deploy to production (separate process)
+# 6. When ready, deploy changes (separate process)
 ```
-
-## Project Structure
-
-```
-cinecircle/
-├── backend/                   # Node.js API
-│   ├── src/                   # Source code
-│   ├── prisma/                # Database schema & migrations
-│   ├── .env                   # Local development config
-│   ├── .env.production        # Production config (for deployment)
-│   └── Dockerfile.production  # Production Docker image
-├── frontend/                  # React Native App (coming soon)
-└── docker-compose.dev.yml     # Development environment
-```
-
-## Environment Files
-
-- **`.env`**: Local development (points to Docker PostgreSQL)
-- **`.env.production`**: Production deployment (points to Supabase)
-
-**Development uses Docker PostgreSQL, Production uses Supabase.** Never mix them.

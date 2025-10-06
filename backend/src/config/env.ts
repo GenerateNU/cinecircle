@@ -1,7 +1,7 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-const requiredEnv = ['DATABASE_URL', 'DIRECT_URL', 'PORT'];
+const requiredEnv = ["DATABASE_URL", "DIRECT_URL", "PORT"];
 
 for (const key of requiredEnv) {
   if (!process.env[key]) {

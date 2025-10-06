@@ -1,37 +1,39 @@
-// Test data constants for seeding and testing
+/**
+ * Test Constants and Utilities
+ *
+ * Since tests use production data, these constants help with:
+ * - Database query timeouts
+ * - Test configuration
+ * - Common test expectations
+ */
 
-export const TEST_USERS = [
-  {
-    id: 'user-1',
-    email: 'john.doe@example.com',
-    name: 'John Doe',
-  },
-  {
-    id: 'user-2',
-    email: 'jane.smith@example.com',
-    name: 'Jane Smith',
-  },
-  {
-    id: 'user-3',
-    email: 'admin@cinecircle.com',
-    name: 'Admin User',
-  },
-];
+// Test timeouts (in milliseconds)
+export const TEST_TIMEOUTS = {
+  SHORT: 5000, // For simple queries
+  MEDIUM: 15000, // For complex queries
+  LONG: 30000, // For heavy operations
+} as const;
 
-export const TEST_HEALTH = [
-  {
-    id: 'health-1',
-    status: 'healthy',
-    message: 'All systems operational',
-  },
-  {
-    id: 'health-2',
-    status: 'warning',
-    message: 'High CPU usage detected',
-  },
-  {
-    id: 'health-3',
-    status: 'error',
-    message: 'Database connection timeout',
-  },
-];
+// Common HTTP status codes for testing
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;
+
+// Test database table names
+export const TEST_TABLES = {
+  MOVIE: "movie",
+  RATING: "Rating",
+  USERS: "users",
+} as const;
+
+// Test query limits
+export const TEST_LIMITS = {
+  SMALL: 5,
+  MEDIUM: 20,
+  LARGE: 100,
+} as const;
