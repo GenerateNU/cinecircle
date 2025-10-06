@@ -1,27 +1,41 @@
-import express from 'express';
-import cors from 'cors';
-import { apiReference } from '@scalar/express-api-reference';
-import routes from './routes/index.js';
+import express from "express";
+import cors from "cors";
+import { apiReference } from "@scalar/express-api-reference";
+import routes from "./routes/index.js";
 
-const app = express();
+export function createApp() {
+  const app = express();
 
-app.use(cors());
-app.use(express.json());
+  app.use(cors());
+  app.use(express.json());
 
-app.get('/', (_req, res) => {
-  res.send('CineCircle backend is running!');
-});
+  app.get("/", (_req, res) => {
+    res.json({
+      status: "success",
+      message: "CineCircle backend is up & running!",
+    });
+  });
 
-// Register all routes
-app.use(routes);
+  // Scalar API Docs
+  app.use(
+    "/docs",
+    apiReference({
+      url: "/swagger-output.json",
+      theme: "laserwave",
+      pageTitle: "Absolute CineCircle",
+    }),
+  );
 
-// Scalar API Docs
-app.use(
-  '/docs',
-  apiReference({
-    url: '/swagger-output.json',
-    theme: 'laserwave',
-  })
-);
+  // Register routes
+  app.use(routes);
 
-export default app;
+  // 404 Handler
+  app.use((_req, res) => {
+    res.status(404).json({
+      status: "error",
+      message: "You probably shouldn't be here",
+    });
+  });
+
+  return app;
+}

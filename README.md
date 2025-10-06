@@ -4,98 +4,96 @@ A user-friendly, community-oriented app for South Indian movie fans to stay upda
 
 ## Quick Start
 
-### Prerequisites
+**Requirements:** Docker Desktop
 
-- Docker and Docker Compose
-- Node.js 18+
-- Supabase account
-- Expo CLI
-
-### Running the Application
-
-1. **Setup environment variables:**
-
-   ```bash
-   cd backend
-   cp .env.example .env
-   # Add Supabase connection string to .env
-   ```
-
-2. **Install and start the backend:**
-
-   ```bash
-   cd backend
-   npm install
-   npm run dev
-   ```
-
-3. **Start the frontend (in a separate terminal):**
-
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
-
-4. **Test the setup:**
-   - Open the Expo app on your phone or simulator / web at http://localhost:8081
-   - Click "Ping Backend" to test the backend connection
-   - Click "Test Database" to test the Supabase connection
-
-## Architecture
-
-- **Frontend**: React Native with Expo
-- **Backend**: Express.js with TypeScript
-- **Database**: Supabase PostgreSQL
-- **ORM**: Prisma for type-safe database operations
-- **Containerization**: Docker Compose
-- **Authentication**: Supabase Auth integration
-
-## API Endpoints
-
-- `GET /` - Backend health check
-- `GET /api/ping` - Simple ping endpoint
-- `GET /api/db-test` - Test Supabase connection via Prisma
-- `GET /api/bootcamps` - Get all bootcamps (example endpoint)
-- `GET /api/bootcamps/:id` - Get specific bootcamp
-- `POST /api/bootcamps` - Create new bootcamp
-
-## Development
-
-### Backend Development
-
-**Key Commands:**
+Enter repo directory then run:
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server (builds + runs)
-npm run dev
-
-# Build TypeScript
-npm run build
-
-# Start production server
 npm start
-
-# Generate Prisma client (after schema changes)
-npx prisma generate
-
-# Sync database schema with Prisma (introspect existing DB)
-npx prisma db pull
-
-# Apply schema changes to database (migrations)
-npx prisma db push
-
-# Open Prisma Studio (database GUI)
-npx prisma studio
 ```
 
-### Environment Variables
+**What happens when you run `npm start`:**
+- Spins up a PostgreSQL database container
+- Starts the backend development container
+- Automatically pulls the latest schema from production
+- Copies production data to your local database
+- Starts the API server at http://localhost:3001
+- Starts Prisma Studio at http://localhost:5555
+
+**Test it works:** http://localhost:3001/api/ping  
+**Stop everything:** `npm stop`
+
+## Commands Reference
+
+### **Development**
 
 ```bash
-DATABASE_URL=    # Supabase connection string (pooled)
-DIRECT_URL=      # Supabase direct connection (for migrations)
-PORT=3001        # Server port
+npm start          # Start development environment (backend + database)
+npm stop           # Stop all containers and clean up
+npm run shell      # Get shell inside backend container for running commands
+npm run logs       # View real-time container logs
+npm run clean      # Clean restart if things break
+```
+
+## **‼️Important‼️:** 
+All terminal actions (database commands, tests, etc.) should be run **inside the container shell** using `npm run shell` first.
+
+### **Testing**
+
+```bash
+npm test              # Run all tests in development environment
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+```
+
+### **Code Quality**
+
+```bash
+npm run lint    # Check code style and quality
+npm run format  # Auto-format code with Prettier
+npm run build   # Build TypeScript to JavaScript
+```
+
+### **Database Operations**
+
+All database commands must be run inside the container shell:
+
+```bash
+# First, get into the container:
+npm run shell
+
+# Then run database commands:
+npm run db:sync          # Re-sync schema and data from production
+npx prisma studio        # Open Prisma Studio at http://localhost:5555
+npx prisma db push       # Push schema changes to local database
+npx prisma generate      # Regenerate Prisma client
+```
+
+## Database usage
+
+**In development, you ONLY use local PostgreSQL - production is never touched (😅):**
+
+- **Local Database**: Runs in Docker container (`postgres:5432`)
+- **Production Database**: Completely separate, read-only for development
+- **Auto-Sync on Startup**: Schema and data automatically pulled from production when you `npm start`
+- **Manual Re-Sync**: Run `npm run db:sync` inside container to sync again
+
+### **Schema Changes Workflow:**
+
+```bash
+# 1. Edit backend/prisma/schema.prisma
+
+# 2. Get into container shell
+npm run shell
+
+# 3. Push to local database
+npx prisma db push
+
+# 4. Generate new Prisma client
+npx prisma generate
+
+# 5. Test your changes
+npm test
+
+# 6. When ready, deploy changes (separate process)
 ```
