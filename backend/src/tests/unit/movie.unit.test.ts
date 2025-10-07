@@ -20,17 +20,15 @@ describe("Movie Controller Unit Tests", () => {
           { english_name: "French" },
         ],
       };
-
       const result = mapTmdbToMovie(tmdbMovie);
-
       expect(result.title).toBe("Fight Club");
       expect(result.description).toBe(
         "A ticking-time-bomb insomniac and a slippery soap salesman...",
       );
       expect(result.imdbRating).toBe(84); // 8.4 * 10
       expect(result.languages).toEqual(["English", "French"]);
-      expect(result.localRating).toBe("0");
-      expect(result.numRatings).toBe("0");
+      expect(result.localRating).toBe(0); 
+      expect(result.numRatings).toBe(0);  
       expect(result.movieId).toBeDefined(); // Should generate UUID
     });
 
@@ -40,9 +38,7 @@ describe("Movie Controller Unit Tests", () => {
         title: "Test Movie",
         // No overview, vote_average, or languages
       };
-
       const result = mapTmdbToMovie(tmdbMovie);
-
       expect(result.title).toBe("Test Movie");
       expect(result.description).toBe("");
       expect(result.imdbRating).toBe(0);
@@ -54,16 +50,14 @@ describe("Movie Controller Unit Tests", () => {
         id: 123,
         title: "Test Movie",
       };
-
       const result = mapTmdbToMovie(tmdbMovie, {
         defaults: {
-          localRating: "7.5",
-          numRatings: "100",
+          localRating: 7.5,
+          numRatings: 100,
         },
       });
-
-      expect(result.localRating).toBe("7.5");
-      expect(result.numRatings).toBe("100");
+      expect(result.localRating).toBe(7.5);  
+      expect(result.numRatings).toBe(100);  
     });
 
     it("should filter out undefined language names", () => {
@@ -76,9 +70,7 @@ describe("Movie Controller Unit Tests", () => {
           { english_name: "Spanish" },
         ],
       };
-
       const result = mapTmdbToMovie(tmdbMovie);
-
       expect(result.languages).toEqual(["English", "Spanish"]);
     });
   });
