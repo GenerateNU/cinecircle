@@ -50,15 +50,15 @@ model flow_state {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model identities {
   provider_id     String
-  user_id         String    @db.Uuid
+  user_id         String     @db.Uuid
   identity_data   Json
   provider        String
-  last_sign_in_at DateTime? @db.Timestamptz(6)
-  created_at      DateTime? @db.Timestamptz(6)
-  updated_at      DateTime? @db.Timestamptz(6)
-  email           String?   
-  id              String    @id @default(uuid()) @db.Uuid
-  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  last_sign_in_at DateTime?  @db.Timestamptz(6)
+  created_at      DateTime?  @db.Timestamptz(6)
+  updated_at      DateTime?  @db.Timestamptz(6)
+  email           String?    
+  id              String     @id @default(uuid()) @db.Uuid
+  users           auth_users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([provider_id, provider], map: "identities_provider_id_provider_unique")
   @@index([email])
@@ -124,7 +124,7 @@ model mfa_factors {
   web_authn_credential Json?
   web_authn_aaguid     String?          @db.Uuid
   mfa_challenges       mfa_challenges[]
-  users                users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, phone], map: "unique_phone_factor_per_user")
   @@index([user_id, created_at], map: "factor_id_created_at_idx")
@@ -162,7 +162,7 @@ model one_time_tokens {
   relates_to String
   created_at DateTime            @default(now()) @db.Timestamp(6)
   updated_at DateTime            @default(now()) @db.Timestamp(6)
-  users      users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      auth_users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, token_type])
   @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
@@ -256,7 +256,7 @@ model sessions {
   tag            String?
   mfa_amr_claims mfa_amr_claims[]
   refresh_tokens refresh_tokens[]
-  users          users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([not_after(sort: Desc)])
   @@index([user_id])
@@ -302,7 +302,7 @@ model sso_providers {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
-model users {
+model auth_users {
   instance_id                 String?           @db.Uuid
   id                          String            @id @db.Uuid
   aud                         String?           @db.VarChar(255)
@@ -345,27 +345,43 @@ model users {
 
   @@index([instance_id])
   @@index([is_anonymous])
+  @@map("users")
   @@schema("auth")
 }
 
-model bootcamp {
-  id         BigInt   @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  name       String?
-  fav_food   Json?    @db.Json
+model Rating {
+  id               String   @id
+  userId           String
+  movieId          String
+  stars            Int
+  comment          String?
+  tags             String[]
+  date             DateTime
+  votes            Int
+  threadedComments Json?
 
   @@schema("public")
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model movie {
-  movieId     String   @id @db.Uuid
-  localRating Int
-  imdbRating  Int
-  languages   String[]
-  title       String
-  description String
-  numRatings  Int
+  movieId     String  @id
+  localRating String?
+  imdbRating  BigInt?
+  languages   Json?
+  title       String?
+  description String?
+  numRatings  String?
 
+  @@schema("public")
+}
+
+model public_users {
+  user_id    String    @id @default(uuid()) @db.Uuid
+  username   String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@map("users")
   @@schema("public")
 }
 
