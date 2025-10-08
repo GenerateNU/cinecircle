@@ -6,7 +6,7 @@ import {
   getMovieById,
   updateMovie,
 } from "../controllers/tmdb";
-import { deleteUserProfile, ensureUserProfile, getUserProfile, updateUserProfile } from '../controllers/user';
+import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
@@ -33,6 +33,9 @@ router.post('/api/user/follow', followUser);
 router.post('/api/user/unfollow', unfollowUser);
 router.get('/api/user/:userId/followers', getFollowers);
 router.get('/api/user/:userId/following', getFollowing);
+router.get("/api/user/ratings", getUserRatings);
+router.get("/api/user/comments", getUserComments);
+
 
 // Movie + TMDB routes
 router.get("/movies/:movieId", getMovie);

@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import { prisma } from '../services/db.js';
 
@@ -113,3 +113,52 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
     });
   }
 };
+export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
+    const { user_id } = req.query;
+  
+    if (!user_id || typeof user_id !== 'string') {
+      res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
+      return;
+    }
+  
+    try {
+      const ratings = await prisma.rating.findMany({
+        where: { userId: user_id },
+        orderBy: { date: 'desc' },
+        include: {
+          threadedComments: true,
+        },
+      });
+  
+      res.json({ message: "User ratings retrieved", ratings });
+    } catch (error) {
+      console.error("getUserRatings error:", error);
+      res.status(500).json({ message: "Internal server error while fetching ratings" });
+    }
+  };
+  
+  export const getUserComments = async (req: Request, res: Response): Promise<void> => {
+    const { user_id } = req.query;
+  
+    if (!user_id || typeof user_id !== 'string') {
+      res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
+      return;
+    }
+  
+    try {
+      const comments = await prisma.comment.findMany({
+        where: { userId: user_id },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          rating: true,
+          post: true,
+        },
+      });
+  
+      res.json({ message: "User comments retrieved", comments });
+    } catch (error) {
+      console.error("getUserComments error:", error);
+      res.status(500).json({ message: "Internal server error while fetching comments" });
+    }
+  };
+  
