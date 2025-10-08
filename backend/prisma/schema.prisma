@@ -56,7 +56,7 @@ model identities {
   last_sign_in_at DateTime?  @db.Timestamptz(6)
   created_at      DateTime?  @db.Timestamptz(6)
   updated_at      DateTime?  @db.Timestamptz(6)
-  email           String?    
+  email           String?
   id              String     @id @default(uuid()) @db.Uuid
   users           auth_users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -64,6 +64,74 @@ model identities {
   @@index([email])
   @@index([user_id])
   @@schema("auth")
+}
+
+model UserProfile {
+  userId              String   @id @db.Uuid
+  username            String?
+  preferredLanguages  String[] @default([])
+  preferredCategories String[] @default([])
+  favoriteMovies      String[] @default([])
+
+  reviews  Rating[]  @relation("UserReviews")
+  comments Comment[] @relation("UserComments")
+
+  followers UserFollow[] @relation("Followers")
+  following UserFollow[] @relation("Following")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Post      Post[]
+
+  @@schema("public")
+}
+
+model UserFollow {
+  id          String @id @default(uuid())
+  followerId  String @db.Uuid
+  followingId String @db.Uuid
+
+  follower  UserProfile @relation("Followers", fields: [followerId], references: [userId])
+  following UserProfile @relation("Following", fields: [followingId], references: [userId])
+
+  @@unique([followerId, followingId])
+  @@schema("public")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  ratingId  String?
+  postId    String?
+  content   String
+  createdAt DateTime @default(now())
+
+  user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
+  rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
+  post   Post?       @relation("PostComments", fields: [postId], references: [id])
+
+  @@schema("public")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  content   String
+  type      PostType
+  votes     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user     UserProfile @relation(fields: [userId], references: [userId])
+  comments Comment[]   @relation("PostComments")
+
+  @@schema("public")
+}
+
+enum PostType {
+  SHORT
+  LONG
+
+  @@schema("public")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -329,7 +397,7 @@ model auth_users {
   phone_change                String?           @default("")
   phone_change_token          String?           @default("") @db.VarChar(255)
   phone_change_sent_at        DateTime?         @db.Timestamptz(6)
-  confirmed_at                DateTime?          @db.Timestamptz(6)
+  confirmed_at                DateTime?         @db.Timestamptz(6)
   email_change_token_current  String?           @default("") @db.VarChar(255)
   email_change_confirm_status Int?              @default(0) @db.SmallInt
   banned_until                DateTime?         @db.Timestamptz(6)
@@ -350,15 +418,17 @@ model auth_users {
 }
 
 model Rating {
-  id               String   @id
-  userId           String
-  movieId          String
-  stars            Int
-  comment          String?
-  tags             String[]
-  date             DateTime
-  votes            Int
-  threadedComments Json?
+  id      String   @id @default(uuid())
+  userId  String   @db.Uuid
+  movieId String
+  stars   Int
+  comment String?
+  tags    String[] @default([])
+  date    DateTime
+  votes   Int      @default(0)
+
+  user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
+  threadedComments Comment[]   @relation("RatingComments")
 
   @@schema("public")
 }
