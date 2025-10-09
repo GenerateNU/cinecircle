@@ -19,19 +19,18 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>CineCircle Frontend</Text>
-      <NavigationContainer>
-        <RootNavigator />
-        {!user ? (
-          <AuthForm onAuthSuccess={setUser} />
-        ) : (
-          <UserDashboard user={user} onSignOut={() => setUser(null)} />
-        )}
-      </NavigationContainer>
-
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <RootNavigator />
+        <View style={styles.container}>
+          <Text style={styles.title}>CineCircle Frontend</Text>
+            {!user ? (
+              <AuthForm onAuthSuccess={setUser} />
+            ) : (
+              <UserDashboard user={user} onSignOut={() => setUser(null)} />
+            )}
+          <StatusBar style="auto" />
+        </View>
+    </NavigationContainer>
   );
 }
 

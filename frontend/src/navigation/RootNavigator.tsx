@@ -1,31 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ProjectNavigator from './ProjectNavigator';
 import LoginNavigator from './LoginNavigator';
+import { supabase } from '../../lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 const Stack = createNativeStackNavigator();
 
-// Navigates user to the log in screen if seesion is not found (i.e. user not logged in)
 export default function RootNavigator() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  /*
-  WHEN AUTH IS IMPLEMENTED
-  const { session, isLoading } = useAuth();
+  // Check for existing session on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes and update user state accordingly
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+       listener?.subscription?.unsubscribe(); 
+    };
+  }, []);
 
   if (isLoading) {
-    return null; // or some loading screen
+    return null; // or a loading screen
   }
-  
-  return session ? (
+
+  return user ? (
     <Stack.Navigator>
-      <Stack.Screen options={{headerShown: false}} name="project" component={ProjectNavigator} />
+      <Stack.Screen
+        name="Project"
+        component={ProjectNavigator}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   ) : <LoginNavigator />;
-  */
-
-  return (
-    <Stack.Navigator>
-      <Stack.Screen options={{headerShown: false}} name="project" component={ProjectNavigator} />
-    </Stack.Navigator>
-  );
 }
