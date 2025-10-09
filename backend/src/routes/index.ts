@@ -6,10 +6,12 @@ import {
   getMovieById,
   updateMovie,
 } from "../controllers/tmdb";
-import { getUserProfile } from '../controllers/user';
+import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
+import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
+
 
 const router = Router();
 
@@ -18,13 +20,24 @@ router.get("/api/db-test", dbTest);
 router.get("/swagger-output.json", serveSwagger);
 
 // everything under here is a private endpoint
-router.use('/api', authenticateUser); 
+router.use('/api', authenticateUser, ensureUserProfile); 
 
 // test protected endpoints
 router.get('/api/protected', protect);
   
 // get current user info
 router.get('/api/user/profile', getUserProfile);
+router.put("/api/user/profile", updateUserProfile);
+router.delete("/api/user/profile", deleteUserProfile);
+
+// User follow routes
+router.post('/api/user/follow', followUser);
+router.post('/api/user/unfollow', unfollowUser);
+router.get('/api/user/:userId/followers', getFollowers);
+router.get('/api/user/:userId/following', getFollowing);
+router.get("/api/user/ratings", getUserRatings);
+router.get("/api/user/comments", getUserComments);
+
 
 // Movie + TMDB routes
 router.get("/movies/:movieId", getMovie);
