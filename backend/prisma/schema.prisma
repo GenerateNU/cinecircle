@@ -50,20 +50,88 @@ model flow_state {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model identities {
   provider_id     String
-  user_id         String    @db.Uuid
+  user_id         String     @db.Uuid
   identity_data   Json
   provider        String
-  last_sign_in_at DateTime? @db.Timestamptz(6)
-  created_at      DateTime? @db.Timestamptz(6)
-  updated_at      DateTime? @db.Timestamptz(6)
-  email           String?   
-  id              String    @id @default(uuid()) @db.Uuid
-  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  last_sign_in_at DateTime?  @db.Timestamptz(6)
+  created_at      DateTime?  @db.Timestamptz(6)
+  updated_at      DateTime?  @db.Timestamptz(6)
+  email           String?
+  id              String     @id @default(uuid()) @db.Uuid
+  users           auth_users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([provider_id, provider], map: "identities_provider_id_provider_unique")
   @@index([email])
   @@index([user_id])
   @@schema("auth")
+}
+
+model UserProfile {
+  userId              String   @id @db.Uuid
+  username            String?
+  preferredLanguages  String[] @default([])
+  preferredCategories String[] @default([])
+  favoriteMovies      String[] @default([])
+
+  reviews  Rating[]  @relation("UserReviews")
+  comments Comment[] @relation("UserComments")
+
+  followers UserFollow[] @relation("Followers")
+  following UserFollow[] @relation("Following")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Post      Post[]
+
+  @@schema("public")
+}
+
+model UserFollow {
+  id          String @id @default(uuid())
+  followerId  String @db.Uuid
+  followingId String @db.Uuid
+
+  follower  UserProfile @relation("Followers", fields: [followerId], references: [userId])
+  following UserProfile @relation("Following", fields: [followingId], references: [userId])
+
+  @@unique([followerId, followingId])
+  @@schema("public")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  ratingId  String?
+  postId    String?
+  content   String
+  createdAt DateTime @default(now())
+
+  user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
+  rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
+  post   Post?       @relation("PostComments", fields: [postId], references: [id])
+
+  @@schema("public")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  content   String
+  type      PostType
+  votes     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user     UserProfile @relation(fields: [userId], references: [userId])
+  comments Comment[]   @relation("PostComments")
+
+  @@schema("public")
+}
+
+enum PostType {
+  SHORT
+  LONG
+
+  @@schema("public")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -124,7 +192,7 @@ model mfa_factors {
   web_authn_credential Json?
   web_authn_aaguid     String?          @db.Uuid
   mfa_challenges       mfa_challenges[]
-  users                users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, phone], map: "unique_phone_factor_per_user")
   @@index([user_id, created_at], map: "factor_id_created_at_idx")
@@ -162,7 +230,7 @@ model one_time_tokens {
   relates_to String
   created_at DateTime            @default(now()) @db.Timestamp(6)
   updated_at DateTime            @default(now()) @db.Timestamp(6)
-  users      users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      auth_users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, token_type])
   @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
@@ -190,6 +258,22 @@ model refresh_tokens {
   @@index([session_id, revoked])
   @@index([updated_at(sort: Desc)])
   @@schema("auth")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model local_event {
+  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
+  title       String
+  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  description String
+  genre       String
+  cost        Float?    @db.Real
+  occasion    String?
+  languages   String[]
+  lat         Float?
+  lon         Float?
+
+  @@schema("public")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -256,7 +340,7 @@ model sessions {
   tag            String?
   mfa_amr_claims mfa_amr_claims[]
   refresh_tokens refresh_tokens[]
-  users          users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([not_after(sort: Desc)])
   @@index([user_id])
@@ -302,7 +386,7 @@ model sso_providers {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
-model users {
+model auth_users {
   instance_id                 String?           @db.Uuid
   id                          String            @id @db.Uuid
   aud                         String?           @db.VarChar(255)
@@ -329,7 +413,7 @@ model users {
   phone_change                String?           @default("")
   phone_change_token          String?           @default("") @db.VarChar(255)
   phone_change_sent_at        DateTime?         @db.Timestamptz(6)
-  confirmed_at                DateTime?          @db.Timestamptz(6)
+  confirmed_at                DateTime?         @db.Timestamptz(6)
   email_change_token_current  String?           @default("") @db.VarChar(255)
   email_change_confirm_status Int?              @default(0) @db.SmallInt
   banned_until                DateTime?         @db.Timestamptz(6)
@@ -345,43 +429,45 @@ model users {
 
   @@index([instance_id])
   @@index([is_anonymous])
+  @@map("users")
   @@schema("auth")
 }
 
-model bootcamp {
-  id         BigInt   @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  name       String?
-  fav_food   Json?    @db.Json
+model Rating {
+  id      String   @id @default(uuid())
+  userId  String   @db.Uuid
+  movieId String
+  stars   Int
+  comment String?
+  tags    String[] @default([])
+  date    DateTime
+  votes   Int      @default(0)
+
+  user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
+  threadedComments Comment[]   @relation("RatingComments")
 
   @@schema("public")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model local_event {
-  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
-  title       String
-  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
-  description String
-  genre       String
-  cost        Float?    @db.Real
-  occasion    String?
-  languages   String[]
-  lat         Float?
-  lon         Float?
+model movie {
+  movieId     String  @id
+  localRating String?
+  imdbRating  BigInt?
+  languages   Json?
+  title       String?
+  description String?
+  numRatings  String?
 
   @@schema("public")
 }
 
-model movie {
-  movieId     String   @id @db.Uuid
-  localRating Int
-  imdbRating  Int
-  languages   String[]
-  title       String
-  description String
-  numRatings  Int
+model public_users {
+  user_id    String    @id @default(uuid()) @db.Uuid
+  username   String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
 
+  @@map("users")
   @@schema("public")
 }
 
@@ -431,11 +517,4 @@ enum one_time_token_type {
   phone_change_token
 
   @@schema("auth")
-}
-
-enum PostType {
-  SHORT_POST
-  LONG_POST
-
-  @@schema("public")
 }
