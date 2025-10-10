@@ -1,7 +1,9 @@
 import request from "supertest";
-import express from "express";
+import express, { Request, Response } from "express";
 import { createApp } from "../../app";
 import { HTTP_STATUS } from "../helpers/constants.js";
+import { getMovieById } from "../../controllers/tmdb.js";
+import { prisma } from "../../services/db.js";
 
 /**
  * Movie API Tests
@@ -121,6 +123,86 @@ describe("Movie API Tests", () => {
       expect(firstResponse.body.data.description).toBe(
         secondResponse.body.data.description,
       );
+    });
+  });
+
+  /**
+   * Get Movie by ID API Tests
+   *
+   * Tests the controller in isolation with mocked Prisma client.
+   * These do not depend on Express routing or Supertest.
+   */
+  describe("getMovieById Controller Unit Tests", () => {
+    let mockRequest: Partial<Request>;
+    let mockResponse: Partial<Response>;
+    let responseObject: any;
+
+    beforeEach(() => {
+      mockRequest = { params: {} };
+
+      responseObject = {
+        json: jest.fn().mockReturnThis(),
+        status: jest.fn().mockReturnThis(),
+      };
+
+      mockResponse = responseObject;
+
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it("should return 400 if movieId is not provided", async () => {
+      mockRequest.params = {}; // No movieId
+
+      await getMovieById(mockRequest as Request, mockResponse as Response);
+
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie ID is required",
+      });
+    });
+
+    it("should return 404 if movie is not found", async () => {
+      mockRequest.params = { movieId: "non-existent-uuid" };
+
+      // Mock Prisma to return null
+      jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(null as any);
+
+      await getMovieById(mockRequest as Request, mockResponse as Response);
+
+      expect(prisma.movie.findUnique).toHaveBeenCalledWith({
+        where: { movieId: "non-existent-uuid" },
+      });
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie not found.",
+      });
+    });
+
+
+    it("should return 500 on database error", async () => {
+      mockRequest.params = { movieId: "some-uuid" };
+
+      const dbError = new Error("Database connection failed");
+      jest.spyOn(prisma.movie, "findUnique").mockRejectedValueOnce(dbError);
+
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+      await getMovieById(mockRequest as Request, mockResponse as Response);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith("getMovieById error:", dbError);
+      expect(responseObject.status).toHaveBeenCalledWith(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "failed to retrieve movie",
+        error: "Database connection failed",
+      });
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });

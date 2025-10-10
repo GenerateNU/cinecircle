@@ -522,4 +522,134 @@ describe("Movie Controller Unit Tests", () => {
       consoleErrorSpy.mockRestore();
     });
   });
+
+  describe("getMovieById", () => {
+    let mockRequest: Partial<Request>;
+    let mockResponse: Partial<Response>;
+    let responseObject: any;
+
+
+    beforeEach(() => {
+      // Reset mocks before each test
+      mockRequest = {
+        params: {},
+      };
+
+
+      responseObject = {
+        json: jest.fn().mockReturnThis(),
+        status: jest.fn().mockReturnThis(),
+      };
+
+
+      mockResponse = responseObject;
+
+
+      // Mock Prisma
+      jest.clearAllMocks();
+    });
+
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+
+    it("should return movie data successfully with converted BigInt", async () => {
+      const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
+      mockRequest.params = { movieId: mockMovieId };
+
+
+      const mockMovie = {
+        movieId: mockMovieId,
+        title: "Fight Club",
+        description: "A ticking-time-bomb insomniac...",
+        languages: ["English", "French"],
+        imdbRating: BigInt(84), // Stored as BigInt
+        localRating: 7.5,
+        numRatings: 100,
+        createdAt: new Date("2024-01-01"),
+        updatedAt: new Date("2024-01-01"),
+      };
+
+
+      // Mock Prisma to return movie
+      jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(mockMovie as any);
+
+
+      await getMovieById(mockRequest as Request, mockResponse as Response);
+
+
+      expect(prisma.movie.findUnique).toHaveBeenCalledWith({
+        where: { movieId: mockMovieId },
+      });
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie found successfully",
+        data: {
+          ...mockMovie,
+          imdbRating: 84, // Converted to number
+        },
+      });
+      expect(responseObject.status).not.toHaveBeenCalled(); // No error status
+    });
+
+
+    it("should handle null imdbRating", async () => {
+      const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
+      mockRequest.params = { movieId: mockMovieId };
+
+
+      const mockMovie = {
+        movieId: mockMovieId,
+        title: "Test Movie",
+        description: "Test description",
+        languages: ["English"],
+        imdbRating: null, // No rating
+        localRating: 0,
+        numRatings: 0,
+        createdAt: new Date("2024-01-01"),
+        updatedAt: new Date("2024-01-01"),
+      };
+
+
+      jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(mockMovie as any);
+
+
+      await getMovieById(mockRequest as Request, mockResponse as Response);
+
+
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie found successfully",
+        data: {
+          ...mockMovie,
+          imdbRating: null, // Remains null
+        },
+      });
+    });
+
+
+    it("should handle unknown errors", async () => {
+      mockRequest.params = { movieId: "some-uuid" };
+
+
+      // Throw a non-Error object
+      jest.spyOn(prisma.movie, "findUnique").mockRejectedValueOnce("Unknown error");
+
+
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+
+      await getMovieById(mockRequest as Request, mockResponse as Response);
+
+
+      expect(responseObject.status).toHaveBeenCalledWith(500);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "failed to retrieve movie",
+        error: "unknown",
+      });
+
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });
