@@ -438,14 +438,6 @@ model bootcamp {
   created_at DateTime @default(now()) @db.Timestamptz(6)
   name       String?
   fav_food   Json?    @db.Json
-  userId           String
-  movieId          String
-  stars            Int
-  comment          String?
-  tags             String[]
-  date             DateTime
-  votes            Int
-  threadedComments Json?
 
   @@schema("public")
 }
