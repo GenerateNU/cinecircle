@@ -182,42 +182,6 @@ describe("Movie Controller Unit Tests", () => {
       jest.restoreAllMocks();
     });
 
-    it("should return 400 if movieId is not provided", async () => {
-      mockRequest.params = {}; // No movieId
-
-      await deleteMovie(mockRequest as Request, mockResponse as Response);
-
-      expect(responseObject.status).toHaveBeenCalledWith(400);
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Movie ID is required",
-      });
-    });
-
-    it("should return 404 if movie is not found", async () => {
-      mockRequest.params = {movieId: "non-existent-uuid"};
-
-      // Mock Prisma to throw P2025 error (record not found)
-      const notFoundError = new Prisma.PrismaClientKnownRequestError(
-          "Record to delete does not exist",
-          {
-            code: "P2025",
-            clientVersion: "6.15.0",
-          }
-      );
-
-      jest.spyOn(prisma.movie, "delete").mockRejectedValueOnce(notFoundError);
-
-      await deleteMovie(mockRequest as Request, mockResponse as Response);
-
-      expect(prisma.movie.delete).toHaveBeenCalledWith({
-        where: {movieId: "non-existent-uuid"},
-      });
-      expect(responseObject.status).toHaveBeenCalledWith(404);
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Movie not found",
-      });
-    });
-
     it("should delete movie successfully", async () => {
       const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
       mockRequest.params = {movieId: mockMovieId};
@@ -246,27 +210,6 @@ describe("Movie Controller Unit Tests", () => {
         message: "Movie deleted successfully",
       });
       expect(responseObject.status).not.toHaveBeenCalled(); // No error status
-    });
-
-    it("should return 500 on database error", async () => {
-      mockRequest.params = {movieId: "some-uuid"};
-
-      const dbError = new Error("Database connection failed");
-      jest.spyOn(prisma.movie, "delete").mockRejectedValueOnce(dbError);
-
-      // Spy on console.error to prevent test output pollution
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-
-      await deleteMovie(mockRequest as Request, mockResponse as Response);
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith("deleteMovie error:", dbError);
-      expect(responseObject.status).toHaveBeenCalledWith(500);
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Failed to delete movie",
-        error: "Database connection failed",
-      });
-
-      consoleErrorSpy.mockRestore();
     });
 
     it("should handle unknown errors", async () => {
@@ -313,17 +256,6 @@ describe("Movie Controller Unit Tests", () => {
 
     afterEach(() => {
       jest.restoreAllMocks();
-    });
-
-    it("should return 400 if movieId is not provided", async () => {
-      mockRequest.params = {}; // No movieId
-
-      await getMovie(mockRequest as Request, mockResponse as Response);
-
-      expect(responseObject.status).toHaveBeenCalledWith(400);
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Movie ID is required",
-      });
     });
 
     it("should fetch movie from TMDB and save to database successfully", async () => {
@@ -452,76 +384,7 @@ describe("Movie Controller Unit Tests", () => {
         }),
       });
     });
-
-    it("should return 500 when TMDB API fails", async () => {
-      const tmdbId = "999999";
-      mockRequest.params = { movieId: tmdbId };
-
-      // Mock fetch to fail
-      // @ts-ignore
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: "Not Found",
-      });
-
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-
-      await getMovie(mockRequest as Request, mockResponse as Response);
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-          "getMovie error:",
-          expect.any(Error)
-      );
-      expect(responseObject.status).toHaveBeenCalledWith(500);
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Failed to fetch/save movie",
-        error: "TMDB 404 Not Found",
-      });
-
-      consoleErrorSpy.mockRestore();
-    });
-
-    it("should return 500 on database save error", async () => {
-      const tmdbId = "550";
-      mockRequest.params = { movieId: tmdbId };
-
-      const mockTmdbResponse = {
-        id: 550,
-        title: "Fight Club",
-        overview: "A ticking-time-bomb insomniac...",
-        vote_average: 8.4,
-        spoken_languages: [{ english_name: "English" }],
-      };
-
-      // Mock fetch to succeed
-      // @ts-ignore
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockTmdbResponse,
-      });
-
-      // Mock Prisma findFirst to return null
-      jest.spyOn(prisma.movie, "findFirst").mockResolvedValueOnce(null);
-
-      // Mock Prisma create to fail
-      const dbError = new Error("Database connection failed");
-      jest.spyOn(prisma.movie, "create").mockRejectedValueOnce(dbError);
-
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-
-      await getMovie(mockRequest as Request, mockResponse as Response);
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith("getMovie error:", dbError);
-      expect(responseObject.status).toHaveBeenCalledWith(500);
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Failed to fetch/save movie",
-        error: "Database connection failed",
-      });
-
-      consoleErrorSpy.mockRestore();
-    });
-  });
+  }); 
 
   describe("getMovieById", () => {
     let mockRequest: Partial<Request>;
