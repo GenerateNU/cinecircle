@@ -49,6 +49,6 @@ router.delete("/movies/:movieId", deleteMovie);
 router.get("/local-event/:id", getLocalEvent);
 router.post("/local-event", createLocalEvent);
 router.delete("/local-event/:id", deleteLocalEvent);
-
+router.put("/local-event/:id", updateLocalEvent);
 
 export default router;
