@@ -2,7 +2,7 @@ import request from "supertest";
 import express, { Request, Response } from "express";
 import { createApp } from "../../app";
 import { HTTP_STATUS } from "../helpers/constants.js";
-import { deleteMovie, getMovie, getMovieById } from "../../controllers/tmdb.js";
+import { deleteMovie, getMovie, getMovieById, updateMovie } from "../../controllers/tmdb.js";
 import { prisma } from "../../services/db.js";
 import { Prisma } from "@prisma/client";
 
@@ -167,7 +167,6 @@ describe("Movie API Tests", () => {
         imdbRating: BigInt(87), // controller converts this to Number
         localRating: 4.8,
         numRatings: 2500,
-        // ...any other fields your schema returns are fine to omit
       };
 
       const findSpy = jest
@@ -298,7 +297,7 @@ describe("Movie API Tests", () => {
     
       await deleteMovie(mockRequest as Request, mockResponse as Response);
     
-      expect(responseObject.status).toHaveBeenCalledWith(400);
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Movie ID is required",
       });
@@ -323,7 +322,7 @@ describe("Movie API Tests", () => {
       expect(prisma.movie.delete).toHaveBeenCalledWith({
         where: {movieId: "non-existent-uuid"},
       });
-      expect(responseObject.status).toHaveBeenCalledWith(404);
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Movie not found",
       });
@@ -341,9 +340,170 @@ describe("Movie API Tests", () => {
       await deleteMovie(mockRequest as Request, mockResponse as Response);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith("deleteMovie error:", dbError);
-      expect(responseObject.status).toHaveBeenCalledWith(500);
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Failed to delete movie",
+        error: "Database connection failed",
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  /**
+   * UPDATE Movie API Tests
+   *
+   * Tests the updateMovie controller in isolation with mocks.
+   */
+  describe("updateMovie Controller API Tests", () => {
+    let mockRequest: Partial<Request>;
+    let mockResponse: Partial<Response>;
+    let responseObject: any;
+
+    beforeEach(() => {
+      mockRequest = { params: {}, body: {} };
+
+      responseObject = {
+        json: jest.fn().mockReturnThis(),
+        status: jest.fn().mockReturnThis(),
+      };
+
+      mockResponse = responseObject;
+
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it("should return 200 and the updated movie when update succeeds", async () => {
+      const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
+      mockRequest.params = { movieId: mockMovieId };
+      mockRequest.body = {
+        title: "Updated Title",
+        description: "Updated description",
+        languages: ["English", "Tamil"],
+        imdbRating: 86,          // number in request
+        localRating: "4.7",      
+        numRatings: "1234",      
+      };
+
+      // What Prisma returns from the DB after update (imdbRating as BigInt)
+      const prismaUpdated = {
+        movieId: mockMovieId,
+        title: "Updated Title",
+        description: "Updated description",
+        languages: ["English", "Tamil"],
+        imdbRating: BigInt(86),  // controller converts to Number
+        localRating: 4.7,
+        numRatings: 1234,
+      };
+
+      const updateSpy = jest
+        .spyOn(prisma.movie, "update")
+        .mockResolvedValueOnce(prismaUpdated as any);
+
+      await updateMovie(mockRequest as Request, mockResponse as Response);
+
+      // Confirms coercions in updateData and correct where clause
+      expect(updateSpy).toHaveBeenCalledWith({
+        where: { movieId: mockMovieId },
+        data: {
+          title: "Updated Title",
+          description: "Updated description",
+          languages: ["English", "Tamil"],
+          imdbRating: 86,
+          localRating: 4.7,  // coerced from "4.7"
+          numRatings: 1234,  // coerced from "1234"
+        },
+      });
+
+      // No explicit status on success => default 200
+      expect(responseObject.status).not.toHaveBeenCalled();
+
+      // imdbRating should be converted from BigInt -> Number in the response
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie updated successfully",
+        data: {
+          ...prismaUpdated,
+          imdbRating: 86,
+        },
+      });
+    });
+
+    it("should return 400 if movieId is not provided", async () => {
+      mockRequest.params = {}; // No movieId
+      mockRequest.body = { title: "Updated Title" };
+
+      await updateMovie(mockRequest as Request, mockResponse as Response);
+
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie ID is required",
+      });
+    });
+
+    it("should return 400 if no fields to update are provided", async () => {
+      mockRequest.params = { movieId: "550e8400-e29b-41d4-a716-446655440000" };
+      mockRequest.body = {}; // No update fields
+
+      await updateMovie(mockRequest as Request, mockResponse as Response);
+
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "No fields to update",
+      });
+    });
+
+    it("should return 404 if movie is not found (P2025 error)", async () => {
+      const mockMovieId = "non-existent-uuid";
+      mockRequest.params = { movieId: mockMovieId };
+      mockRequest.body = {
+        title: "Updated Title",
+      };
+
+      const prismaError = new Prisma.PrismaClientKnownRequestError(
+        "Record not found",
+        {
+          code: "P2025",
+          clientVersion: "4.0.0",
+        }
+      );
+
+      jest.spyOn(prisma.movie, "update").mockRejectedValueOnce(prismaError);
+
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+      await updateMovie(mockRequest as Request, mockResponse as Response);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith("updateMovie error:", prismaError);
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Movie not found",
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should return 500 on database error", async () => {
+      const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
+      mockRequest.params = { movieId: mockMovieId };
+      mockRequest.body = {
+        title: "Updated Title",
+      };
+
+      const dbError = new Error("Database connection failed");
+      jest.spyOn(prisma.movie, "update").mockRejectedValueOnce(dbError);
+
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+      await updateMovie(mockRequest as Request, mockResponse as Response);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith("updateMovie error:", dbError);
+      expect(responseObject.status).toHaveBeenCalledWith(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Failed to update movie",
         error: "Database connection failed",
       });
 
