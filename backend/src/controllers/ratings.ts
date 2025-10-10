@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import type { AuthenticatedRequest } from '../middleware/auth.js';
+import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import type { Response } from 'express';
 
 const prisma = new PrismaClient();
