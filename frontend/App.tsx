@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import AuthForm from './components/AuthForm';
 import UserDashboard from './components/UserDashboard';
+import { NavigationContainer } from '@react-navigation/native';
+import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -17,15 +19,18 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>CineCircle Frontend</Text>
-      {!user ? (
-        <AuthForm onAuthSuccess={setUser} />
-      ) : (
-        <UserDashboard user={user} onSignOut={() => setUser(null)} />
-      )}
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <RootNavigator />
+        <View style={styles.container}>
+          <Text style={styles.title}>CineCircle Frontend</Text>
+            {!user ? (
+              <AuthForm onAuthSuccess={setUser} />
+            ) : (
+              <UserDashboard user={user} onSignOut={() => setUser(null)} />
+            )}
+          <StatusBar style="auto" />
+        </View>
+    </NavigationContainer>
   );
 }
 
