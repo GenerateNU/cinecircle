@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "cinecircle",
+    "slug": "cinecircle",
+    "owner": "generate-fall-2025-cinecircle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,8 +13,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "extra": {
+      "projectId": "6a01b6dd-ef8f-47b0-b777-9a03d0ed0453"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.generate.cinecircle"
     },
     "android": {
       "adaptiveIcon": {
