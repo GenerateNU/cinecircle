@@ -502,15 +502,3 @@ enum one_time_token_type {
 
   @@schema("auth")
 }
-
-model Rating {
-  id               String   @id @default(cuid())
-  userId           String
-  movieId          String
-  stars            Int
-  comment          String?
-  tags             String[]
-  date             DateTime
-  votes            Int
-  threadedComments Json?
-}

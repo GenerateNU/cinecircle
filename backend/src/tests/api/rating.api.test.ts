@@ -51,6 +51,7 @@ describe("Ratings API Tests", () => {
         stars: 5,
         comment: "Great movie!",
         tags: ["action", "thriller"],
+        votes: 0,
       };
 
       const res = await request(app)
@@ -67,6 +68,7 @@ describe("Ratings API Tests", () => {
         stars: 5,
         comment: "Great movie!",
         tags: ["action", "thriller"],
+        votes: 0,
       });
     });
 
@@ -75,6 +77,7 @@ describe("Ratings API Tests", () => {
         movieId: TEST_MOVIE_ID,
         stars: 4,
         comment: "Nice!",
+        votes: 0,
       };
 
       const res = await request(app)
@@ -90,6 +93,7 @@ describe("Ratings API Tests", () => {
         movieId: TEST_MOVIE_ID,
         stars: 10,
         comment: "Invalid stars",
+        votes: 0,
       };
 
       const res = await request(app)
@@ -156,6 +160,7 @@ describe("Ratings API Tests", () => {
           stars: 2,
           comment: "Not my favorite",
           date: new Date(),
+          votes: 0,
         },
       });
       ratingId = rating.id;
