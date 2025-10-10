@@ -1,0 +1,83 @@
+name: Notify Slack on merges to main
+
+on:
+  # Fire when PRs close (includes merges)
+  pull_request:
+    types: [closed]
+    branches: [main]
+  # Also fire on direct pushes to main in case someone bypasses PR
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine event type
+        id: meta
+        run: |
+          echo "event_name=${{ github.event_name }}" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "is_merged=${{ github.event.pull_request.merged }}" >> $GITHUB_OUTPUT
+            echo "base_branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "is_merged=false" >> $GITHUB_OUTPUT
+            echo "base_branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      # ---- PR merged → main ----
+      - name: Post to Slack (PR merged)
+        if: >
+          steps.meta.outputs.event_name == 'pull_request' &&
+          steps.meta.outputs.is_merged == 'true' &&
+          steps.meta.outputs.base_branch == 'main'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          pr_number='${{ github.event.pull_request.number }}'
+          pr_title='${{ github.event.pull_request.title }}'
+          pr_url='${{ github.event.pull_request.html_url }}'
+          pr_author='${{ github.event.pull_request.user.login }}'
+          merger='${{ github.actor }}'
+          repo='${{ github.repository }}'
+
+          payload=$(cat <<EOF
+          {
+            "text": ":tada: New changes merged to *main* in *${repo}*",
+            "blocks": [
+              { "type": "section",
+                "text": { "type": "mrkdwn",
+                  "text": "*New changes merged to `main`* in *${repo}*\n*PR* #${pr_number}: *${pr_title}*\nBy: @${pr_author}  |  Merged by: @${merger}\n<${pr_url}|View PR>" }
+              }
+            ]
+          }
+          EOF
+          )
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+
+      # ---- Direct push to main ----
+      - name: Post to Slack (direct push to main)
+        if: >
+          steps.meta.outputs.event_name == 'push' &&
+          steps.meta.outputs.base_branch == 'main'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          repo='${{ github.repository }}'
+          actor='${{ github.actor }}'
+          sha='${{ github.sha }}'
+          compare_url='${{ github.event.compare }}'  # link showing diff range
+          payload=$(cat <<EOF
+          {
+            "text": ":rocket: New changes pushed to *main* in *${repo}*",
+            "blocks": [
+              { "type": "section",
+                "text": { "type": "mrkdwn",
+                  "text": "*New changes pushed to `main`* in *${repo}*\nBy: @${actor}\n<${compare_url}|View changes>" }
+              }
+            ]
+          }
+          EOF
+          )
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
