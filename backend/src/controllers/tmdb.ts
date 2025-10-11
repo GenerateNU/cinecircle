@@ -45,8 +45,8 @@ export function mapTmdbToMovie(
       .map((l) => l.english_name)
       .filter(Boolean) as string[],
     imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75 (stored as BigInt)
-    localRating: defaults.localRating ?? "0",
-    numRatings: defaults.numRatings ?? "0",
+    localRating: defaults.localRating ?? 0,
+    numRatings: defaults.numRatings ?? 0,
   };
 }
 
@@ -127,8 +127,8 @@ export const updateMovie = async (req: Request, res: Response) => {
   if (description !== undefined) updateData.description = description;
   if (languages !== undefined) updateData.languages = languages;
   if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
-  if (localRating !== undefined) updateData.localRating = String(localRating);
-  if (numRatings !== undefined) updateData.numRatings = String(numRatings);
+  if (localRating !== undefined) updateData.localRating = Number(localRating);
+  if (numRatings !== undefined) updateData.numRatings = Number(numRatings);
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).json({ message: "No fields to update" });
