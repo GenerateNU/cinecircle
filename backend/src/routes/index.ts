@@ -10,6 +10,8 @@ import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, 
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
+import { getComment, createComment, updateComment, deleteComment} from "../controllers/comment"
+import { create } from "domain";
 
 const router = Router();
 
@@ -42,5 +44,11 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+// Comment routes
+router.post("/api/comment", createComment);
+router.get("/api/comment/:id", getComment)
+router.put("/api/comment/:id", updateMovie);
+router.delete("/api/comment/:id", deleteMovie);
 
 export default router;

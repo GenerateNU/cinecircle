@@ -3,7 +3,7 @@ import type { AuthenticatedRequest } from "../middleware/auth";
 import { prisma } from "../services/db";
 
 /**
- * GET /api/comments/:id
+ * GET /api/comment/:id
  */
 export const getComment = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -14,7 +14,7 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
     return res.status(401).json({
       message: "User not authenticated",
       timestamp,
-      endpoint: "/api/comments/:id",
+      endpoint: "/api/comment/:id",
     });
   }
 
@@ -23,7 +23,7 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
     return res.status(400).json({
       message: "Missing comment ID",
       timestamp,
-      endpoint: "/api/comments/:id",
+      endpoint: "/api/comment/:id",
     });
   }
 
@@ -51,7 +51,7 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 /**
- * POST /api/comments
+ * POST /api/comment
  * Body: { content: string, postId?: string, ratingId?: string }
  */
 export const createComment = async (req: AuthenticatedRequest, res: Response) => {
@@ -62,7 +62,7 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(401).json({
       message: "User not authenticated",
       timestamp,
-      endpoint: "/api/comments",
+      endpoint: "/api/comment",
     });
   }
 
@@ -72,7 +72,7 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(400).json({
       message: "Content is required to create a comment",
       timestamp,
-      endpoint: "/api/comments",
+      endpoint: "/api/comment",
     });
   }
 
@@ -101,7 +101,7 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
 };
 
 /**
- * PUT /api/comments/:id
+ * PUT /api/comment/:id
  * Body: { content?: string }
  */
 export const updateComment = async (req: AuthenticatedRequest, res: Response) => {
@@ -112,7 +112,7 @@ export const updateComment = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(401).json({
       message: "User not authenticated",
       timestamp,
-      endpoint: "/api/comments/:id",
+      endpoint: "/api/comment/:id",
     });
   }
 
@@ -168,7 +168,7 @@ export const updateComment = async (req: AuthenticatedRequest, res: Response) =>
 };
 
 /**
- * DELETE /api/comments/:id
+ * DELETE /api/comment/:id
  */
 export const deleteComment = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -178,7 +178,7 @@ export const deleteComment = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(401).json({
       message: "User not authenticated",
       timestamp,
-      endpoint: "/api/comments/:id",
+      endpoint: "/api/comment/:id",
     });
   }
 
