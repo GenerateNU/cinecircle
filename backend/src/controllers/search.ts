@@ -116,10 +116,10 @@ export const searchMovies = async (req: Request, res: Response) => {
         console.log(`🔍 Found ${results.length} local movies`);
 
         if (results.length < 3) {
-            console.log(`✅ Only ${results.length} local results, searching TMDB...`);
+            console.log(`Only ${results.length} local results, searching TMDB...`);
             try {
                 const tmdbResults = await searchTMDB(q);
-                console.log(`✅ TMDB returned ${tmdbResults.length} results`);
+                console.log(`TMDB returned ${tmdbResults.length} results`);
 
                 const localTitles = new Set(
                     results
@@ -139,13 +139,13 @@ export const searchMovies = async (req: Request, res: Response) => {
                             return rating >= minRatingNum;
                         }
                     );
-                    console.log(`✅ After rating filter (>=${minRatingNum}): ${newTmdbMovies.length} movies`);
+                    console.log(`After rating filter (>=${minRatingNum}): ${newTmdbMovies.length} movies`);
                 }
 
-                console.log(`✅ ${newTmdbMovies.length} new movies after deduplication`);
+                console.log(`${newTmdbMovies.length} new movies after deduplication`);
 
                 const neededCount = Math.min(3 - results.length, newTmdbMovies.length);
-                console.log(`✅ Will try to save ${neededCount} movies`);
+                console.log(`Will try to save ${neededCount} movies`);
 
                 for (let i = 0; i < neededCount; i++) {
                     try {
@@ -164,16 +164,15 @@ export const searchMovies = async (req: Request, res: Response) => {
                             source: "tmdb" as const,
                         });
                     } catch (saveErr) {
-                        console.error(`❌ Failed to save TMDB movie:`, saveErr);
                     }
                 }
 
-                console.log(`\n📊 Final results: ${results.length} total movies`);
+                console.log(`Final results: ${results.length} total movies`);
             } catch (tmdbErr) {
-                console.error("❌ TMDB search failed:", tmdbErr);
+                console.error("TMDB search failed:", tmdbErr);
             }
         } else {
-            console.log(`✅ Found ${results.length} local movies, no TMDB search needed`);
+            console.log(`Found ${results.length} local movies, no TMDB search needed`);
         }
 
         return res.json({
@@ -193,9 +192,209 @@ export const searchMovies = async (req: Request, res: Response) => {
         });
 
     } catch (error) {
-        console.error("❌ searchMovies error:", error);
+        console.error("searchMovies error:", error);
         return res.status(500).json({
             message: "Failed to search movies",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
+
+/**
+ * Search users by username
+ * GET /search/users?q={query}&limit=10
+ */
+export const searchUsers = async (req: Request, res: Response) => {
+    const { q, limit = "10" } = req.query;
+
+    if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Query parameter 'q' is required" });
+    }
+
+    const limitNum = parseInt(limit as string);
+
+    if (limitNum > 50) {
+        return res.status(400).json({
+            message: "limit cannot exceed 50"
+        });
+    }
+
+    try {
+        const users = await prisma.userProfile.findMany({
+            where: {
+                username: {
+                    contains: q,
+                    mode: "insensitive"
+                }
+            },
+            take: limitNum,
+            select: {
+                userId: true,
+                username: true,
+                preferredCategories: true,
+                preferredLanguages: true,
+                favoriteMovies: true,
+                createdAt: true,
+            },
+        });
+
+        return res.json({
+            type: "users",
+            query: q,
+            count: users.length,
+            results: users,
+        });
+    } catch (error) {
+        console.error("searchUsers error:", error);
+        return res.status(500).json({
+            message: "Failed to search users",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
+
+/**
+ * Search reviews/ratings by comment text or tags
+ * GET /search/reviews?q={query}&minStars={1-5}&tags={tag1,tag2}&limit=10
+ */
+export const searchReviews = async (req: Request, res: Response) => {
+    const { q, minStars, tags, limit = "10" } = req.query;
+
+    // Validate query parameter
+    if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Query parameter 'q' is required" });
+    }
+
+    const limitNum = parseInt(limit as string);
+
+    if (limitNum > 50) {
+        return res.status(400).json({
+            message: "limit cannot exceed 50"
+        });
+    }
+
+    try {
+        const whereClause: any = {
+            comment: {
+                contains: q,
+                mode: "insensitive"
+            }
+        };
+
+        if (minStars) {
+            whereClause.stars = { gte: parseInt(minStars as string) };
+        }
+
+        if (tags) {
+            const tagArray = (tags as string).split(",");
+            whereClause.tags = {
+                hasSome: tagArray
+            };
+        }
+
+        const reviews = await prisma.rating.findMany({
+            where: whereClause,
+            take: limitNum,
+            orderBy: {
+                votes: "desc" // sorting by most votes to least, essentially most relevant
+            },
+            include: {
+                user: {
+                    select: {
+                        userId: true,
+                        username: true,
+                    },
+                },
+            },
+        });
+
+        return res.json({
+            type: "reviews",
+            query: q,
+            count: reviews.length,
+            filters: {
+                minStars: minStars || "any",
+                tags: tags || "any",
+            },
+            results: reviews,
+        });
+    } catch (error) {
+        console.error("searchReviews error:", error);
+        return res.status(500).json({
+            message: "Failed to search reviews",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
+
+/**
+ * Search posts by content
+ * GET /search/posts?q={query}&type={SHORT|LONG}&limit=10
+ */
+export const searchPosts = async (req: Request, res: Response) => {
+    const { q, type, limit = "10" } = req.query;
+
+    // Validate query parameter
+    if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Query parameter 'q' is required" });
+    }
+
+    const limitNum = parseInt(limit as string);
+
+    if (limitNum > 50) {
+        return res.status(400).json({
+            message: "limit cannot exceed 50"
+        });
+    }
+
+    try {
+        // Build where clause dynamically
+        const whereClause: any = {
+            content: {
+                contains: q,
+                mode: "insensitive"
+            }
+        };
+
+        // Add optional type filter
+        if (type && (type === "SHORT" || type === "LONG")) {
+            whereClause.type = type;
+        }
+
+        const posts = await prisma.post.findMany({
+            where: whereClause,
+            take: limitNum,
+            orderBy: {
+                votes: "desc" // sorting by most votes to least, essentially most relevant
+            },
+            include: {
+                user: {
+                    select: {
+                        userId: true,
+                        username: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        comments: true
+                    }
+                }
+            },
+        });
+
+        return res.json({
+            type: "posts",
+            query: q,
+            count: posts.length,
+            filters: {
+                postType: type || "any",
+            },
+            results: posts,
+        });
+    } catch (error) {
+        console.error("searchPosts error:", error);
+        return res.status(500).json({
+            message: "Failed to search posts",
             error: error instanceof Error ? error.message : String(error),
         });
     }
