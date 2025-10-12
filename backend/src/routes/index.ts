@@ -10,6 +10,7 @@ import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, 
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
+import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search";
 
 const router = Router();
 
@@ -42,5 +43,11 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+// Search routes
+router.get("/search/movies", searchMovies)
+router.get("search/users", searchUsers)
+router.get("search/reviews", searchReviews)
+router.get("search/posts", searchPosts)
 
 export default router;
