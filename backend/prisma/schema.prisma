@@ -434,14 +434,14 @@ model auth_users {
 }
 
 model Rating {
-  id      String   @id @default(uuid())
-  userId  String   @db.Uuid
-  movieId String
-  stars   Int
-  comment String?
-  tags    String[] @default([])
-  date    DateTime
-  votes   Int      @default(0)
+  id       String   @id @default(uuid())
+  userId   String   @db.Uuid
+  movieId  String
+  stars    Int
+  comments String[] @default([])
+  tags     String[] @default([])
+  date     DateTime
+  votes    Int      @default(0)
 
   user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
   threadedComments Comment[]   @relation("RatingComments")

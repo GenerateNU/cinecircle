@@ -48,7 +48,7 @@ router.delete("/movies/:movieId", deleteMovie);
 // Comment routes
 router.post("/api/comment", createComment);
 router.get("/api/comment/:id", getComment)
-router.put("/api/comment/:id", updateMovie);
-router.delete("/api/comment/:id", deleteMovie);
+router.put("/api/comment/:id", updateComment);
+router.delete("/api/comment/:id", deleteComment);
 
 export default router;
