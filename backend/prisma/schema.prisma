@@ -449,6 +449,15 @@ model Rating {
   @@schema("public")
 }
 
+model bootcamp {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  name       String?
+  fav_food   Json?    @db.Json
+
+  @@schema("public")
+}
+
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model movie {
   movieId     String  @id

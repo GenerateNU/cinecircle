@@ -9,9 +9,9 @@ import {
 import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
+import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
 import { getComment, createComment, updateComment, deleteComment} from "../controllers/comment"
-import { create } from "domain";
 
 const router = Router();
 
@@ -50,5 +50,11 @@ router.post("/api/comment", createComment);
 router.get("/api/comment/:id", getComment)
 router.put("/api/comment/:id", updateComment);
 router.delete("/api/comment/:id", deleteComment);
+
+// Local events routes
+router.get("/api/local-event/:id", getLocalEvent);
+router.post("/api/local-event", createLocalEvent);
+router.delete("/api/local-event/:id", deleteLocalEvent);
+router.put("/api/local-event/:id", updateLocalEvent);
 
 export default router;

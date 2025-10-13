@@ -32,8 +32,6 @@ services:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
       - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
-
-      - SYNC_FROM_PRODUCTION=true
     volumes:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
