@@ -22,7 +22,6 @@ export const createRating = async (req: AuthenticatedRequest, res: Response) => 
       tags: req.body.tags || [],
       date: new Date(),
       votes: 0,
-      threadedComments: [],
     };
     const newRating = await prisma.rating.create({ data: newRatingData });
     return res.status(201).json({
