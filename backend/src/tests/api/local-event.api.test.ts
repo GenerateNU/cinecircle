@@ -1,11 +1,39 @@
 import request from "supertest";
-import express from "express";
+import express, { NextFunction } from "express";
 import { createApp } from "../../app";
 import { HTTP_STATUS } from "../helpers/constants.js";
 import { prisma } from "../../services/db";
+import jwt from "jsonwebtoken";
+import { AuthenticatedRequest } from "../../middleware/auth";
+
+jest.mock('../../middleware/auth', () => ({
+  authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    req.user = {
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      email: 'testuser@example.com',
+      role: 'USER',
+    };
+    next();
+  },
+}));
 
 describe("Local Event API Tests", () => {
   let app: express.Express;
+  const TEST_USER_ID = "123e4567-e89b-12d3-a456-426614174000";
+  const TEST_USER_EMAIL = "testuser@example.com";
+  const TEST_USER_ROLE = "USER";
+
+  const generateToken = () => {
+    return jwt.sign(
+      { id: TEST_USER_ID, email: TEST_USER_EMAIL, role: TEST_USER_ROLE },
+      process.env.JWT_SECRET || "test-secret",
+      { expiresIn: "1h" }
+    );
+  };
+
+  const authHeader = () => ({
+    Authorization: `Bearer ${generateToken()}`,
+  });
 
   const TEST_EVENTS = [
     {
@@ -36,6 +64,15 @@ describe("Local Event API Tests", () => {
 
   beforeAll(async () => {
     app = createApp();
+    // Create user profile for authenticated requests
+    await prisma.userProfile.upsert({
+      where: { userId: TEST_USER_ID },
+      update: {},
+      create: {
+        userId: TEST_USER_ID,
+        username: "testuser",
+      },
+    });
     await prisma.local_event.createMany({ data: TEST_EVENTS });
   });
 
@@ -45,18 +82,20 @@ describe("Local Event API Tests", () => {
         id: { in: TEST_EVENTS.map((e) => e.id) },
       },
     });
+    await prisma.userProfile.deleteMany({ where: { userId: TEST_USER_ID } });
     await new Promise((resolve) => setTimeout(resolve, 100));
   });
 
   // ────────────────────────────────────────────────
   // GET /local-event/:id
   // ────────────────────────────────────────────────
-  describe("GET /local-event/:id", () => {
+  describe("GET /api/local-event/:id", () => {
     it("should fetch the correct local event by ID", async () => {
       const eventId = TEST_EVENTS[0].id;
 
       const response = await request(app)
-        .get(`/local-event/${eventId}`)
+        .get(`/api/local-event/${eventId}`)
+        .set(authHeader())
         .expect(HTTP_STATUS.OK)
         .expect("Content-Type", /json/);
 
@@ -68,7 +107,8 @@ describe("Local Event API Tests", () => {
 
     it("should return 404 if the event does not exist", async () => {
       const response = await request(app)
-        .get("/local-event/nonexistent-id")
+        .get("/api/local-event/nonexistent-id")
+        .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND);
 
       expect(response.body.message).toBe("Local event not found.");
@@ -76,15 +116,16 @@ describe("Local Event API Tests", () => {
 
     it("should return 400 if the ID param is missing", async () => {
       const response = await request(app)
-        .get("/local-event/")
+        .get("/api/local-event/")
+        .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND); // Express catches this as 404 (no route)
     });
   });
 
   // ────────────────────────────────────────────────
-  // POST /local-event
+  // POST /api/local-event
   // ────────────────────────────────────────────────
-  describe("POST /local-event", () => {
+  describe("POST /api/local-event", () => {
     it("should create a new local event successfully", async () => {
       const newEvent = {
         title: "Test Launch Party",
@@ -99,7 +140,8 @@ describe("Local Event API Tests", () => {
       };
 
       const response = await request(app)
-        .post("/local-event")
+        .post("/api/local-event")
+        .set(authHeader())
         .send(newEvent)
         .expect(HTTP_STATUS.CREATED);
 
@@ -116,7 +158,8 @@ describe("Local Event API Tests", () => {
       const invalidEvent = { title: "Missing fields" };
 
       const response = await request(app)
-        .post("/local-event")
+        .post("/api/local-event")
+        .set(authHeader())
         .send(invalidEvent)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -125,10 +168,10 @@ describe("Local Event API Tests", () => {
   });
 
   // ────────────────────────────────────────────────
-  // PUT /local-event/:id
+  // PUT /api/local-event/:id
   // ────────────────────────────────────────────────
-  describe("PUT /local-event/:id", () => {
-    it("should update an existing event’s title and cost", async () => {
+  describe("PUT /api/local-event/:id", () => {
+    it("should update an existing event's title and cost", async () => {
       const eventId = TEST_EVENTS[1].id;
 
       const updatePayload = {
@@ -137,7 +180,8 @@ describe("Local Event API Tests", () => {
       };
 
       const response = await request(app)
-        .put(`/local-event/${eventId}`)
+        .put(`/api/local-event/${eventId}`)
+        .set(authHeader())
         .send(updatePayload)
         .expect(HTTP_STATUS.OK);
 
@@ -157,7 +201,8 @@ describe("Local Event API Tests", () => {
 
     it("should return 404 when updating a non-existent event", async () => {
       const response = await request(app)
-        .put("/local-event/nonexistent-id")
+        .put("/api/local-event/nonexistent-id")
+        .set(authHeader())
         .send({ title: "Nothing" })
         .expect(HTTP_STATUS.NOT_FOUND);
 
@@ -166,9 +211,9 @@ describe("Local Event API Tests", () => {
   });
 
   // ────────────────────────────────────────────────
-  // DELETE /local-event/:id
+  // DELETE /api/local-event/:id
   // ────────────────────────────────────────────────
-  describe("DELETE /local-event/:id", () => {
+  describe("DELETE /api/local-event/:id", () => {
     it("should delete an existing event successfully", async () => {
       const event = await prisma.local_event.create({
         data: {
@@ -185,7 +230,8 @@ describe("Local Event API Tests", () => {
       });
 
       const response = await request(app)
-        .delete(`/local-event/${event.id}`)
+        .delete(`/api/local-event/${event.id}`)
+        .set(authHeader())
         .expect(HTTP_STATUS.OK);
 
       expect(response.body.message).toBe(
@@ -200,7 +246,8 @@ describe("Local Event API Tests", () => {
 
     it("should return 404 when deleting a non-existent event", async () => {
       const response = await request(app)
-        .delete("/local-event/non-existent-id")
+        .delete("/api/local-event/non-existent-id")
+        .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND);
 
       expect(response.body.message).toBe("Local event not found.");
