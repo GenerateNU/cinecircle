@@ -10,6 +10,7 @@ import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, 
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
+import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
 const router = Router();
 
@@ -42,5 +43,12 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+//Ratings routes
+router.post('/ratings', authenticateUser, createRating);
+router.get('/ratings', authenticateUser, getRatings);
+router.get('/ratings/:id', authenticateUser, getRatingById);
+router.put('/ratings/:id', authenticateUser, updateRating);
+router.delete('/ratings/:id', authenticateUser, deleteRating);
 
 export default router;
