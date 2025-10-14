@@ -260,6 +260,22 @@ model refresh_tokens {
   @@schema("auth")
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model local_event {
+  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
+  title       String
+  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  description String
+  genre       String
+  cost        Float?    @db.Real
+  occasion    String?
+  languages   String[]
+  lat         Float?
+  lon         Float?
+
+  @@schema("public")
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
