@@ -57,8 +57,8 @@ describe("Movie Controller Unit Tests", () => {
 
       const result = mapTmdbToMovie(tmdbMovie, {
         defaults: {
-          localRating: "7.5",
-          numRatings: "100",
+          localRating: 7.5,
+          numRatings: 100,
         },
       });
 
