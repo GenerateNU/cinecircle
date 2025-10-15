@@ -99,12 +99,17 @@ model UserFollow {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  userId    String   @db.Uuid
-  ratingId  String?
-  postId    String?
-  content   String
+  id             String   @id @default(uuid())
+  userId         String   @db.Uuid
+  ratingId       String?
+  postId         String?
+  content        String
+  parentId       String?
   createdAt DateTime @default(now())
+
+
+  parent_comment Comment?    @relation("CommentThread", fields: [parentId], references: [id])
+  child_comment  Comment[]  @relation("CommentThread")
 
   user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
   rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
