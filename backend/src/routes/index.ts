@@ -45,9 +45,9 @@ router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
 
 // Search routes
-router.get("/search/movies", searchMovies)
-router.get("search/users", searchUsers)
-router.get("search/reviews", searchReviews)
-router.get("search/posts", searchPosts)
+router.get("/api/search/movies", searchMovies)
+router.get("/api/search/users", searchUsers)
+router.get("/api/search/reviews", searchReviews)
+router.get("/api/search/posts", searchPosts)
 
 export default router;
