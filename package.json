@@ -19,5 +19,9 @@
     "backend",
     "frontend"
   ],
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@react-navigation/native-stack": "^7.3.27",
+    "@testing-library/react-native": "^13.3.3"
+  }
 }
