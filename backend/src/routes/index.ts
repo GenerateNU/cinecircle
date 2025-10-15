@@ -11,6 +11,7 @@ import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
+import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
 
 const router = Router();
@@ -44,6 +45,13 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+// Ratings routes
+router.post('/api/ratings', createRating);
+router.get('/api/ratings', getRatings);
+router.get('/api/ratings/:id', getRatingById);
+router.put('/api/ratings/:id', updateRating);
+router.delete('/api/ratings/:id', deleteRating);
 
 // Local events routes
 router.get("/api/local-event/:id", getLocalEvent);
