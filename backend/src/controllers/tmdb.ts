@@ -45,8 +45,8 @@ export function mapTmdbToMovie(
       .map((l) => l.english_name)
       .filter(Boolean) as string[],
     imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75 (stored as BigInt)
-    localRating: defaults.localRating ?? 0,
-    numRatings: defaults.numRatings ?? 0,
+    localRating: defaults.localRating !== undefined ? Number(defaults.localRating) : 0,
+    numRatings: defaults.numRatings !== undefined ? Number(defaults.numRatings) : 0,
   };
 }
 
