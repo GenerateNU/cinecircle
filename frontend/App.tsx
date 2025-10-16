@@ -1,31 +1,67 @@
 import { StyleSheet, View, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { supabase } from './lib/supabase';
 import AuthForm from './components/AuthForm';
 import UserDashboard from './components/UserDashboard';
+import MovieChosenScreen from './MovieChosenScreen';
+
+const Stack = createNativeStackNavigator();
+
+function AuthScreen({ onAuthSuccess }: { onAuthSuccess: (user: any) => void }) {
+  return (
+      <View style={styles.container}>
+        <Text style={styles.title}>CineCircle Frontend</Text>
+        <AuthForm onAuthSuccess={onAuthSuccess} />
+        <StatusBar style="auto" />
+      </View>
+  );
+}
+
+function DashboardScreen({ user, onSignOut }: { user: any; onSignOut: () => void }) {
+  return (
+      <View style={styles.container}>
+        <Text style={styles.title}>CineCircle Frontend</Text>
+        <UserDashboard user={user} onSignOut={onSignOut} />
+        <StatusBar style="auto" />
+      </View>
+  );
+}
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<any>({ email: 'test@test.com' });
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   supabase.auth.getSession().then(({ data: { session } }) => {
+  //     if (session?.user) {
+  //       setUser(session.user);
+  //     }
+  //   });
+  // }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>CineCircle Frontend</Text>
-      {!user ? (
-        <AuthForm onAuthSuccess={setUser} />
-      ) : (
-        <UserDashboard user={user} onSignOut={() => setUser(null)} />
-      )}
-      <StatusBar style="auto" />
-    </View>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!user ? (
+              <Stack.Screen name="Auth">
+                {(props) => <AuthScreen {...props} onAuthSuccess={setUser} />}
+              </Stack.Screen>
+          ) : (
+              <>
+                <Stack.Screen name="Dashboard">
+                  {(props) => <DashboardScreen {...props} user={user} onSignOut={() => setUser(null)} />}
+                </Stack.Screen>
+                <Stack.Screen
+                    name="MovieChosen"
+                    component={MovieChosenScreen}
+                    options={{ headerShown: false }}
+                />
+              </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
   );
 }
 
