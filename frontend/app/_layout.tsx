@@ -1,40 +1,27 @@
-// frontend/App.tsx
-import React, { useEffect, useState, createContext } from 'react';
+// app/_layout.tsx
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { supabase } from '../lib/supabase';
+import AuthForm from '../components/AuthForm';
+import { AuthContext } from '../context/AuthContext';
 
-import { supabase } from './lib/supabase';
-import AuthForm from './components/AuthForm';
-
-// Optional: expose the authed user to screens via context
-export const AuthContext = createContext<{
-  user: any;
-  signOut: () => Promise<void>;
-}>({
-  user: null,
-  signOut: async () => {},
-});
-
-export default function App() {
+export default function RootLayout() {
   const [user, setUser] = useState<any | null>(null);
   const [booted, setBooted] = useState(false);
 
   useEffect(() => {
-    // initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setBooted(true);
     });
-
-    // listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -43,7 +30,7 @@ export default function App() {
     setUser(null);
   };
 
-  // simple splash while checking session
+  // Splash while checking session
   if (!booted) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
@@ -54,7 +41,7 @@ export default function App() {
     );
   }
 
-  // Not logged in → show Auth form (no navigation container needed)
+  // Not logged in → show Auth form
   if (!user) {
     return (
       <View style={styles.container}>
@@ -65,11 +52,11 @@ export default function App() {
     );
   }
 
-  // Logged in → hand over to Expo Router pages via <Slot />
+  // Logged in → provide context and mount a Router navigator
   return (
     <SafeAreaProvider>
       <AuthContext.Provider value={{ user, signOut }}>
-        <Slot />
+        <Stack screenOptions={{ headerShown: false }} />
       </AuthContext.Provider>
       <StatusBar style="auto" />
     </SafeAreaProvider>

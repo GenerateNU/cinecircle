@@ -1,66 +1,50 @@
+// components/BottomNavBar.tsx
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { router, usePathname } from 'expo-router';
 
 export default function BottomNavBar() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const pathname = usePathname();
+
+  const go = (to: string) => {
+    // use replace for tab-like behavior (no stacking duplicates)
+    router.replace(to);
+  };
+
+  const active = (to: string) => pathname === to;
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.navigate('Post')}>
-        <Ionicons name="home" size={26} color="#000" />
+    <View style={styles.bar}>
+      <TouchableOpacity style={styles.item} onPress={() => go('/')}>
+        <Text style={[styles.icon, active('/') && styles.active]}>🏠</Text>
+        <Text style={[styles.label, active('/') && styles.active]}>Home</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-        <Ionicons name="person-circle-outline" size={28} color="#000" />
+      <TouchableOpacity style={styles.item} onPress={() => go('/post')}>
+        <Text style={[styles.icon, active('/post') && styles.active]}>✍️</Text>
+        <Text style={[styles.label, active('/post') && styles.active]}>Post</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Post')}
-        style={styles.centerButton}
-      >
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
-
-      <TouchableOpacity>
-        <MaterialCommunityIcons name="ticket-outline" size={26} color="#000" />
-      </TouchableOpacity>
-
-      <TouchableOpacity>
-        <Feather name="map-pin" size={25} color="#000" />
+      <TouchableOpacity style={styles.item} onPress={() => go('/profile')}>
+        <Text style={[styles.icon, active('/profile') && styles.active]}>👤</Text>
+        <Text style={[styles.label, active('/profile') && styles.active]}>Profile</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bar: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    backgroundColor: '#fff',
+    left: 0, right: 0, bottom: 0,
     flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderTopWidth: 1, borderTopColor: '#eee',
+    paddingBottom: 10, paddingTop: 8,
     justifyContent: 'space-around',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderColor: '#eee',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 10,
   },
-  centerButton: {
-    backgroundColor: '#000',
-    width: 55,
-    height: 55,
-    borderRadius: 27.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
+  item: { alignItems: 'center' },
+  icon: { fontSize: 20, color: '#777' },
+  label: { fontSize: 12, color: '#777', marginTop: 2 },
+  active: { color: '#000', fontWeight: '600' },
 });
