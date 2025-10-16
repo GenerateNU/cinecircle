@@ -31,17 +31,17 @@ const AuthForm = ({ onAuthSuccess }: Props) => {
   };
 
   const signIn = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // const { data, error } = await supabase.auth.signInWithPassword({
+    //   email,
+    //   password,
+    // });
 
-    if (error) {
-      setMessage(`Sign-in error: ${error.message}`);
-      return;
-    }
+    // if (error) {
+    //   setMessage(`Sign-in error: ${error.message}`);
+    //   return;
+    // }
 
-    onAuthSuccess(data.user);
+    // onAuthSuccess(data.user);
     setMessage('Signed in successfully!');
   };
 
