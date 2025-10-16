@@ -11,6 +11,7 @@ import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
+import { getComment, createComment, updateComment, deleteComment} from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
 
@@ -46,6 +47,11 @@ router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
 
+// Comment routes
+router.post("/api/comment", createComment);
+router.get("/api/comment/:id", getComment)
+router.put("/api/comment/:id", updateComment);
+router.delete("/api/comment/:id", deleteComment);
 // Ratings routes
 router.post('/api/ratings', createRating);
 router.get('/api/ratings', getRatings);
