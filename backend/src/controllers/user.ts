@@ -1,35 +1,31 @@
 import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import { prisma } from '../services/db.js';
+import { UserProfile as ApiUserProfile} from '../types/models.js';
+import { PrismaClient, UserProfile as PrismaUserProfile } from '@prisma/client';
 
 export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
-    const { user } = req;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
-  
-    const {
-      username,
-      preferredLanguages,
-      preferredCategories,
-      favoriteMovies,
-    } = req.body;
+  const { user } = req;
+  if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-    try {
-      const updated = await prisma.userProfile.update({
-        where: { userId: user.id },
-        data: {
-          username,
-          preferredLanguages,
-          preferredCategories,
-          favoriteMovies,
-        },
-      });
-  
-      res.json({ message: "Profile updated", data: updated });
-    } catch (error) {
-      console.error("updateUserProfile error:", error);
-      res.status(500).json({ message: "Failed to update profile" });
+  try {
+    const data = toUserProfileUpdateData(req.body);
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
     }
-  };
+
+    const updated = await prisma.userProfile.update({
+      where: { userId: user.id },
+      data,
+    });
+
+    res.json({ message: "Profile updated", data: toUserProfileResponse(updated) });
+  } catch (error) {
+    console.error("updateUserProfile error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+};
   
   export const deleteUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     const { user } = req;
@@ -113,6 +109,7 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
     });
   }
 };
+
 export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
     const { user_id } = req.query;
   
@@ -162,3 +159,54 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
     }
   };
   
+  export function toUserProfileResponse(row: PrismaUserProfile): ApiUserProfile {
+  return {
+    userId: row.userId,
+    username: row.username ?? null,
+    preferredLanguages: Array.isArray(row.preferredLanguages) ? row.preferredLanguages : [],
+    preferredCategories: Array.isArray(row.preferredCategories) ? row.preferredCategories : [],
+    favoriteMovies: Array.isArray(row.favoriteMovies) ? row.favoriteMovies : [],
+    createdAt: row.createdAt?.toISOString(),
+    updatedAt: row.updatedAt?.toISOString(),
+  };
+}
+
+/**
+ * Request body -> Prisma update data
+ * - Optional: guards to accept only arrays of strings
+ * - Ignores undefined fields so partial updates work
+ */
+export function toUserProfileUpdateData(body: any) {
+  const data: Partial<PrismaUserProfile> = {};
+
+  if (typeof body?.username === "string" || body?.username === null) {
+    // Prisma accepts `null` for optional String? (it will set to NULL)
+    // If you don't want to allow nulling, remove the `=== null` branch.
+    // @ts-ignore - this is not the exact Prisma type but will be assigned to update input
+    data.username = body.username;
+  }
+
+  if (Array.isArray(body?.preferredLanguages)) {
+    // (Optional) validate all strings:
+    if (body.preferredLanguages.every((s: unknown) => typeof s === "string")) {
+      // @ts-ignore
+      data.preferredLanguages = body.preferredLanguages;
+    }
+  }
+
+  if (Array.isArray(body?.preferredCategories)) {
+    if (body.preferredCategories.every((s: unknown) => typeof s === "string")) {
+      // @ts-ignore
+      data.preferredCategories = body.preferredCategories;
+    }
+  }
+
+  if (Array.isArray(body?.favoriteMovies)) {
+    if (body.favoriteMovies.every((s: unknown) => typeof s === "string")) {
+      // @ts-ignore
+      data.favoriteMovies = body.favoriteMovies;
+    }
+  }
+
+  return data;
+}
