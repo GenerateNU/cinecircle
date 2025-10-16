@@ -12,7 +12,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
       preferredCategories,
       favoriteMovies,
     } = req.body;
-  
+
     try {
       const updated = await prisma.userProfile.update({
         where: { userId: user.id },
