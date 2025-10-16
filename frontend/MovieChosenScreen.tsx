@@ -19,8 +19,8 @@ export default function MovieChosenScreen() {
 
             {/* Metadata */}
             <View style={styles.metaContainer}>
-                <Text style={styles.metaText}>2025 • Directed by: Emily Chooi</Text>
-                <Text style={styles.genreText}>Genre • Genre • Genre • Genre • Genre</Text>
+                <Text style={styles.metaText}>2025 • Directed by: Zesty Kaamil</Text>
+                <Text style={styles.genreText}>Drama</Text>
             </View>
 
             {/* Description */}
@@ -29,7 +29,7 @@ export default function MovieChosenScreen() {
             </Text>
 
             {/* Tags */}
-            <TagList tags={['Tag 1', 'Tag 1', 'Tag 1', 'Tag 1', 'Tag 1']} />
+            <TagList tags={['Spicy Emoji 🌶️', 'Spicy Emoji 🌶️', 'Spicy Emoji 🌶️', 'Spicy Emoji 🌶️']} />
 
             {/* Ratings */}
             <View style={styles.ratingsContainer}>
