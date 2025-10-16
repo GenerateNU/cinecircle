@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { useNavigation } from '@react-navigation/native';
 
 type Props = {
   user: any;
@@ -8,6 +9,7 @@ type Props = {
 };
 
 const UserDashboard = ({ user, onSignOut }: Props) => {
+  const navigation = useNavigation();
   const [backendMessage, setBackendMessage] = useState('');
   const [dbMessage, setDbMessage] = useState('');
 
@@ -71,6 +73,10 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     <View>
       <Text style={{ marginBottom: 10 }}>Welcome, {user.email}</Text>
       <View style={styles.buttonContainer}>
+        <Button
+            title="View Movie (Test)"
+            onPress={() => navigation.navigate('MovieChosen' as never)}
+        />
         <Button title="Call Protected Backend" onPress={callProtectedBackend} />
         <Button title="Get User Profile" onPress={getUserProfile} />
         <Button title="Test DB" onPress={testDatabase} />
