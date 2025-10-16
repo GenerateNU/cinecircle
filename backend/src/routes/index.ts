@@ -12,6 +12,8 @@ import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
 import { getComment, createComment, updateComment, deleteComment} from "../controllers/comment"
+import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
+
 
 const router = Router();
 
@@ -50,6 +52,12 @@ router.post("/api/comment", createComment);
 router.get("/api/comment/:id", getComment)
 router.put("/api/comment/:id", updateComment);
 router.delete("/api/comment/:id", deleteComment);
+// Ratings routes
+router.post('/api/ratings', createRating);
+router.get('/api/ratings', getRatings);
+router.get('/api/ratings/:id', getRatingById);
+router.put('/api/ratings/:id', updateRating);
+router.delete('/api/ratings/:id', deleteRating);
 
 // Local events routes
 router.get("/api/local-event/:id", getLocalEvent);
