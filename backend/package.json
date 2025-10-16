@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "nodemon",
     "docs": "node scripts/generate-docs.js",
-    "build": "tsc",
-    "start": "node dist/server.js",
     "test": "NODE_ENV=test jest",
     "test:unit": "NODE_ENV=test jest --testPathPattern=unit",
     "test:integration": "NODE_ENV=test jest --testPathPattern=integration",
@@ -18,7 +16,18 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "start": "docker-compose -f ../docker-compose.dev.yml up --build",
+    "stop": "docker-compose -f ../docker-compose.dev.yml down --volumes",
+    "test": "docker exec -it cinecircle-backend-1 npm run test",
+    "test:watch": "docker exec -it cinecircle-backend-1 npm run test:watch",
+    "test:coverage": "docker exec cinecircle-backend-1 npm run test:coverage",
+    "lint": "docker exec cinecircle-backend-1 npm run lint",
+    "format": "docker exec cinecircle-backend-1 npm run format",
+    "build": "docker exec cinecircle-backend-1 npm run build",
+    "shell": "docker exec -it cinecircle-backend-1 sh",
+    "logs": "docker-compose -f docker-compose.dev.yml logs -f",
+    "clean": "docker-compose -f docker-compose.dev.yml down --volumes --rmi all"
   },
   "keywords": [],
   "author": "",
