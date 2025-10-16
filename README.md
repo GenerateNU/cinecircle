@@ -2,7 +2,16 @@
 
 A user-friendly, community-oriented app for South Indian movie fans to stay updated with, discuss, and review / rate Tollywood (Telugu), Kollywood (Tamil), Mollywood (Malayalam), and Sandalwood (Kollywood) cinema.
 
-## Quick Start
+## Frontend Quick Start
+Enter repo directory then run:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Backend Quick Start
 
 **Requirements:** Docker Desktop
 
