@@ -46,6 +46,13 @@ router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
 
+// Ratings routes
+router.post('/api/ratings', createRating);
+router.get('/api/ratings', getRatings);
+router.get('/api/ratings/:id', getRatingById);
+router.put('/api/ratings/:id', updateRating);
+router.delete('/api/ratings/:id', deleteRating);
+
 // Local events routes
 router.get("/api/local-event/:id", getLocalEvent);
 router.post("/api/local-event", createLocalEvent);
