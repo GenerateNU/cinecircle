@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../services/db";
-import {mapTmdbToMovie, saveMovie } from "./tmdb";
+import {mapTmdbToMovie, saveMovie } from "./tmdb.js";
 type MovieResult = {
     movieId: string;
     title: string | null;

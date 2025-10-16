@@ -1,16 +1,16 @@
 import { Router } from "express";
-import { ping, dbTest, serveSwagger } from "../controllers/health";
+import { ping, dbTest, serveSwagger } from "../controllers/health.js";
 import {
   deleteMovie,
   getMovie,
   getMovieById,
   updateMovie,
-} from "../controllers/tmdb";
-import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
-import { authenticateUser } from '../middleware/auth';
-import { protect } from "../controllers/protected";
-import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
-import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search";
+} from "../controllers/tmdb.js";
+import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user.js';  // ← Add .js
+import { authenticateUser } from '../middleware/auth.js';
+import { protect } from "../controllers/protected.js";
+import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows.js";
+import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 
 const router = Router();
 

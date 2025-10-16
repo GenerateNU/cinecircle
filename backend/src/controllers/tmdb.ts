@@ -28,7 +28,7 @@ export async function fetchTmdbMovie(tmdbId: string): Promise<TmdbMovie> {
 }
 
 // Map TMDB -> Prisma.Movie fields (include movieId as UUID)
-type MovieInsert = Prisma.MovieCreateInput;
+type MovieInsert = Prisma.movieCreateInput;
 
 export function mapTmdbToMovie(
   tmdb: TmdbMovie,
@@ -121,7 +121,7 @@ export const updateMovie = async (req: Request, res: Response) => {
   const { title, description, languages, imdbRating, localRating, numRatings } =
     req.body;
 
-  const updateData: Partial<Prisma.MovieUpdateInput> = {};
+  const updateData: Partial<Prisma.movieUpdateInput> = {};
 
   if (title !== undefined) updateData.title = title;
   if (description !== undefined) updateData.description = description;
