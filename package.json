@@ -19,5 +19,10 @@
     "backend",
     "frontend"
   ],
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsd": "^0.33.0",
+    "vitest": "^3.2.4"
+  }
 }
