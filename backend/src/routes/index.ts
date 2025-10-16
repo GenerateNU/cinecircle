@@ -9,17 +9,11 @@ import {
 import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
+import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
-import {
-    createPost,
-    getPostById,
-    getPosts,
-    updatePost,
-    deletePost,
-    toggleLikePost,
-    getPostLikes,
-    getPostReplies
-  } from "../controllers/post.js";
+import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
+
+import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
 
 const router = Router();
 
@@ -52,6 +46,19 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+// Ratings routes
+router.post('/api/ratings', createRating);
+router.get('/api/ratings', getRatings);
+router.get('/api/ratings/:id', getRatingById);
+router.put('/api/ratings/:id', updateRating);
+router.delete('/api/ratings/:id', deleteRating);
+
+// Local events routes
+router.get("/api/local-event/:id", getLocalEvent);
+router.post("/api/local-event", createLocalEvent);
+router.delete("/api/local-event/:id", deleteLocalEvent);
+router.put("/api/local-event/:id", updateLocalEvent);
 
 // Post routes
 router.post("/post", createPost);
