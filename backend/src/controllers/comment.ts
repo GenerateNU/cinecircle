@@ -4,6 +4,7 @@ import { prisma } from "../services/db";
 
 /**
  * GET /api/comment/:id
+ * Query params: includeReplies=true (optional)
  */
 export const getComment = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -19,6 +20,8 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
   }
 
   const { id } = req.params;
+  const { includeReplies } = req.query;
+
   if (!id) {
     return res.status(400).json({
       message: "Missing comment ID",
@@ -30,6 +33,15 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const comment = await prisma.comment.findUnique({
       where: { id },
+      ...(includeReplies === 'true' && {
+        include: {
+          child_comment: {
+            orderBy: {
+              createdAt: 'asc'
+            }
+          }
+        }
+      })
     });
 
     if (!comment) {
@@ -52,7 +64,7 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
 
 /**
  * POST /api/comment
- * Body: { content: string, postId?: string, ratingId?: string }
+ * Body: { content: string, postId?: string, ratingId?: string, parentId?: string }
  */
 export const createComment = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -66,9 +78,9 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
     });
   }
 
-  const { content, postId, ratingId } = req.body;
+  const { content, ratingId, postId, parentId } = req.body;
 
-  if (!content || (typeof content !== "string" && content.trim() === "")) {
+  if (!content || typeof content !== "string" || content.trim() === "") {
     return res.status(400).json({
       message: "Content is required to create a comment",
       timestamp,
@@ -79,10 +91,11 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
   try {
     const newComment = await prisma.comment.create({
       data: {
-        content,
-        postId: postId ?? null,
-        ratingId: ratingId ?? null,
         userId: req.user.id,
+        ratingId: ratingId ?? null,
+        postId: postId ?? null,
+        parentId: parentId ?? null,
+        content: content,
       },
     });
 
