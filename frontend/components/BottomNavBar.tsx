@@ -22,12 +22,36 @@ export default function BottomNavBar() {
 
       <TouchableOpacity style={styles.item} onPress={() => go('/post')}>
         <Text style={[styles.icon, active('/post') && styles.active]}>✍️</Text>
-        <Text style={[styles.label, active('/post') && styles.active]}>Post</Text>
+        <Text style={[styles.label, active('/post') && styles.active]}>
+          Post
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.item} onPress={() => go('/profile')}>
-        <Text style={[styles.icon, active('/profile') && styles.active]}>👤</Text>
-        <Text style={[styles.label, active('/profile') && styles.active]}>Profile</Text>
+        <Text style={[styles.icon, active('/profile') && styles.active]}>
+          👤
+        </Text>
+        <Text style={[styles.label, active('/profile') && styles.active]}>
+          Profile
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.item} onPress={() => go('/movies')}>
+        <Text style={[styles.icon, active('/movies') && styles.active]}>
+          🎞️
+        </Text>
+        <Text style={[styles.label, active('/movies') && styles.active]}>
+          Movies
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.item} onPress={() => go('/events')}>
+        <Text style={[styles.icon, active('/events') && styles.active]}>
+          👤👤
+        </Text>
+        <Text style={[styles.label, active('/events') && styles.active]}>
+          Events
+        </Text>
       </TouchableOpacity>
     </View>
   );
