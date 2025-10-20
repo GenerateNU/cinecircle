@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../services/db.js";
+import { PrismaClient } from "@prisma/client";
 
 type LocalEvent = {
   id: string;
