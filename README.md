@@ -2,98 +2,88 @@
 
 A user-friendly, community-oriented app for South Indian movie fans to stay updated with, discuss, and review / rate Tollywood (Telugu), Kollywood (Tamil), Mollywood (Malayalam), and Sandalwood (Kollywood) cinema.
 
-## Frontend Quick Start
-Enter repo directory then run:
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-## Backend Quick Start
+## Quick Start
 
 **Requirements:** Docker Desktop
 
-Enter repo directory then run:
+**All commands run from root directory.** Run `npm run` to see all available commands.
 
+### Dependencies Setup
 ```bash
-npm start
+npm run install:all     # Install all for both backend and frontend
 ```
 
-**What happens when you run `npm start`:**
-- Spins up a PostgreSQL database container
-- Starts the backend development container
-- Automatically pulls the latest schema from production
-- Copies production data to your local database
-- Starts the API server at http://localhost:3001
-- Starts Prisma Studio at http://localhost:5555
-
-**Test it works:** http://localhost:3001/api/ping  
-**Stop everything:** `npm stop`
-
-## Commands Reference
-
-### **Development**
-
+### Start Development
 ```bash
-npm start          # Start development environment (backend + database)
-npm stop           # Stop all containers and clean up
-npm run shell      # Get shell inside backend container for running commands
-npm run logs       # View real-time container logs
-npm run clean      # Clean restart if things break
+npm run backend:start   # Start backend (Docker containers)
+npm run frontend:start  # Start frontend (Expo) - in separate terminal
 ```
 
-## **‼️Important‼️:** 
-All terminal actions (database commands, tests, etc.) should be run **inside the container shell** using `npm run shell` first.
+**Backend starts:**
+- Local PostgreSQL database container (postgres:5432)
+- Backend API server at http://localhost:3001
+- Prisma Studio at http://localhost:5555
+- Auto-syncs schema/data from production (with SYNC_FROM_PRODUCTION=true in .env file)
 
-### **Testing**
+**Test backend works:** http://localhost:3001/api/ping
 
+**Stop backend:**
 ```bash
-npm test              # Run all tests in development environment
-npm run test:watch    # Run tests in watch mode
-npm run test:coverage # Run tests with coverage report
+npm run backend:stop
 ```
 
-### **Code Quality**
+## Available Commands
 
+Run `npm run` from root to see all commands. Key ones:
+
+### Backend (Docker)
 ```bash
-npm run lint    # Check code style and quality
-npm run format  # Auto-format code with Prettier
-npm run build   # Build TypeScript to JavaScript
+npm run backend:start          # Start containers
+npm run backend:stop           # Stop containers
+npm run backend:logs           # View logs
+npm run backend:shell          # Shell into container
+npm run backend:test           # Run tests
+npm run backend:lint           # Lint code
+npm run backend:clean          # Full cleanup
 ```
 
-### **Database Operations**
+### Database Operations
 
-All database commands must be run inside the container shell:
+Get into container shell first, then run database commands:
 
 ```bash
-# First, get into the container:
-npm run shell
+npm run backend:shell
 
-# Then run database commands:
-npm run db:sync          # Re-sync schema and data from production
-npx prisma studio        # Open Prisma Studio at http://localhost:5555
-npx prisma db push       # Push schema changes to local database
-npx prisma generate      # Regenerate Prisma client
+# Inside container:
+npm run db:sync          # Re-sync from production
+npx prisma studio        # Open Prisma Studio
+npx prisma db push       # Push schema changes
+npx prisma generate      # Regenerate client
 ```
 
-## Database usage
+### Frontend (Expo)
+```bash
+npm run frontend:start         # Start Expo dev server
+npm run frontend:android       # Run on Android
+npm run frontend:ios           # Run on iOS
+npm run frontend:clean         # Clean rebuild
+```
+
+## Database Usage
 
 **In development, you ONLY use local PostgreSQL - production is never touched (😅):**
 
 - **Local Database**: Runs in Docker container (`postgres:5432`)
 - **Production Database**: Completely separate, read-only for development
-- **Auto-Sync on Startup**: Schema and data automatically pulled from production when you `npm start`
-- **Manual Re-Sync**: Run `npm run db:sync` inside container to sync again
+- **Manual Re-Sync**: Run `db:sync` inside container to sync again
 
-### **Schema Changes Workflow:**
+### Schema Changes Workflow
 
 ```bash
 # 1. Edit backend/prisma/schema.prisma
 
 # 2. Get into container shell
-npm run shell
+npm run backend:shell
 
 # 3. Push to local database
 npx prisma db push
