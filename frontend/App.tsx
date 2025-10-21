@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Slot } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import EventDetails from './components/EventDetails';
 
 import { supabase } from './lib/supabase';
 import AuthForm from './components/AuthForm';
@@ -80,3 +81,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 24 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
 });
+
+
