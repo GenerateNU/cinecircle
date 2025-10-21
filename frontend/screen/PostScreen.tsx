@@ -12,6 +12,10 @@ import {
 } from 'react-native';
 import BottomNavBar from '../components/BottomNavBar';
 import { router } from 'expo-router'; // ← Expo Router navigation
+import LongPostForm from './Posts/LongPostForm';
+import ShortPostForm from './Posts/ShortPostForm';
+import RatingPostForm from './Posts/RatingPostForm'
+import PostTypeSelector from '../components/PostTypeSelector'
 
 interface PostData {
   title: string;
@@ -20,122 +24,33 @@ interface PostData {
 }
 
 export default function PostScreen() {
+  const [postType, setPostType] = useState<'long' | 'short' | 'rating'>('long');
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [rating, setRating] = useState<number>(0);
 
-  const canPublish = title.trim().length > 0 && content.trim().length > 0;
-
-  const handlePublish = (): void => {
-    const postData: PostData = { title, content, rating };
-    console.log('Post created:', postData);
-    // need to push to backend here
-    router.back();
-  };
-
-  const renderStars = (): React.ReactElement => {
-    return (
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star: number) => (
-          <TouchableOpacity
-            key={star}
-            onPress={() => setRating(star)}
-            style={styles.starButton}
-          >
-            <Text style={[styles.star, star <= rating && styles.starFilled]}>
-              ★
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
+  const renderPostContent = () => {
+    switch (postType) {
+      case 'long':
+        return <LongPostForm />;
+      case 'short':
+        return <ShortPostForm />;
+      case 'rating':
+        return <RatingPostForm />;
+    }
   };
 
   return (
     <SafeAreaView style={styles.screen}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Create Post</Text>
-
-        <TouchableOpacity
-          onPress={handlePublish}
-          disabled={!canPublish}
-          style={[styles.nextButton, !canPublish && styles.nextButtonDisabled]}
-        >
-          <Text
-            style={[styles.nextText, !canPublish && styles.nextTextDisabled]}
-          >
-            Publish
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Content */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={{ paddingBottom: 120 }} // keep clear of fixed bottom nav
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Title Input */}
-          <TextInput
-            style={styles.titleInput}
-            placeholder="Add a Title"
-            placeholderTextColor="#999"
-            value={title}
-            onChangeText={setTitle}
-          />
-
-          {/* Rating Stars */}
-          {renderStars()}
-
-          {/* Content Input */}
-          <TextInput
-            style={styles.contentInput}
-            placeholder="Start sharing your thoughts..."
-            placeholderTextColor="#999"
-            value={content}
-            onChangeText={setContent}
-            multiline
-            textAlignVertical="top"
-          />
+      <View style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: 550 }}>
+          {renderPostContent()}
         </ScrollView>
-      </KeyboardAvoidingView>
 
-      {/* Composer toolbar (above bottom nav) */}
-      <View style={styles.toolbar}>
-        <TouchableOpacity style={styles.toolButton}>
-          <Text style={styles.toolIcon}>＋</Text>
-        </TouchableOpacity>
-        <View style={styles.separator} />
-        <TouchableOpacity style={styles.toolButton}>
-          <Text style={styles.toolIcon}>☰</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.toolButton}>
-          <Text style={styles.toolIcon}>❞</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.toolButton}>
-          <Text style={styles.toolIcon}>↶</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.toolButton}>
-          <Text style={styles.toolIcon}>⌨</Text>
-        </TouchableOpacity>
+        <PostTypeSelector value={postType} onChange={setPostType} />
       </View>
 
-      {/* Fixed Bottom Nav */}
-      <View style={styles.bottomBar}>
-        <BottomNavBar />
-      </View>
+      <BottomNavBar />
     </SafeAreaView>
   );
 }
