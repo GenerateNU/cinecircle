@@ -17,5 +17,5 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
-  ]
+, "styles/BottomNavBar.styles"  ]
 }
