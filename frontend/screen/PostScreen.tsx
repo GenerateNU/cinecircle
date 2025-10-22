@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  Button,
   ScrollView,
 } from 'react-native';
 import BottomNavBar from '../components/BottomNavBar';
-import LongPostForm from './Posts/LongPostForm';
-import ShortPostForm from './Posts/ShortPostForm';
-import RatingPostForm from './Posts/RatingPostForm'
 import PostTypeSelector from '../components/PostTypeSelector'
-import CreatePostBar from './Posts/CreatePostBar'
+import CreatePostBar from '../components/CreatePostBar'
+import PostForm from '../components/PostForm'
 
 interface PostData {
   title: string;
@@ -26,34 +17,39 @@ interface PostData {
 
 export default function PostScreen() {
   const [postType, setPostType] = useState<'long' | 'short' | 'rating' | null>(null);
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [rating, setRating] = useState<number>(0);
+
+  const handleSubmit = (data: { title: string; content: string; rating: number }) => {
+    console.log('Post submitted:', data);
+    setPostType(null);
+  };
 
   const renderPostContent = () => {
-    console.log(postType)
     switch (postType) {
       case 'short':
-        return <ShortPostForm />;
+        return <PostForm showTextBox showStars onSubmit={handleSubmit} />;
       case 'long': 
-        return <LongPostForm />;
+        return <PostForm showTitle showTextBox showStars onSubmit={handleSubmit} />;
       case 'rating':
-        return <RatingPostForm />;
+        return <PostForm showTextBox onSubmit={handleSubmit} />;
+      default:
+        return null;
     }
   };
 
   return (
     <SafeAreaView style={{flex: 1}}>
       {postType === null ? (
-      <View style={{flex: 1, justifyContent: 'flex-end'}}>
-        <PostTypeSelector value={postType} onChange={setPostType}/>
-      </View>
-       ) : (
-         <>
-         <CreatePostBar onBack={() => setPostType(null)} />
-          <ScrollView style={{flex: 1}}> {renderPostContent()} </ScrollView>
-         </>
-     )}
+        <View style={{flex: 1, justifyContent: 'flex-end'}}>
+          <PostTypeSelector value={postType} onChange={setPostType}/>
+        </View>
+      ) : (
+        <>
+          <CreatePostBar onBack={() => setPostType(null)} />
+          <ScrollView style={{flex: 1}}> 
+            {renderPostContent()} 
+          </ScrollView>
+        </>
+      )}
       
       <BottomNavBar/>
     </SafeAreaView>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from "@expo/vector-icons";
-import { styles } from "../../styles/CreatePostbar.styles";
+import { styles } from "../styles/CreatePostbar.styles";
 
 interface CreatePostBarProps {
   onBack: () => void;
