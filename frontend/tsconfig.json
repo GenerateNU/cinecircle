@@ -16,6 +16,8 @@
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
-  ]
+    "**/*.tsx", 
+    "styles/BottomNavBar.styles",
+    "styles/PostTypeSelector.styles",
+    "styles/CreatePostBar.styles",  ]
 }
