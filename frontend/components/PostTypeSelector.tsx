@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { styles } from "../styles/PostTypeSelector.styles";
 
 
-type PostType = 'long' | 'short' | 'rating';
+type PostType = 'short' | 'long' | 'rating';
 
 interface PostTypeSelectorProps {
   value: PostType;
@@ -16,21 +16,22 @@ export default function PostTypeSelector({
 }: PostTypeSelectorProps) {
   return (
     <View style={styles.container}>
-      {(['long', 'short', 'rating'] as PostType[]).map(type => (
-        <TouchableOpacity
-          key={type}
-          style={[styles.button, value === type && styles.selected]}
-          onPress={() => onChange(type)}
-        >
-          <Text
-            style={[
-              styles.text,
-              value === type && styles.selectedText,
-            ]}
-          >
-            {type.toUpperCase()}
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.title}> Select </Text>
+        {(['short', 'long', 'rating'] as PostType[]).map(type => (
+            <TouchableOpacity
+            key={type}
+            style={[styles.button, value === type && styles.selected]}
+            onPress={() => onChange(type)}
+         >
+           <Text
+              style={[
+                styles.text,
+                value === type && styles.selectedText,
+               ]}
+           >
+                {type.toUpperCase()}
+           </Text>
+          </TouchableOpacity>
       ))}
     </View>
   );

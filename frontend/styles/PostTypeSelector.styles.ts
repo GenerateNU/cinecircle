@@ -2,19 +2,35 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexDirection: 'column',
+    width: '60%',
+    height: '25%',
     paddingVertical: 10,
-    backgroundColor: '#f2f2f2',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#000000ff',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   button: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#e0e0e0',
+    alignItems: 'center',
+    width: '85%',
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#000000ff',
+    marginBottom: 5,
+    marginTop: 15,
   },
   selected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#000000ff',
+  },
+  title: {
+    paddingHorizontal: 20,
+    color: '#333',
+    fontSize: 20,
+    alignSelf: 'flex-start',
   },
   text: {
     color: '#333',
