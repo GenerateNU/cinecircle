@@ -12,13 +12,11 @@ import {
   ScrollView,
 } from 'react-native';
 import BottomNavBar from '../components/BottomNavBar';
-import { router } from 'expo-router'; // ← Expo Router navigation
 import LongPostForm from './Posts/LongPostForm';
 import ShortPostForm from './Posts/ShortPostForm';
 import RatingPostForm from './Posts/RatingPostForm'
 import PostTypeSelector from '../components/PostTypeSelector'
-import { useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import CreatePostBar from './Posts/CreatePostBar'
 
 interface PostData {
   title: string;
@@ -46,18 +44,14 @@ export default function PostScreen() {
 
   return (
     <SafeAreaView style={{flex: 1}}>
-      <ScrollView style={{flex: 1}}> {renderPostContent()} </ScrollView>
-
       {postType === null ? (
+      <View style={{flex: 1, justifyContent: 'flex-end'}}>
         <PostTypeSelector value={postType} onChange={setPostType}/>
+      </View>
        ) : (
          <>
-         <TouchableOpacity onPress={() => setPostType(null)}>
-           <Text>Back</Text>
-         </TouchableOpacity>
-         {postType === 'short' && <ShortPostForm />}
-         {postType === 'long' && <LongPostForm />}
-         {postType === 'rating' && <RatingPostForm />}
+         <CreatePostBar onBack={() => setPostType(null)} />
+          <ScrollView style={{flex: 1}}> {renderPostContent()} </ScrollView>
          </>
      )}
       
