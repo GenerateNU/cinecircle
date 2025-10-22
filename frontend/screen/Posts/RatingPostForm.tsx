@@ -1,5 +1,6 @@
 import React from 'react';
+import { Text } from 'react-native'
 
 export default function RatingPostForm() {
-  return null;
+  return <Text>LONG</Text>;
 }

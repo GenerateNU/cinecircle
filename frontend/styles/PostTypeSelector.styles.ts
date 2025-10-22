@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#000000ff',
+    borderColor: '#333',
     alignItems: 'center',
     alignSelf: 'center',
     marginBottom: 20,
@@ -19,12 +19,12 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#000000ff',
+    borderColor: '#333',
     marginBottom: 5,
     marginTop: 15,
   },
   selected: {
-    backgroundColor: '#000000ff',
+    backgroundColor: '#333',
   },
   title: {
     paddingHorizontal: 20,

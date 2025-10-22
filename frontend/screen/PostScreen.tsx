@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  Button,
   ScrollView,
 } from 'react-native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -16,6 +17,8 @@ import LongPostForm from './Posts/LongPostForm';
 import ShortPostForm from './Posts/ShortPostForm';
 import RatingPostForm from './Posts/RatingPostForm'
 import PostTypeSelector from '../components/PostTypeSelector'
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 
 interface PostData {
   title: string;
@@ -24,17 +27,18 @@ interface PostData {
 }
 
 export default function PostScreen() {
-  const [postType, setPostType] = useState<'long' | 'short' | 'rating'>('long');
+  const [postType, setPostType] = useState<'long' | 'short' | 'rating' | null>(null);
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [rating, setRating] = useState<number>(0);
 
   const renderPostContent = () => {
+    console.log(postType)
     switch (postType) {
-      case 'long':
-        return <LongPostForm />;
       case 'short':
         return <ShortPostForm />;
+      case 'long': 
+        return <LongPostForm />;
       case 'rating':
         return <RatingPostForm />;
     }
@@ -44,8 +48,19 @@ export default function PostScreen() {
     <SafeAreaView style={{flex: 1}}>
       <ScrollView style={{flex: 1}}> {renderPostContent()} </ScrollView>
 
-      <PostTypeSelector value={postType} onChange={setPostType}/>
-
+      {postType === null ? (
+        <PostTypeSelector value={postType} onChange={setPostType}/>
+       ) : (
+         <>
+         <TouchableOpacity onPress={() => setPostType(null)}>
+           <Text>Back</Text>
+         </TouchableOpacity>
+         {postType === 'short' && <ShortPostForm />}
+         {postType === 'long' && <LongPostForm />}
+         {postType === 'rating' && <RatingPostForm />}
+         </>
+     )}
+      
       <BottomNavBar/>
     </SafeAreaView>
   );

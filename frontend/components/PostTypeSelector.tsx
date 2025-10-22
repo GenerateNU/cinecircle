@@ -6,7 +6,7 @@ import { styles } from "../styles/PostTypeSelector.styles";
 type PostType = 'short' | 'long' | 'rating';
 
 interface PostTypeSelectorProps {
-  value: PostType;
+  value: PostType | null;
   onChange: (type: PostType) => void;
 }
 
