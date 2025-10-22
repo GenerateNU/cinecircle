@@ -99,12 +99,17 @@ model UserFollow {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  userId    String   @db.Uuid
-  ratingId  String?
-  postId    String?
-  content   String
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  userId         String   @db.Uuid
+  ratingId       String?
+  postId         String?
+  content        String
+  parentId       String?
+  createdAt      DateTime @default(now())
+
+
+  parent_comment Comment?    @relation("CommentThread", fields: [parentId], references: [id])
+  child_comment  Comment[]   @relation("CommentThread")
 
   user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
   rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
@@ -434,14 +439,14 @@ model auth_users {
 }
 
 model Rating {
-  id      String   @id @default(uuid())
-  userId  String   @db.Uuid
-  movieId String
-  stars   Int
-  comment String?
-  tags    String[] @default([])
-  date    DateTime
-  votes   Int      @default(0)
+  id       String   @id @default(uuid())
+  userId   String   @db.Uuid
+  movieId  String
+  stars    Int
+  comments String[] @default([])
+  tags     String[] @default([])
+  date     DateTime
+  votes    Int      @default(0)
 
   user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
   threadedComments Comment[]   @relation("RatingComments")
