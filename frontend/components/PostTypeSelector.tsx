@@ -2,7 +2,6 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { styles } from "../styles/PostTypeSelector.styles";
 
-
 type PostType = 'short' | 'long' | 'rating';
 
 interface PostTypeSelectorProps {

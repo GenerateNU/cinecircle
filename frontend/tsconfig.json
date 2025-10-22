@@ -18,5 +18,6 @@
     "**/*.ts",
     "**/*.tsx", 
     "styles/BottomNavBar.styles",
-    "styles/PostTypeSelector.styles"  ]
+    "styles/PostTypeSelector.styles",
+    "styles/CreatePostBar.styles",  ]
 }

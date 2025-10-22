@@ -38,6 +38,23 @@ export default function PostForm({
           }}
         />
       )}
+
+    {showStars && (
+        <View style={{ marginBottom: 15 }}>
+          <TextInput 
+            placeholder="Rating (0-5)"
+            value={rating.toString()}
+            onChangeText={(text) => setRating(Number(text))}
+            keyboardType="numeric"
+            style={{ 
+              borderWidth: 1, 
+              borderColor: '#ddd', 
+              padding: 10,
+              borderRadius: 8 
+            }}
+          />
+        </View>
+      )}
       
       {showTextBox && (
         <TextInput 
@@ -55,23 +72,6 @@ export default function PostForm({
             height: 120 
           }}
         />
-      )}
-      
-      {showStars && (
-        <View style={{ marginBottom: 15 }}>
-          <TextInput 
-            placeholder="Rating (0-5)"
-            value={rating.toString()}
-            onChangeText={(text) => setRating(Number(text))}
-            keyboardType="numeric"
-            style={{ 
-              borderWidth: 1, 
-              borderColor: '#ddd', 
-              padding: 10,
-              borderRadius: 8 
-            }}
-          />
-        </View>
       )}
       
       <Button title="Submit" onPress={handleSubmit} />

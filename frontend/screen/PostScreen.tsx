@@ -3,6 +3,7 @@ import {
   View,
   SafeAreaView,
   ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import BottomNavBar from '../components/BottomNavBar';
 import PostTypeSelector from '../components/PostTypeSelector'
@@ -26,11 +27,11 @@ export default function PostScreen() {
   const renderPostContent = () => {
     switch (postType) {
       case 'short':
-        return <PostForm showTextBox showStars onSubmit={handleSubmit} />;
-      case 'long': 
-        return <PostForm showTitle showTextBox showStars onSubmit={handleSubmit} />;
-      case 'rating':
         return <PostForm showTextBox onSubmit={handleSubmit} />;
+      case 'long': 
+        return <PostForm showTitle showTextBox onSubmit={handleSubmit} />;
+      case 'rating':
+        return <PostForm showTitle showTextBox showStars onSubmit={handleSubmit} />;
       default:
         return null;
     }

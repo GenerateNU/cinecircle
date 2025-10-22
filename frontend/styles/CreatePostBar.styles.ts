@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
   nextButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#000000ff',
     borderRadius: 8,
     width: 80,
     alignItems: 'center',
