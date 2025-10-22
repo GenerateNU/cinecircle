@@ -49,4 +49,4 @@ Thumbs.db
 *.mobileprovision
 
 # TypeScript
-*.tsbuildinfo
+*.tsbuildinfo.idea/

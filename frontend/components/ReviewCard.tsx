@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
 export default function ReviewCard() {
     return (
         <View style={styles.container}>
@@ -9,6 +10,7 @@ export default function ReviewCard() {
                     <Text style={styles.userHandle}>@username Date</Text>
                 </View>
             </View>
+
             <View style={styles.nestedReview}>
                 <View style={styles.nestedHeader}>
                     <View style={styles.smallAvatar} />
@@ -20,27 +22,29 @@ export default function ReviewCard() {
                         <Text key={star} style={styles.reviewStar}>★</Text>
                     ))}
                     <TouchableOpacity style={styles.bookmarkIcon}>
-                        <Text>:bookmark:</Text>
+                        <Text>🔖</Text>
                     </TouchableOpacity>
                 </View>
             </View>
+
             <View style={styles.actions}>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>:heart: 1.23k</Text>
+                    <Text style={styles.actionText}>❤️ 1.23k</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>:speech_balloon: 1.23k</Text>
+                    <Text style={styles.actionText}>💬 1.23k</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>:repeat: 1.23k</Text>
+                    <Text style={styles.actionText}>🔁 1.23k</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>:arrow_upper_right:</Text>
+                    <Text style={styles.actionText}>↗️</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#FFF',
@@ -125,12 +129,3 @@ const styles = StyleSheet.create({
         color: '#666',
     },
 });
-
-
-
-
-
-
-
-
-
