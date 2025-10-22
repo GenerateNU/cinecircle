@@ -14,6 +14,7 @@ import { followUser, unfollowUser, getFollowers, getFollowing } from "../control
 import { getComment, createComment, updateComment, deleteComment} from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
+import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
 
 const router = Router();
 
@@ -64,5 +65,16 @@ router.get("/api/local-event/:id", getLocalEvent);
 router.post("/api/local-event", createLocalEvent);
 router.delete("/api/local-event/:id", deleteLocalEvent);
 router.put("/api/local-event/:id", updateLocalEvent);
+
+// Post routes
+router.post("/post", createPost);
+router.get("/posts", getPosts);
+router.get("/post/:postId", getPostById);
+router.put("/post/:postId", updatePost);
+router.delete("/post/:postId", deletePost);
+
+router.post("/post/:postId/like", toggleLikePost);
+router.get("/post/:postId/likes", getPostLikes);
+router.get("/:postId/replies", getPostReplies);
 
 export default router;

@@ -73,15 +73,16 @@ model UserProfile {
   preferredCategories String[] @default([])
   favoriteMovies      String[] @default([])
 
-  reviews  Rating[]  @relation("UserReviews")
-  comments Comment[] @relation("UserComments")
+  reviews   Rating[]   @relation("UserReviews")
+  comments  Comment[]  @relation("UserComments")
+  posts     Post[]     @relation("UserPosts")
+  postLikes PostLike[] @relation("UserPostLikes")
 
   followers UserFollow[] @relation("Followers")
   following UserFollow[] @relation("Following")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Post      Post[]
 
   @@schema("public")
 }
@@ -113,29 +114,59 @@ model Comment {
 
   user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
   rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
-  post   Post?       @relation("PostComments", fields: [postId], references: [id])
+  post   Post?       @relation("PostComments", fields: [postId], references: [postId])
 
   @@schema("public")
 }
 
 model Post {
-  id        String   @id @default(uuid())
+  postId    String   @id @default(uuid())
   userId    String   @db.Uuid
   content   String
-  type      PostType
+  postType  PostType
   votes     Int      @default(0)
   createdAt DateTime @default(now())
 
-  user     UserProfile @relation(fields: [userId], references: [userId])
+  // threading relationships
+  parentPostId String? @db.Uuid
+  parentPost   Post?   @relation("PostReplies", fields: [parentPostId], references: [postId], onDelete: Cascade)
+  replies      Post[]  @relation("PostReplies")
+
+  // related to rating for long post type
+  ratingId String? @unique
+  rating   Rating? @relation("PostRating", fields: [ratingId], references: [id], onDelete: Cascade)
+
+  user     UserProfile @relation("UserPosts", fields: [userId], references: [userId], onDelete: Cascade)
+  likes    PostLike[]
   comments Comment[]   @relation("PostComments")
 
+  @@index([userId])
+  @@index([parentPostId])
+  @@index([postType])
+  @@index([createdAt])
   @@schema("public")
 }
 
 enum PostType {
-  SHORT
-  LONG
+  SHORT_POST
+  LONG_POST
 
+  @@schema("public")
+}
+
+// Post Likes Model
+model PostLike {
+  likeId    String   @id @default(uuid())
+  postId    String
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  post Post        @relation(fields: [postId], references: [postId], onDelete: Cascade)
+  user UserProfile @relation("UserPostLikes", fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([postId, userId]) // prevent duplicate likes
+  @@index([postId])
+  @@index([userId])
   @@schema("public")
 }
 
@@ -450,6 +481,7 @@ model Rating {
 
   user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
   threadedComments Comment[]   @relation("RatingComments")
+  post             Post?       @relation("PostRating")
 
   @@schema("public")
 }
