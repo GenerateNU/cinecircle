@@ -31,5 +31,17 @@
     "frontend:web": "cd frontend && npm run web",
     "frontend:clean": "cd frontend && npm run clean",
     "frontend:install": "cd frontend && npm install"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "dependencies": {
+    "nativewind": "^4.2.1",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-svg": "15.11.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.18"
   }
 }
