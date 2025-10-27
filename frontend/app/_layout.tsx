@@ -55,11 +55,17 @@ export default function RootLayout() {
   // Logged in → provide context and mount a Router navigator
   return (
     <SafeAreaProvider>
-      <AuthContext.Provider value={{ user, signOut }}>
-        <Stack screenOptions={{ headerShown: false }} />
-      </AuthContext.Provider>
-      <StatusBar style="auto" />
-    </SafeAreaProvider>
+    <AuthContext.Provider value={{ user, signOut }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="profilePage/index" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="profilePage/settings"
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+      </Stack>
+    </AuthContext.Provider>
+    <StatusBar style="auto" />
+  </SafeAreaProvider>
   );
 }
 

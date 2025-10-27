@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
-import ProfilePage from '../screen/ProfilePage';
+import ProfilePage from '../app/profile';
 
 type Props = {
   user: any;
