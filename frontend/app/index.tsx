@@ -1,18 +1,9 @@
-// app/index.tsx
+// frontend/app/index.tsx
 import React, { useContext } from 'react';
-import { View, StyleSheet } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
-import UserDashboard from '../components/UserDashboard';
+import HomeScreen from '../screen/HomeScreen';
 
 export default function HomeRoute() {
   const { user, signOut } = useContext(AuthContext);
-  return (
-    <View style={styles.container}>
-      <UserDashboard user={user} onSignOut={signOut} />
-    </View>
-  );
+  return <HomeScreen user={user} onSignOut={signOut} />;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-});
