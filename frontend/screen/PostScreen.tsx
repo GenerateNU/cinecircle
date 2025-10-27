@@ -5,7 +5,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 import PostTypeSelector from '../components/PostTypeSelector'
 import CreatePostBar from '../components/CreatePostBar'
 import PostForm from '../components/PostForm'
@@ -51,8 +50,6 @@ export default function PostScreen() {
           </ScrollView>
         </>
       )}
-      
-      <BottomNavBar/>
     </SafeAreaView>
   );
 }

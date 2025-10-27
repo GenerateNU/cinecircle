@@ -4,10 +4,6 @@ const { width, height } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   bar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     flexDirection: "row",
     backgroundColor: "#fff",
     borderTopWidth: 1, // 1 = "thin", not hard-coded 1px
