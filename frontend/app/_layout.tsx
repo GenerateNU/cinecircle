@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import AuthForm from '../components/AuthForm';
 import { AuthContext } from '../context/AuthContext';
+import BottomNavBar from '../components/BottomNavBar';
 
 export default function RootLayout() {
   const [user, setUser] = useState<any | null>(null);
@@ -57,6 +58,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthContext.Provider value={{ user, signOut }}>
         <Stack screenOptions={{ headerShown: false }} />
+        <BottomNavBar />
       </AuthContext.Provider>
       <StatusBar style="auto" />
     </SafeAreaProvider>

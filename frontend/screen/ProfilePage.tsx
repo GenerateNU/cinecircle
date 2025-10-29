@@ -9,7 +9,6 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -187,11 +186,6 @@ const ProfilePage = ({ user }: Props) => {
           </TouchableOpacity>
         )}
       </ScrollView>
-
-      {/* Fixed bottom nav */}
-      <View style={styles.bottomBar}>
-        <BottomNavBar />
-      </View>
     </View>
   );
 };
