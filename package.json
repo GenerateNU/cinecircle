@@ -31,5 +31,8 @@
     "frontend:web": "cd frontend && npm run web",
     "frontend:clean": "cd frontend && npm run clean",
     "frontend:install": "cd frontend && npm install"
+  },
+  "dependencies": {
+    "lucide-react-native": "^0.548.0"
   }
 }
