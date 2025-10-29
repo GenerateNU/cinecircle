@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import StarRating from '../components/StarRating';
 import {
   View,
   Text,
@@ -31,24 +32,6 @@ export default function PostScreen() {
     console.log('Post created:', postData);
     // need to push to backend here
     router.back();
-  };
-
-  const renderStars = (): React.ReactElement => {
-    return (
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star: number) => (
-          <TouchableOpacity
-            key={star}
-            onPress={() => setRating(star)}
-            style={styles.starButton}
-          >
-            <Text style={[styles.star, star <= rating && styles.starFilled]}>
-              ★
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
   };
 
   return (
@@ -97,7 +80,7 @@ export default function PostScreen() {
           />
 
           {/* Rating Stars */}
-          {renderStars()}
+          <StarRating initialRating={5} onRatingChange={(rating) => setRating(rating)}/>
 
           {/* Content Input */}
           <TextInput
