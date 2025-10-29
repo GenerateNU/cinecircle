@@ -1,5 +1,4 @@
 import React from 'react';
-import ProfilePage from '../screen/ProfilePage'; // ← the file you showed me
-export default function ProfileRoute() {
-  return <ProfilePage />;
-}
+import ProfilePage from './profile'; // ← the file you showed me
+export { default } from './profilePage';
+
