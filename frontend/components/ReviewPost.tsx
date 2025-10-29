@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import UserBar from './UserBar';
+
+const { width } = Dimensions.get('window');
 
 type ReviewPostProps = {
     userName: string;
@@ -36,7 +38,7 @@ export default function ReviewPost({
                 <UserBar
                     name={reviewerName}
                     avatarUri={reviewerAvatarUri}
-                    avatarSize={24}
+                    avatarSize={width * 0.06}
                 />
                 <Text style={styles.movieTitle}>{movieTitle}</Text>
 
@@ -54,29 +56,33 @@ export default function ReviewPost({
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#FFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
+        borderRadius: width * 0.03,
+        padding: width * 0.04,
+        marginBottom: width * 0.04,
+        width: '100%',
     },
     nestedReview: {
         backgroundColor: '#F8F8F8',
-        borderRadius: 8,
-        padding: 12,
-        marginTop: 12,
+        borderRadius: width * 0.02,
+        padding: width * 0.03,
+        marginTop: width * 0.03,
+        width: '100%',
     },
     movieTitle: {
-        fontSize: 16,
+        fontSize: width * 0.04,
         fontWeight: '600',
         color: '#000',
-        marginTop: 8,
-        marginBottom: 8,
+        marginTop: width * 0.02,
+        marginBottom: width * 0.02,
+        flexShrink: 1,
     },
     starPlaceholder: {
         flexDirection: 'row',
         alignItems: 'center',
+        flexWrap: 'wrap',
     },
     placeholderText: {
-        fontSize: 18,
+        fontSize: width * 0.045,
         color: '#FFD700',
     },
 });

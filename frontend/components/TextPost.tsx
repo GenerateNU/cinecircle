@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import UserBar from './UserBar';
+
+const { width } = Dimensions.get('window');
 
 type TextPostProps = {
     userName: string;
@@ -34,14 +36,16 @@ export default function TextPost({
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#FFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
+        borderRadius: width * 0.03,
+        padding: width * 0.04,
+        marginBottom: width * 0.04,
+        width: '100%',
     },
     content: {
-        fontSize: 15,
+        fontSize: width * 0.0375,
         color: '#000',
-        lineHeight: 20,
-        marginTop: 12,
+        lineHeight: width * 0.05,
+        marginTop: width * 0.03,
+        flexShrink: 1,
     },
 });

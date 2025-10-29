@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Avatar from './Avatar';
+
+const { width } = Dimensions.get('window');
 
 type UserBarProps = {
     name: string;
@@ -15,7 +17,7 @@ export default function UserBar({
                                     username,
                                     date,
                                     avatarUri,
-                                    avatarSize = 40
+                                    avatarSize = width * 0.1
                                 }: UserBarProps) {
     return (
         <View style={styles.container}>
@@ -36,17 +38,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     textContainer: {
-        marginLeft: 12,
+        marginLeft: width * 0.03,
         flex: 1,
     },
     name: {
-        fontSize: 16,
+        fontSize: width * 0.04,
         fontWeight: '600',
         color: '#000',
     },
     metadata: {
-        fontSize: 13,
+        fontSize: width * 0.0325,
         color: '#666',
-        marginTop: 2,
+        marginTop: width * 0.005,
     },
 });
