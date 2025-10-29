@@ -15,7 +15,7 @@ export default function CreatePostBar({ onBack }: CreatePostBarProps) {
         <MaterialIcons name="arrow-back-ios" style={styles.backButton} />
       </TouchableOpacity>
       
-      <View style={styles.titleContainer}>
+      <View style={styles.titleContainer} pointerEvents ="none">
         <Text style={styles.title}>Create</Text>
       </View>
 

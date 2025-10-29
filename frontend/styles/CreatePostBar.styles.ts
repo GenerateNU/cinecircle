@@ -14,13 +14,6 @@ export const styles = StyleSheet.create({
     borderBottomColor: "#e0e0e0",
   },
 
-  backWrapper: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
   backButton: {
     fontSize: width * 0.05,
     color: "#9A0169",
