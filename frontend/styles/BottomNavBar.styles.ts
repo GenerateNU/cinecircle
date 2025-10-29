@@ -18,10 +18,12 @@ export const styles = StyleSheet.create({
   activeIcon: { 
     color: "#9A0169", 
     fontWeight: "600",
-    fontSize: width * 0.07 },
+    fontSize: width * 0.07 
+  },
   icon: { 
     color: "#9A0169", 
     fontWeight: "100", 
     opacity: 0.6, 
-    fontSize: width * 0.07},
+    fontSize: width * 0.07
+  },
 });

@@ -19,7 +19,7 @@ export default function PostTypeSelector({
         {(['short', 'long', 'rating'] as PostType[]).map(type => (
             <TouchableOpacity
             key={type}
-            style={[styles.button, value === type && styles.selected]}
+            style={styles.button}
             onPress={() => onChange(type)}
          >
            <Text
