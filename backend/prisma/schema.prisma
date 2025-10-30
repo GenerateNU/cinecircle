@@ -73,16 +73,15 @@ model UserProfile {
   preferredCategories String[] @default([])
   favoriteMovies      String[] @default([])
 
-  reviews   Rating[]   @relation("UserReviews")
-  comments  Comment[]  @relation("UserComments")
-  posts     Post[]     @relation("UserPosts")
-  postLikes PostLike[] @relation("UserPostLikes")
+  reviews  Rating[]  @relation("UserReviews")
+  comments Comment[] @relation("UserComments")
 
   followers UserFollow[] @relation("Followers")
   following UserFollow[] @relation("Following")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Post      Post[]
 
   @@schema("public")
 }
@@ -100,73 +99,38 @@ model UserFollow {
 }
 
 model Comment {
-  id             String   @id @default(uuid())
-  userId         String   @db.Uuid
-  ratingId       String?
-  postId         String?
-  content        String
-  parentId       String?
-  createdAt      DateTime @default(now())
-
-
-  parent_comment Comment?    @relation("CommentThread", fields: [parentId], references: [id])
-  child_comment  Comment[]   @relation("CommentThread")
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  ratingId  String?
+  postId    String?
+  content   String
+  createdAt DateTime @default(now())
 
   user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
   rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
-  post   Post?       @relation("PostComments", fields: [postId], references: [postId])
+  post   Post?       @relation("PostComments", fields: [postId], references: [id])
 
   @@schema("public")
 }
 
 model Post {
-  postId    String   @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String   @db.Uuid
   content   String
-  postType  PostType
+  type      PostType
   votes     Int      @default(0)
   createdAt DateTime @default(now())
 
-  // threading relationships
-  parentPostId String? @db.Uuid
-  parentPost   Post?   @relation("PostReplies", fields: [parentPostId], references: [postId], onDelete: Cascade)
-  replies      Post[]  @relation("PostReplies")
-
-  // related to rating for long post type
-  ratingId String? @unique
-  rating   Rating? @relation("PostRating", fields: [ratingId], references: [id], onDelete: Cascade)
-
-  user     UserProfile @relation("UserPosts", fields: [userId], references: [userId], onDelete: Cascade)
-  likes    PostLike[]
+  user     UserProfile @relation(fields: [userId], references: [userId])
   comments Comment[]   @relation("PostComments")
 
-  @@index([userId])
-  @@index([parentPostId])
-  @@index([postType])
-  @@index([createdAt])
   @@schema("public")
 }
 
 enum PostType {
-  SHORT_POST
-  LONG_POST
+  SHORT
+  LONG
 
-  @@schema("public")
-}
-
-// Post Likes Model
-model PostLike {
-  likeId    String   @id @default(uuid())
-  postId    String
-  userId    String   @db.Uuid
-  createdAt DateTime @default(now())
-
-  post Post        @relation(fields: [postId], references: [postId], onDelete: Cascade)
-  user UserProfile @relation("UserPostLikes", fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@unique([postId, userId]) // prevent duplicate likes
-  @@index([postId])
-  @@index([userId])
   @@schema("public")
 }
 
@@ -294,22 +258,6 @@ model refresh_tokens {
   @@index([session_id, revoked])
   @@index([updated_at(sort: Desc)])
   @@schema("auth")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model local_event {
-  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
-  title       String
-  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
-  description String
-  genre       String
-  cost        Float?    @db.Real
-  occasion    String?
-  languages   String[]
-  lat         Float?
-  lon         Float?
-
-  @@schema("public")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -470,27 +418,17 @@ model auth_users {
 }
 
 model Rating {
-  id       String   @id @default(uuid())
-  userId   String   @db.Uuid
-  movieId  String
-  stars    Int
-  comments String[] @default([])
-  tags     String[] @default([])
-  date     DateTime
-  votes    Int      @default(0)
+  id      String   @id @default(uuid())
+  userId  String   @db.Uuid
+  movieId String
+  stars   Int
+  comment String?
+  tags    String[] @default([])
+  date    DateTime
+  votes   Int      @default(0)
 
   user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
   threadedComments Comment[]   @relation("RatingComments")
-  post             Post?       @relation("PostRating")
-
-  @@schema("public")
-}
-
-model bootcamp {
-  id         BigInt   @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  name       String?
-  fav_food   Json?    @db.Json
 
   @@schema("public")
 }
