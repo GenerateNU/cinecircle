@@ -79,72 +79,89 @@ export async function saveMovie(mapped: MovieInsert) {
   });
 }
 
+// GET /movies/:movieId (TMDB id)
 export const getMovie = async (req: Request, res: Response) => {
-  const { movieId: tmdbId } = req.params;
-  if (!tmdbId) return res.status(400).json({ message: "Movie ID is required" });
+  const { movieId: tmdbId } = req.params; 
+
+  if (!tmdbId) {
+    return res.status(400).json({ message: "Movie ID is required" });
+  }
 
   try {
     const tmdb = await fetchTmdbMovie(tmdbId);
     const mapped = mapTmdbToMovie(tmdb);
-    const saved = await saveMovie(mapped); // <-- capture the DB row
+    const saved = await saveMovie(mapped);
 
-    // Return DB-shaped response (with imdbRating coerced)
-    const movieResponse = {
-      ...saved,
-      imdbRating: saved.imdbRating != null ? Number(saved.imdbRating) : null,
-    };
+    const dto = toMovieResponseFromDb(saved);
 
-    res.json({
+    return res.json({
       message: "Movie fetched from TMDB and saved to DB",
-      data: movieResponse,
+      data: { ...saved, ...dto },
     });
   } catch (err) {
     console.error("getMovie error:", err);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch/save movie",
       error: err instanceof Error ? err.message : "Unknown error",
     });
   }
 };
 
+
+// PUT /movies/:movieId
 export const updateMovie = async (req: Request, res: Response) => {
   const { movieId } = req.params;
-  if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
+  if (!movieId) {
+    return res.status(400).json({ message: "Movie ID is required" });
+  }
 
   const { title, description, languages, imdbRating, localRating, numRatings } = req.body;
-  const data: Partial<Prisma.MovieUpdateInput> = {};
 
-  if (title !== undefined) data.title = title;
-  if (description !== undefined) data.description = description;
-  if (languages !== undefined) data.languages = languages;  // string[]
-  if (imdbRating !== undefined) data.imdbRating = imdbRating;
-  if (localRating !== undefined) data.localRating = Number(localRating);
-  if (numRatings !== undefined) data.numRatings = Number(numRatings);
+  const updateData: Partial<Prisma.MovieUpdateInput> = {};
 
-  if (Object.keys(data).length === 0) {
+  if (title !== undefined) updateData.title = title;
+  if (description !== undefined) updateData.description = description;
+
+  // Only accept an array (or explicit null) for languages to avoid bad writes
+  if (languages !== undefined) {
+    if (languages === null) updateData.languages = null as any;
+    else if (Array.isArray(languages)) updateData.languages = languages as any;
+  }
+
+  if (imdbRating !== undefined) updateData.imdbRating = Number(imdbRating);
+  if (localRating !== undefined) updateData.localRating = Number(localRating);
+  if (numRatings !== undefined) updateData.numRatings = Number(numRatings);
+
+  if (Object.keys(updateData).length === 0) {
     return res.status(400).json({ message: "No fields to update" });
   }
 
   try {
-    const updated = await prisma.movie.update({ where: { movieId }, data });
+    const updatedMovie = await prisma.movie.update({
+      where: { movieId },
+      data: updateData,
+    });
 
-    const movieResponse = {
-      ...updated,
-      imdbRating: updated.imdbRating != null ? Number(updated.imdbRating) : null,
-    };
+    const dto = toMovieResponseFromDb(updatedMovie);
 
-    res.json({ message: "Movie updated successfully", data: movieResponse });
+    return res.json({
+      message: "Movie updated successfully",
+      data: { ...updatedMovie, ...dto },
+    });
   } catch (err) {
     console.error("updateMovie error:", err);
+
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return res.status(404).json({ message: "Movie not found" });
     }
-    res.status(500).json({
+
+    return res.status(500).json({
       message: "Failed to update movie",
       error: err instanceof Error ? err.message : "Unknown error",
     });
   }
 };
+
 
 // DELETE /movies/:movieId
 export const deleteMovie = async (req: Request, res: Response) => {
@@ -185,11 +202,10 @@ export const getMovieById = async (req: Request, res: Response) => {
     const movie = await prisma.movie.findUnique({ where: { movieId } });
     if (!movie) return res.status(404).json({ message: "Movie not found." });
 
-    // Use the mapper for correct types, then merge back to preserve DB fields
-    const dto = toMovieResponseFromDb(movie); // imdbRating coerced, etc.
+    const dto = toMovieResponseFromDb(movie); 
     res.json({
       message: "Movie found successfully",
-      data: { ...movie, ...dto }, // keeps createdAt/updatedAt + coerces imdbRating
+      data: { ...movie, ...dto }, 
     });
   } catch (err) {
     console.error("getMovieById error:", err);
@@ -200,25 +216,7 @@ export const getMovieById = async (req: Request, res: Response) => {
   }
 };
 
-function toMovieResponse(dbMovie: TmdbMovie): Movie {
-  const languages =
-    dbMovie.spoken_languages
-      ?.map(l => l.english_name)
-      .filter((v): v is string => typeof v === "string" && v.length > 0)
-    ?? null;
-
-  return {
-    movieId: String(dbMovie.id),
-    title: dbMovie.title,
-    description: dbMovie.overview,
-    languages,
-    imdbRating: dbMovie.vote_average != null ? Number(dbMovie.vote_average) : null,
-  };
-}
-
-// Map a DB movie row to the public API shape
 function toMovieResponseFromDb(row: any): Movie {
-  // imdbRating might be number | bigint | string | null depending on your ORM/DB
   const imdb =
     row.imdbRating == null
       ? null
