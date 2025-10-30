@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../services/db.js";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
+import { Movie } from "../types/models.js";
 
 type TmdbMovie = {
   id: number;
@@ -78,9 +79,9 @@ export async function saveMovie(mapped: MovieInsert) {
   });
 }
 
-// Express handler
+// GET /movies/:movieId (TMDB id)
 export const getMovie = async (req: Request, res: Response) => {
-  const { movieId: tmdbId } = req.params; // route: /movies/:movieId (TMDB id)
+  const { movieId: tmdbId } = req.params; 
 
   if (!tmdbId) {
     return res.status(400).json({ message: "Movie ID is required" });
@@ -91,42 +92,43 @@ export const getMovie = async (req: Request, res: Response) => {
     const mapped = mapTmdbToMovie(tmdb);
     const saved = await saveMovie(mapped);
 
-    // Convert BigInt to number for JSON serialization
-    const movieResponse = {
-      ...saved,
-      imdbRating: saved.imdbRating ? Number(saved.imdbRating) : null,
-    };
+    const dto = toMovieResponseFromDb(saved);
 
-    res.json({
+    return res.json({
       message: "Movie fetched from TMDB and saved to DB",
-      data: movieResponse,
+      data: { ...saved, ...dto },
     });
   } catch (err) {
     console.error("getMovie error:", err);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch/save movie",
       error: err instanceof Error ? err.message : "Unknown error",
     });
   }
 };
 
+
 // PUT /movies/:movieId
 export const updateMovie = async (req: Request, res: Response) => {
   const { movieId } = req.params;
-
   if (!movieId) {
     return res.status(400).json({ message: "Movie ID is required" });
   }
 
-  const { title, description, languages, imdbRating, localRating, numRatings } =
-    req.body;
+  const { title, description, languages, imdbRating, localRating, numRatings } = req.body;
 
   const updateData: Partial<Prisma.MovieUpdateInput> = {};
 
   if (title !== undefined) updateData.title = title;
   if (description !== undefined) updateData.description = description;
-  if (languages !== undefined) updateData.languages = languages;
-  if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
+
+  // Only accept an array (or explicit null) for languages to avoid bad writes
+  if (languages !== undefined) {
+    if (languages === null) updateData.languages = null as any;
+    else if (Array.isArray(languages)) updateData.languages = languages as any;
+  }
+
+  if (imdbRating !== undefined) updateData.imdbRating = Number(imdbRating);
   if (localRating !== undefined) updateData.localRating = Number(localRating);
   if (numRatings !== undefined) updateData.numRatings = Number(numRatings);
 
@@ -136,38 +138,30 @@ export const updateMovie = async (req: Request, res: Response) => {
 
   try {
     const updatedMovie = await prisma.movie.update({
-      where: { movieId: movieId },
+      where: { movieId },
       data: updateData,
     });
 
-    // Convert BigInt to number for JSON serialization
-    const movieResponse = {
-      ...updatedMovie,
-      imdbRating: updatedMovie.imdbRating
-        ? Number(updatedMovie.imdbRating)
-        : null,
-    };
+    const dto = toMovieResponseFromDb(updatedMovie);
 
-    res.json({
+    return res.json({
       message: "Movie updated successfully",
-      data: movieResponse,
+      data: { ...updatedMovie, ...dto },
     });
   } catch (err) {
     console.error("updateMovie error:", err);
 
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2025"
-    ) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return res.status(404).json({ message: "Movie not found" });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to update movie",
       error: err instanceof Error ? err.message : "Unknown error",
     });
   }
 };
+
 
 // DELETE /movies/:movieId
 export const deleteMovie = async (req: Request, res: Response) => {
@@ -201,29 +195,17 @@ export const deleteMovie = async (req: Request, res: Response) => {
 };
 
 export const getMovieById = async (req: Request, res: Response) => {
-  // Fetch movie from YOUR database using the local UUID
-  // No TMDB call needed
   const { movieId } = req.params;
-  if (!movieId) {
-    return res.status(400).json({ message: "Movie ID is required" });
-  }
+  if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
+
   try {
-    const movie = await prisma.movie.findUnique({
-      where: { movieId: movieId },
-    });
-    if (!movie) {
-      return res.status(404).json({ message: "Movie not found." });
-    }
+    const movie = await prisma.movie.findUnique({ where: { movieId } });
+    if (!movie) return res.status(404).json({ message: "Movie not found." });
 
-    // Convert BigInt to number for JSON serialization
-    const movieResponse = {
-      ...movie,
-      imdbRating: movie.imdbRating ? Number(movie.imdbRating) : null,
-    };
-
+    const dto = toMovieResponseFromDb(movie); 
     res.json({
       message: "Movie found successfully",
-      data: movieResponse,
+      data: { ...movie, ...dto }, 
     });
   } catch (err) {
     console.error("getMovieById error:", err);
@@ -233,3 +215,24 @@ export const getMovieById = async (req: Request, res: Response) => {
     });
   }
 };
+
+function toMovieResponseFromDb(row: any): Movie {
+  const imdb =
+    row.imdbRating == null
+      ? null
+      : typeof row.imdbRating === "bigint"
+      ? Number(row.imdbRating)
+      : Number(row.imdbRating);
+
+  return {
+    movieId: String(row.movieId ?? row.id),
+    title: row.title ?? null,
+    description: row.description ?? null,
+    languages: Array.isArray(row.languages) ? (row.languages as string[]) : null,
+    imdbRating: Number.isFinite(imdb) ? imdb : null,
+    localRating:
+      row.localRating == null ? null : typeof row.localRating === "number" ? row.localRating : Number(row.localRating),
+    numRatings:
+      row.numRatings == null ? null : typeof row.numRatings === "number" ? row.numRatings : Number(row.numRatings),
+  };
+}
