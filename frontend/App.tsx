@@ -67,12 +67,14 @@ export default function App() {
 
   // Logged in → hand over to Expo Router pages via <Slot />
   return (
+    <GestureHandlerRootView>
     <SafeAreaProvider>
       <AuthContext.Provider value={{ user, signOut }}>
         <Slot />
       </AuthContext.Provider>
       <StatusBar style="auto" />
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
