@@ -2,10 +2,16 @@ import React from "react";
 import Carousel from "react-native-reanimated-carousel";
 import { Dimensions, View, StyleSheet } from "react-native";
 
+/**
+ * TO USE 
+ * - Components must be an array 
+ * - width and height are the percent of the screen you want to fill 
+ *   e.g 30 would be 30%
+ */
 interface CarouselProps {
-  components: React.ReactNode[];
-  width: number; // percentage of screen width
-  height: number; // percentage of screen height
+  components: React.ReactNode[]; 
+  width: number; 
+  height: number; 
 }
 
 export default function MyCarousel({ components, width, height }: CarouselProps) {
