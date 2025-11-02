@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../services/db.js";
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
+import type { Movie } from "../types/models";
 
 type TmdbMovie = {
   id: number;
@@ -80,21 +81,24 @@ export async function saveMovie(mapped: MovieInsert) {
 
 // Express handler
 export const getMovie = async (req: Request, res: Response) => {
-  const { movieId: tmdbId } = req.params; // route: /movies/:movieId (TMDB id)
-
-  if (!tmdbId) {
-    return res.status(400).json({ message: "Movie ID is required" });
-  }
+  const { movieId: tmdbId } = req.params;
+  if (!tmdbId) return res.status(400).json({ message: "Movie ID is required" });
 
   try {
     const tmdb = await fetchTmdbMovie(tmdbId);
-    const mapped = mapTmdbToMovie(tmdb);
-    const saved = await saveMovie(mapped);
+    const mappedAppModel = mapTmdbToMovie(tmdb);
+    const prismaCreate = mappedAppModel;
 
-    // Convert BigInt to number for JSON serialization
+    // create or update if it already exists
+    const saved = await prisma.movie.upsert({
+      where: { movieId: prismaCreate.movieId },
+      create: prismaCreate,
+      update: prismaCreate,
+    });
+
     const movieResponse = {
       ...saved,
-      imdbRating: saved.imdbRating ? Number(saved.imdbRating) : null,
+      imdbRating: saved.imdbRating != null ? Number(saved.imdbRating) : null,
     };
 
     res.json({
@@ -113,22 +117,10 @@ export const getMovie = async (req: Request, res: Response) => {
 // PUT /movies/:movieId
 export const updateMovie = async (req: Request, res: Response) => {
   const { movieId } = req.params;
+  if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
 
-  if (!movieId) {
-    return res.status(400).json({ message: "Movie ID is required" });
-  }
-
-  const { title, description, languages, imdbRating, localRating, numRatings } =
-    req.body;
-
-  const updateData: Partial<Prisma.movieUpdateInput> = {};
-
-  if (title !== undefined) updateData.title = title;
-  if (description !== undefined) updateData.description = description;
-  if (languages !== undefined) updateData.languages = languages;
-  if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
-  if (localRating !== undefined) updateData.localRating = String(localRating);
-  if (numRatings !== undefined) updateData.numRatings = String(numRatings);
+  const body = req.body as Partial<Movie>;
+  const updateData = mapMovieToPrismaUpdate(body);
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).json({ message: "No fields to update" });
@@ -136,29 +128,20 @@ export const updateMovie = async (req: Request, res: Response) => {
 
   try {
     const updatedMovie = await prisma.movie.update({
-      where: { movieId: movieId },
+      where: { movieId },
       data: updateData,
     });
 
-    // Convert BigInt to number for JSON serialization
     const movieResponse = {
       ...updatedMovie,
-      imdbRating: updatedMovie.imdbRating
-        ? Number(updatedMovie.imdbRating)
-        : null,
+      imdbRating: updatedMovie.imdbRating != null ? Number(updatedMovie.imdbRating) : null,
     };
 
-    res.json({
-      message: "Movie updated successfully",
-      data: movieResponse,
-    });
+    res.json({ message: "Movie updated successfully", data: movieResponse });
   } catch (err) {
     console.error("updateMovie error:", err);
 
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2025"
-    ) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return res.status(404).json({ message: "Movie not found" });
     }
 
@@ -201,30 +184,19 @@ export const deleteMovie = async (req: Request, res: Response) => {
 };
 
 export const getMovieById = async (req: Request, res: Response) => {
-  // Fetch movie from YOUR database using the local UUID
-  // No TMDB call needed
   const { movieId } = req.params;
-  if (!movieId) {
-    return res.status(400).json({ message: "Movie ID is required" });
-  }
-  try {
-    const movie = await prisma.movie.findUnique({
-      where: { movieId: movieId },
-    });
-    if (!movie) {
-      return res.status(404).json({ message: "Movie not found." });
-    }
+  if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
 
-    // Convert BigInt to number for JSON serialization
+  try {
+    const movie = await prisma.movie.findUnique({ where: { movieId } });
+    if (!movie) return res.status(404).json({ message: "Movie not found." });
+
     const movieResponse = {
       ...movie,
-      imdbRating: movie.imdbRating ? Number(movie.imdbRating) : null,
+      imdbRating: movie.imdbRating != null ? Number(movie.imdbRating) : null,
     };
 
-    res.json({
-      message: "Movie found successfully",
-      data: movieResponse,
-    });
+    res.json({ message: "Movie found successfully", data: movieResponse });
   } catch (err) {
     console.error("getMovieById error:", err);
     res.status(500).json({
@@ -233,4 +205,109 @@ export const getMovieById = async (req: Request, res: Response) => {
     });
   }
 };
+
+// -------- helpers --------
+const isNonEmptyString = (v: unknown): v is string =>
+  typeof v === "string" && v.length > 0;
+
+const toStringOrUndefined = (v: unknown): string | undefined =>
+  v == null ? undefined : String(v);
+
+const toStringOrNull = (v: unknown): string | null =>
+  v == null ? null : String(v);
+
+const toBigIntNullable = (
+  v: unknown,
+  { forUpdate = false }: { forUpdate?: boolean } = {}
+): bigint | null | undefined => {
+  if (v === undefined) return undefined;  // skip
+  if (v === null) return forUpdate ? null : undefined; // update: explicit null, create: skip
+
+  if (typeof v === "bigint") return v;
+
+  if (typeof v === "number" && Number.isFinite(v)) {
+    return BigInt(Math.round(v));
+  }
+
+  if (typeof v === "string") {
+    const trimmed = v.trim();
+    if (!isNonEmptyString(trimmed)) return forUpdate ? null : undefined;
+
+    // Try strict BigInt first, then numeric parse fallback
+    try {
+      return BigInt(trimmed);
+    } catch {
+      const n = Number(trimmed);
+      if (Number.isFinite(n)) return BigInt(Math.round(n));
+    }
+  }
+
+  return forUpdate ? null : undefined;
+};
+
+const toJsonStringArray = (v: unknown): string[] | undefined => {
+  if (v == null) return undefined;              // undefined or null => skip
+  if (Array.isArray(v)) return v.filter(x => x != null).map(String);
+  return undefined;
+};
+
+// -------- mappers --------
+export const mapMovieToPrismaCreate = (m: Movie): Prisma.movieCreateInput => {
+  return {
+    movieId: m.movieId,
+    title: m.title ?? undefined,
+    description: m.description ?? undefined,
+    languages: toJsonStringArray(m.languages),    // string[] or undefined
+    imdbRating: toBigIntNullable(m.imdbRating),   // bigint | undefined
+    localRating: toStringOrUndefined(m.localRating),
+    numRatings: toStringOrUndefined(m.numRatings),
+  };
+};
+
+export const mapMovieToPrismaUpdate = (
+  patch: Partial<Movie>
+): Prisma.movieUpdateInput => {
+  const data: Prisma.movieUpdateInput = {};
+
+  if ("title" in patch) data.title = patch.title ?? null;
+  if ("description" in patch) data.description = patch.description ?? null;
+
+  if ("languages" in patch) {
+    if (patch.languages === null) {
+      data.languages = Prisma.DbNull;             // clear JSON column
+    } else {
+      data.languages = toJsonStringArray(patch.languages); // string[] | undefined
+    }
+  }
+
+  if ("imdbRating" in patch) {
+    data.imdbRating = toBigIntNullable(patch.imdbRating, { forUpdate: true }) as
+      | bigint
+      | null
+      | undefined;
+  }
+
+  if ("localRating" in patch) {
+    if (patch.localRating === undefined) {
+      // leave undefined (no-op)
+    } else if (patch.localRating === null) {
+      data.localRating = null;
+    } else {
+      data.localRating = String(patch.localRating);
+    }
+  }
+
+  if ("numRatings" in patch) {
+    if (patch.numRatings === undefined) {
+      // no-op
+    } else if (patch.numRatings === null) {
+      data.numRatings = null;
+    } else {
+      data.numRatings = String(patch.numRatings);
+    }
+  }
+
+  return data;
+};
+
 
