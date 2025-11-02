@@ -1,35 +1,41 @@
 import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import { prisma } from '../services/db.js';
+import { Prisma } from "@prisma/client";
+import { UserProfile } from "../types/models";
 
 export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
-    const { user } = req;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
-  
-    const {
+  const { user } = req;
+  if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+  const {
+    username,
+    preferredLanguages,
+    preferredCategories,
+    favoriteMovies,
+    updatedAt,
+  } = (req.body ?? {}) as Partial<UserProfile>;
+
+  try {
+    const data = mapUserProfilePatchToUpdateData({
       username,
       preferredLanguages,
       preferredCategories,
       favoriteMovies,
-    } = req.body;
-  
-    try {
-      const updated = await prisma.userProfile.update({
-        where: { userId: user.id },
-        data: {
-          username,
-          preferredLanguages,
-          preferredCategories,
-          favoriteMovies,
-        },
-      });
-  
-      res.json({ message: "Profile updated", data: updated });
-    } catch (error) {
-      console.error("updateUserProfile error:", error);
-      res.status(500).json({ message: "Failed to update profile" });
-    }
-  };
+      updatedAt,
+    });
+
+    const updated = await prisma.userProfile.update({
+      where: { userId: user.id },
+      data,
+    });
+
+    res.json({ message: "Profile updated", data: mapUserProfileDbToApi(updated) });
+  } catch (error) {
+    console.error("updateUserProfile error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+};
   
   export const deleteUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     const { user } = req;
@@ -114,51 +120,100 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
   }
 };
 export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
-    const { user_id } = req.query;
-  
-    if (!user_id || typeof user_id !== 'string') {
-      res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
-      return;
-    }
-  
-    try {
-      const ratings = await prisma.rating.findMany({
-        where: { userId: user_id },
-        orderBy: { date: 'desc' },
-        include: {
-          threadedComments: true,
-        },
-      });
-  
-      res.json({ message: "User ratings retrieved", ratings });
-    } catch (error) {
-      console.error("getUserRatings error:", error);
-      res.status(500).json({ message: "Internal server error while fetching ratings" });
-    }
+  const { user_id } = req.query;
+
+  if (!user_id || typeof user_id !== "string") {
+    res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
+    return;
+  }
+
+  try {
+    const ratings = await prisma.rating.findMany({
+      where: { userId: user_id },
+      orderBy: { date: "desc" },
+      include: { threadedComments: true },
+    });
+
+    res.json({ message: "User ratings retrieved", ratings });
+  } catch (error) {
+    console.error("getUserRatings error:", error);
+    res.status(500).json({ message: "Internal server error while fetching ratings" });
+  }
+};
+
+export const getUserComments = async (req: Request, res: Response): Promise<void> => {
+  const { user_id } = req.query;
+
+  if (!user_id || typeof user_id !== "string") {
+    res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
+    return;
+  }
+
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { userId: user_id },
+      orderBy: { createdAt: "desc" },
+      include: { rating: true, post: true },
+    });
+
+    res.json({ message: "User comments retrieved", comments });
+  } catch (error) {
+    console.error("getUserComments error:", error);
+    res.status(500).json({ message: "Internal server error while fetching comments" });
+  }
+};
+
+const toDate = (v?: string) => (v ? new Date(v) : undefined);
+const toISO = (d?: Date) => (d ? d.toISOString() : undefined);
+
+// -------- DB → API --------
+export function mapUserProfileDbToApi(row: {
+  userId: string;
+  username: string | null;
+  preferredLanguages: string[];
+  preferredCategories: string[];
+  favoriteMovies: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}): UserProfile {
+  return {
+    userId: row.userId,
+    username: row.username,
+    preferredLanguages: row.preferredLanguages ?? [],
+    preferredCategories: row.preferredCategories ?? [],
+    favoriteMovies: row.favoriteMovies ?? [],
+    createdAt: toISO(row.createdAt),
+    updatedAt: toISO(row.updatedAt),
   };
-  
-  export const getUserComments = async (req: Request, res: Response): Promise<void> => {
-    const { user_id } = req.query;
-  
-    if (!user_id || typeof user_id !== 'string') {
-      res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
-      return;
-    }
-  
-    try {
-      const comments = await prisma.comment.findMany({
-        where: { userId: user_id },
-        orderBy: { createdAt: 'desc' },
-        include: {
-          rating: true,
-          post: true,
-        },
-      });
-  
-      res.json({ message: "User comments retrieved", comments });
-    } catch (error) {
-      console.error("getUserComments error:", error);
-      res.status(500).json({ message: "Internal server error while fetching comments" });
-    }
-  };
-  
+}
+
+// -------- API (patch) → Prisma.update data --------
+// Only touches fields that are present on the patch.
+// - username: undefined => untouched; null => set NULL; string => set value
+// - arrays: undefined => untouched; string[] => set value
+export function mapUserProfilePatchToUpdateData(
+  patch: Partial<Pick<
+    UserProfile,
+    "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies" | "updatedAt"
+  >>
+): Prisma.UserProfileUpdateInput {
+  const data: Prisma.UserProfileUpdateInput = {};
+
+  if (Object.prototype.hasOwnProperty.call(patch, "username")) {
+    data.username = patch.username ?? null;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "preferredLanguages")) {
+    data.preferredLanguages = patch.preferredLanguages ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "preferredCategories")) {
+    data.preferredCategories = patch.preferredCategories ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
+    data.favoriteMovies = patch.favoriteMovies ?? [];
+  }
+
+  // Always refresh updatedAt to now unless caller explicitly provided one
+  data.updatedAt = toDate(patch.updatedAt) ?? new Date();
+
+  return data;
+}
