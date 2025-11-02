@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { makeJsonResponse } from "./setup";
-import { getUserProfileBasic, updateUserProfile, getUserRatings, getUserComments  } from "backend/src/services/userService";
+import { getUserProfileBasic, updateUserProfile, getUserRatings, getUserComments  } from "../../backend/src/services/userService";
 
 describe("userService", async () => {
   const BASE = "http://svc.test";

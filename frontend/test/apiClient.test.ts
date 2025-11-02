@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { makeJsonResponse, makeTextResponse } from "./setup";
-import { ApiClient, toQuery } from "backend/src/services/apiClient";
+import { ApiClient, toQuery } from "../../backend/src/services/apiClient";
 
 describe("toQuery()", () => {
   it("builds query string correctly", () => {

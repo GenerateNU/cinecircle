@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { makeJsonResponse } from "./setup";
-import { fetchAndSaveByTmdbId, updateMovieByCinecircleId, deleteMovie } from "backend/src/services/moviesService";
-
+import { fetchAndSaveByTmdbId, updateMovieByCinecircleId, deleteMovie } from "../../backend/src/services/moviesService";
 describe("moviesService", async () => {
   const BASE = "http://svc.test";
   beforeEach(() => {
