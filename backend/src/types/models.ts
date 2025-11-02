@@ -22,12 +22,6 @@ export type UserProfile = {
   updatedAt?: string;
 };
 
-export type UserProfileBasic = {
-  id?: string;
-  email?: string | null;
-  role?: string | null;
-};
-
 /** Ratings & comments (shapes are flexible because you include relations). */
 export type Rating = {
   id: string;
