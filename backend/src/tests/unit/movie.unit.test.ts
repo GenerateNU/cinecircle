@@ -1,4 +1,4 @@
-import { mapTmdbToMovie, fetchTmdbMovie, deleteMovie, getMovieById, getMovie, updateMovie, mapMovieToPrismaCreate, mapMovieToPrismaUpdate } from "../../controllers/tmdb.js";
+import { mapTmdbToMovie, fetchTmdbMovie, deleteMovie, getMovieById, getMovie, updateMovie, mapMovieToPrismaUpdate } from "../../controllers/tmdb.js";
 import type { Movie } from "../../types/models";
 import { Request, Response } from "express";
 import { prisma } from "../../services/db.js";
