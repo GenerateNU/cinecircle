@@ -54,10 +54,15 @@ export const getFollowers = async (req: Request, res: Response) => {
   try {
     const followers = await prisma.userFollow.findMany({
       where: { followingId: userId },
-      include: { follower: true },
+      include: { 
+        follower: true,
+        following: true 
+      },
     });
 
-    res.json({ followers });
+    const mappedFollowers = followers.map(mapUserFollowDbToApi);
+
+    res.json({ followers: mappedFollowers });
   } catch (error) {
     console.error('getFollowers error:', error);
     res.status(500).json({ message: 'Failed to get followers' });
@@ -70,10 +75,15 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const following = await prisma.userFollow.findMany({
       where: { followerId: userId },
-      include: { following: true },
+      include: { 
+        follower: true,
+        following: true 
+      },
     });
 
-    res.json({ following });
+    const mappedFollowing = following.map(mapUserFollowDbToApi);
+
+    res.json({ following: mappedFollowing });
   } catch (error) {
     console.error('getFollowing error:', error);
     res.status(500).json({ message: 'Failed to get following' });
