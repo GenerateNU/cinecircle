@@ -119,8 +119,21 @@ export const updateMovie = async (req: Request, res: Response) => {
   const { movieId } = req.params;
   if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
 
-  const body = req.body as Partial<Movie>;
-  const updateData = mapMovieToPrismaUpdate(body);
+  if (!movieId) {
+    return res.status(400).json({ message: "Movie ID is required" });
+  }
+
+  const { title, description, languages, imdbRating, localRating, numRatings } =
+    req.body;
+
+  const updateData: Partial<Prisma.movieUpdateInput> = {};
+
+  if (title !== undefined) updateData.title = title;
+  if (description !== undefined) updateData.description = description;
+  if (languages !== undefined) updateData.languages = languages;
+  if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
+  if (localRating !== undefined) updateData.localRating = String(localRating);
+  if (numRatings !== undefined) updateData.numRatings = String(numRatings);
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).json({ message: "No fields to update" });
