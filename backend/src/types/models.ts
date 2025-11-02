@@ -48,8 +48,7 @@ export type Comment = {
 };
 
 export type FollowEdge = {
-  // For followers: { follower: UserProfile }
-  // For following: { following: UserProfile }
+
   id: string;
   followerId: string;
   followingId: string;

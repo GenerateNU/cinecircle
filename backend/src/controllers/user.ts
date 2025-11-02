@@ -187,10 +187,6 @@ export function mapUserProfileDbToApi(row: {
   };
 }
 
-// -------- API (patch) → Prisma.update data --------
-// Only touches fields that are present on the patch.
-// - username: undefined => untouched; null => set NULL; string => set value
-// - arrays: undefined => untouched; string[] => set value
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
