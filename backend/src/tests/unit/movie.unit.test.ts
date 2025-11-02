@@ -730,46 +730,6 @@ describe("Movie Controller Unit Tests", () => {
 });
 
 describe("movie mapper", () => {
-  test("create: maps primitives and converts imdbRating to BigInt", () => {
-    const m: Movie = {
-      movieId: "tt123",
-      title: "Inception",
-      description: "dreams!",
-      languages: ["en", "fr"],
-      imdbRating: 8.6,              // number -> BigInt(9) after rounding
-      localRating: 4.5,             // -> "4.5"
-      numRatings: "1024",
-    };
-
-    const out = mapMovieToPrismaCreate(m);
-    expect(out.movieId).toBe("tt123");
-    expect(out.title).toBe("Inception");
-    expect(out.description).toBe("dreams!");
-    expect(out.languages).toEqual(["en", "fr"]);
-    expect(typeof out.imdbRating).toBe("bigint");
-    expect(out.imdbRating).toBe(BigInt(9));
-    expect(out.localRating).toBe("4.5");
-    expect(out.numRatings).toBe("1024");
-  });
-
-  test("create: skips undefined and tolerates nulls", () => {
-    const m: Movie = {
-      movieId: "tt456",
-      title: undefined,
-      description: null,
-      languages: null,
-      imdbRating: null,
-      localRating: undefined,
-      numRatings: null,
-    };
-
-    const out = mapMovieToPrismaCreate(m);
-    // undefined fields should be omitted; nulls for create are skipped in mapper
-    expect(out).toEqual({
-      movieId: "tt456",
-    });
-  });
-
   test("update: explicit null clears fields, undefined is ignored", () => {
     const patch: Partial<Movie> = {
       title: null,                   // should clear to null

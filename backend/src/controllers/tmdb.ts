@@ -119,21 +119,8 @@ export const updateMovie = async (req: Request, res: Response) => {
   const { movieId } = req.params;
   if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
 
-  if (!movieId) {
-    return res.status(400).json({ message: "Movie ID is required" });
-  }
-
-  const { title, description, languages, imdbRating, localRating, numRatings } =
-    req.body;
-
-  const updateData: Partial<Prisma.movieUpdateInput> = {};
-
-  if (title !== undefined) updateData.title = title;
-  if (description !== undefined) updateData.description = description;
-  if (languages !== undefined) updateData.languages = languages;
-  if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
-  if (localRating !== undefined) updateData.localRating = String(localRating);
-  if (numRatings !== undefined) updateData.numRatings = String(numRatings);
+  const body = req.body as Partial<Movie>;
+  const updateData = mapMovieToPrismaUpdate(body);
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).json({ message: "No fields to update" });
@@ -226,9 +213,6 @@ const isNonEmptyString = (v: unknown): v is string =>
 const toStringOrUndefined = (v: unknown): string | undefined =>
   v == null ? undefined : String(v);
 
-const toStringOrNull = (v: unknown): string | null =>
-  v == null ? null : String(v);
-
 const toBigIntNullable = (
   v: unknown,
   { forUpdate = false }: { forUpdate?: boolean } = {}
@@ -265,18 +249,6 @@ const toJsonStringArray = (v: unknown): string[] | undefined => {
 };
 
 // -------- mappers --------
-export const mapMovieToPrismaCreate = (m: Movie): Prisma.movieCreateInput => {
-  return {
-    movieId: m.movieId,
-    title: m.title ?? undefined,
-    description: m.description ?? undefined,
-    languages: toJsonStringArray(m.languages),    // string[] or undefined
-    imdbRating: toBigIntNullable(m.imdbRating),   // bigint | undefined
-    localRating: toStringOrUndefined(m.localRating),
-    numRatings: toStringOrUndefined(m.numRatings),
-  };
-};
-
 export const mapMovieToPrismaUpdate = (
   patch: Partial<Movie>
 ): Prisma.movieUpdateInput => {
