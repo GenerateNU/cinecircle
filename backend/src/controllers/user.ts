@@ -68,10 +68,10 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
         await prisma.userProfile.create({
           data: {
             userId: req.user.id,
-            username: req.user.email?.split("@")[0], // default username
-          },
+            username: req.user.username || null,
+            updatedAt: new Date(), // Add this line
+          }
         });
-        console.log(`Created new user profile for user ${req.user.id}`);
       }
   
       next();
@@ -134,7 +134,36 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
       include: { threadedComments: true },
     });
 
-    res.json({ message: "User ratings retrieved", ratings });
+    // Fetch user profile
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId: user_id },
+    });
+
+    // Map user profile if it exists, with proper type conversion
+    let mappedUserProfile = null;
+    if (userProfile) {
+      mappedUserProfile = mapUserProfileDbToApi({
+        userId: userProfile.userId,
+        username: userProfile.username,
+        preferredLanguages: Array.isArray(userProfile.preferredLanguages) 
+          ? userProfile.preferredLanguages as string[]
+          : [],
+        preferredCategories: Array.isArray(userProfile.preferredCategories)
+          ? userProfile.preferredCategories as string[]
+          : [],
+        favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+          ? userProfile.favoriteMovies as string[]
+          : [],
+        createdAt: userProfile.createdAt,
+        updatedAt: userProfile.updatedAt,
+      });
+    }
+
+    res.json({ 
+      message: "User ratings retrieved", 
+      ratings,
+      userProfile: mappedUserProfile,
+    });
   } catch (error) {
     console.error("getUserRatings error:", error);
     res.status(500).json({ message: "Internal server error while fetching ratings" });
@@ -156,7 +185,36 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
       include: { rating: true, post: true },
     });
 
-    res.json({ message: "User comments retrieved", comments });
+    // Fetch user profile
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId: user_id },
+    });
+
+    // Map user profile if it exists, with proper type conversion
+    let mappedUserProfile = null;
+    if (userProfile) {
+      mappedUserProfile = mapUserProfileDbToApi({
+        userId: userProfile.userId,
+        username: userProfile.username,
+        preferredLanguages: Array.isArray(userProfile.preferredLanguages) 
+          ? userProfile.preferredLanguages as string[]
+          : [],
+        preferredCategories: Array.isArray(userProfile.preferredCategories)
+          ? userProfile.preferredCategories as string[]
+          : [],
+        favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+          ? userProfile.favoriteMovies as string[]
+          : [],
+        createdAt: userProfile.createdAt,
+        updatedAt: userProfile.updatedAt,
+      });
+    }
+
+    res.json({ 
+      message: "User comments retrieved", 
+      comments,
+      userProfile: mappedUserProfile,
+    });
   } catch (error) {
     console.error("getUserComments error:", error);
     res.status(500).json({ message: "Internal server error while fetching comments" });
