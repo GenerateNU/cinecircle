@@ -79,7 +79,7 @@ export async function saveMovie(mapped: MovieInsert) {
   });
 }
 
-// Express handler
+// Gets a movie from TMDB and saves it to the local db
 export const getMovie = async (req: Request, res: Response) => {
   const { movieId: tmdbId } = req.params;
   if (!tmdbId) return res.status(400).json({ message: "Movie ID is required" });
@@ -191,10 +191,7 @@ export const getMovieById = async (req: Request, res: Response) => {
     const movie = await prisma.movie.findUnique({ where: { movieId } });
     if (!movie) return res.status(404).json({ message: "Movie not found." });
 
-    const movieResponse = {
-      ...movie,
-      imdbRating: movie.imdbRating != null ? Number(movie.imdbRating) : null,
-    };
+    const movieResponse = mapMovieDbToApi(movie);
 
     res.json({ message: "Movie found successfully", data: movieResponse });
   } catch (err) {
@@ -209,9 +206,6 @@ export const getMovieById = async (req: Request, res: Response) => {
 // -------- helpers --------
 const isNonEmptyString = (v: unknown): v is string =>
   typeof v === "string" && v.length > 0;
-
-const toStringOrUndefined = (v: unknown): string | undefined =>
-  v == null ? undefined : String(v);
 
 const toBigIntNullable = (
   v: unknown,
@@ -249,6 +243,22 @@ const toJsonStringArray = (v: unknown): string[] | undefined => {
 };
 
 // -------- mappers --------
+export function mapMovieDbToApi(dbMovie: Prisma.movieGetPayload<{}>): Movie {
+  return {
+    movieId: dbMovie.movieId,
+    title: dbMovie.title,
+    description: dbMovie.description,
+    languages: dbMovie.languages ? (dbMovie.languages as string[]) : null,
+    imdbRating: dbMovie.imdbRating != null ? Number(dbMovie.imdbRating) : null,
+    localRating: dbMovie.localRating,
+    numRatings: dbMovie.numRatings,
+  };
+}
+
+export function mapMoviesDbToApi(dbMovies: Prisma.movieGetPayload<{}>[]): Movie[] {
+  return dbMovies.map(mapMovieDbToApi);
+}
+
 export const mapMovieToPrismaUpdate = (
   patch: Partial<Movie>
 ): Prisma.movieUpdateInput => {
