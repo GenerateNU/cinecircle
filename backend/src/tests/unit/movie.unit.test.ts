@@ -418,77 +418,79 @@ describe("Movie Controller Unit Tests", () => {
 
 
     it("should return movie data successfully with converted BigInt", async () => {
-      const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
-      mockRequest.params = { movieId: mockMovieId };
+    const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
+    mockRequest.params = { movieId: mockMovieId };
 
+    const mockMovie = {
+      movieId: mockMovieId,
+      title: "Fight Club",
+      description: "A ticking-time-bomb insomniac...",
+      languages: ["English", "French"],
+      imdbRating: BigInt(84), 
+      localRating: "7.5",
+      numRatings: "100",
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    };
 
-      const mockMovie = {
+    // Mock Prisma to return movie
+    jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(mockMovie as any);
+
+    await getMovieById(mockRequest as Request, mockResponse as Response);
+
+    expect(prisma.movie.findUnique).toHaveBeenCalledWith({
+      where: { movieId: mockMovieId },
+    });
+    expect(responseObject.json).toHaveBeenCalledWith({
+      message: "Movie found successfully",
+      data: {
         movieId: mockMovieId,
         title: "Fight Club",
         description: "A ticking-time-bomb insomniac...",
         languages: ["English", "French"],
-        imdbRating: BigInt(84), 
+        imdbRating: 84, // Converted from BigInt
         localRating: "7.5",
         numRatings: "100",
-        createdAt: new Date("2024-01-01"),
-        updatedAt: new Date("2024-01-01"),
-      };
-
-
-      // Mock Prisma to return movie
-      jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(mockMovie as any);
-
-
-      await getMovieById(mockRequest as Request, mockResponse as Response);
-
-
-      expect(prisma.movie.findUnique).toHaveBeenCalledWith({
-        where: { movieId: mockMovieId },
-      });
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Movie found successfully",
-        data: {
-          ...mockMovie,
-          imdbRating: 84, 
-        },
-      });
-      expect(responseObject.status).not.toHaveBeenCalled(); 
+        // Note: createdAt and updatedAt are NOT included
+      },
     });
+    expect(responseObject.status).not.toHaveBeenCalled(); 
+  });
 
+  it("should handle null imdbRating", async () => {
+    const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
+    mockRequest.params = { movieId: mockMovieId };
 
-    it("should handle null imdbRating", async () => {
-      const mockMovieId = "550e8400-e29b-41d4-a716-446655440000";
-      mockRequest.params = { movieId: mockMovieId };
+    const mockMovie = {
+      movieId: mockMovieId,
+      title: "Test Movie",
+      description: "Test description",
+      languages: ["English"],
+      imdbRating: null, // No rating
+      localRating: "0",
+      numRatings: "0",
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    };
 
+    jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(mockMovie as any);
 
-      const mockMovie = {
+    await getMovieById(mockRequest as Request, mockResponse as Response);
+
+    expect(responseObject.json).toHaveBeenCalledWith({
+      message: "Movie found successfully",
+      data: {
         movieId: mockMovieId,
         title: "Test Movie",
         description: "Test description",
         languages: ["English"],
-        imdbRating: null, // No rating
+        imdbRating: null,
         localRating: "0",
         numRatings: "0",
-        createdAt: new Date("2024-01-01"),
-        updatedAt: new Date("2024-01-01"),
-      };
-
-
-      jest.spyOn(prisma.movie, "findUnique").mockResolvedValueOnce(mockMovie as any);
-
-
-      await getMovieById(mockRequest as Request, mockResponse as Response);
-
-
-      expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Movie found successfully",
-        data: {
-          ...mockMovie,
-          imdbRating: null, 
-        },
-      });
+        // Note: createdAt and updatedAt are NOT included
+      },
     });
-
+  });
 
     it("should handle unknown errors", async () => {
       mockRequest.params = { movieId: "some-uuid" };
