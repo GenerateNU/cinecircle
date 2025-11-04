@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { prisma } from '../services/db';
+import type { Prisma } from "@prisma/client";
 import type { AuthenticatedRequest } from '../middleware/auth';
+import { mapUserProfileDbToApi } from "./user";
+import { FollowEdge } from "../types/models";
 
 export const followUser = async (req: AuthenticatedRequest, res: Response) => {
   const followerId = req.user?.id;
@@ -51,10 +54,15 @@ export const getFollowers = async (req: Request, res: Response) => {
   try {
     const followers = await prisma.userFollow.findMany({
       where: { followingId: userId },
-      include: { follower: true },
+      include: { 
+        follower: true,
+        following: true 
+      },
     });
 
-    res.json({ followers });
+    const mappedFollowers = followers.map(mapUserFollowDbToApi);
+
+    res.json({ followers: mappedFollowers });
   } catch (error) {
     console.error('getFollowers error:', error);
     res.status(500).json({ message: 'Failed to get followers' });
@@ -67,12 +75,35 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const following = await prisma.userFollow.findMany({
       where: { followerId: userId },
-      include: { following: true },
+      include: { 
+        follower: true,
+        following: true 
+      },
     });
 
-    res.json({ following });
+    const mappedFollowing = following.map(mapUserFollowDbToApi);
+
+    res.json({ following: mappedFollowing });
   } catch (error) {
     console.error('getFollowing error:', error);
     res.status(500).json({ message: 'Failed to get following' });
   }
 };
+
+type UserFollowWithProfiles = Prisma.UserFollowGetPayload<{
+  include: { follower: true; following: true };
+}>;
+
+export function mapUserFollowDbToApi(row: UserFollowWithProfiles): FollowEdge {
+  return {
+    id: row.id,
+    followerId: row.followerId,
+    followingId: row.followingId,
+    follower: row.follower ? mapUserProfileDbToApi(row.follower) : undefined,
+    following: row.following ? mapUserProfileDbToApi(row.following) : undefined,
+  };
+}
+
+export function mapUserFollowsDbToApi(rows: UserFollowWithProfiles[]): FollowEdge[] {
+  return rows.map(mapUserFollowDbToApi);
+}
