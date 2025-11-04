@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
-import ProfilePage from '../screen/ProfilePage';
+import ProfilePage from '../app/profile';
 
 type Props = {
   user: any;
@@ -92,7 +92,9 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
 
   return (
     <View>
-      <Text style={{ marginBottom: 10 }}>Welcome, {user.email}</Text>
+      <Text style={{ marginBottom: 10 }}>
+        Welcome, {user?.email || 'Guest'}
+      </Text>
       <View style={styles.buttonContainer}>
         <Button title="Call Protected Backend" onPress={callProtectedBackend} />
         <Button title="Get User Profile" onPress={getUserProfile} />
