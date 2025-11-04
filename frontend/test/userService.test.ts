@@ -5,7 +5,7 @@ import { getUserProfileBasic, updateUserProfile, getUserRatings, getUserComments
 describe("userService", async () => {
   const BASE = "http://svc.test";
   beforeEach(() => {
-    process.env.NEXT_PUBLIC_API_BASE_URL = BASE;
+    process.env.API_BASE_URL = BASE;
     vi.resetModules();
   });
 
