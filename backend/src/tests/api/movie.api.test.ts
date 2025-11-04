@@ -5,9 +5,9 @@ import { HTTP_STATUS } from "../helpers/constants.js";
 import { deleteMovie, getMovie, getMovieById, updateMovie } from "../../controllers/tmdb.js";
 import { prisma } from "../../services/db.js";
 import { Prisma } from "@prisma/client";
-import axios from 'axios'; // or whatever HTTP library you're using
+import axios from 'axios'; 
 
-// Mock axios or your HTTP client
+// Mock axios
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
