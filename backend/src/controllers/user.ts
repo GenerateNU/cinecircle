@@ -131,7 +131,7 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
     const ratings = await prisma.rating.findMany({
       where: { userId: user_id },
       orderBy: { date: "desc" },
-      include: { threadedComments: true },
+      include: { Comment: true },
     });
 
     // Fetch user profile
@@ -182,7 +182,7 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
     const comments = await prisma.comment.findMany({
       where: { userId: user_id },
       orderBy: { createdAt: "desc" },
-      include: { rating: true, post: true },
+      include: { Rating: true, Post: true },
     });
 
     // Fetch user profile
