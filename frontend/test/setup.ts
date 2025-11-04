@@ -2,7 +2,7 @@ import { vi } from "vitest";
 
 if (!(globalThis as any).fetch) (globalThis as any).fetch = vi.fn();
 
-process.env.NEXT_PUBLIC_API_BASE_URL = "http://svc.test";
+process.env.API_BASE_URL = "http://svc.test";
 
 // Minimal Response-like mock helpers
 export function makeTextResponse(body: string, status = 200, headers?: Record<string, string>) {

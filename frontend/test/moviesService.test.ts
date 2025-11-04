@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { makeJsonResponse } from "./setup";
-import { fetchAndSaveByTmdbId, updateMovieByCinecircleId, deleteMovie } from "../../backend/src/services/moviesService";
+import { fetchAndSaveByTmdbId, updateMovieByCinecircleId, deleteMovie } from "../services/moviesService";
 describe("moviesService", async () => {
   const BASE = "http://svc.test";
   beforeEach(() => {
-    process.env.NEXT_PUBLIC_API_BASE_URL = BASE;
+    process.env.API_BASE_URL = BASE;
     vi.resetModules();
   });
 
