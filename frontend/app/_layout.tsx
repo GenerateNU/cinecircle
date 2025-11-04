@@ -57,7 +57,16 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthContext.Provider value={{ user, signOut }}>
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen
+            name="profilePage/index"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="profilePage/settings"
+            options={{ headerShown: false, presentation: 'modal' }}
+          />
+        </Stack>
         <BottomNavBar />
       </AuthContext.Provider>
       <StatusBar style="auto" />
@@ -67,5 +76,10 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
 });
