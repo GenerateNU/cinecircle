@@ -28,7 +28,7 @@ export async function fetchTmdbMovie(tmdbId: string): Promise<TmdbMovie> {
 }
 
 // Map TMDB -> Prisma.Movie fields (include movieId as UUID)
-type MovieInsert = Prisma.MovieCreateInput;
+type MovieInsert = Prisma.movieCreateInput;
 
 export function mapTmdbToMovie(
   tmdb: TmdbMovie,
@@ -45,8 +45,8 @@ export function mapTmdbToMovie(
       .map((l) => l.english_name)
       .filter(Boolean) as string[],
     imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75 (stored as BigInt)
-    localRating: defaults.localRating !== undefined ? Number(defaults.localRating) : 0,
-    numRatings: defaults.numRatings !== undefined ? Number(defaults.numRatings) : 0,
+    localRating: defaults.localRating !== undefined ? String(defaults.localRating) : "0",
+    numRatings: defaults.numRatings !== undefined ? String(defaults.numRatings) : "0",
   };
 }
 
@@ -121,14 +121,14 @@ export const updateMovie = async (req: Request, res: Response) => {
   const { title, description, languages, imdbRating, localRating, numRatings } =
     req.body;
 
-  const updateData: Partial<Prisma.MovieUpdateInput> = {};
+  const updateData: Partial<Prisma.movieUpdateInput> = {};
 
   if (title !== undefined) updateData.title = title;
   if (description !== undefined) updateData.description = description;
   if (languages !== undefined) updateData.languages = languages;
   if (imdbRating !== undefined) updateData.imdbRating = imdbRating;
-  if (localRating !== undefined) updateData.localRating = Number(localRating);
-  if (numRatings !== undefined) updateData.numRatings = Number(numRatings);
+  if (localRating !== undefined) updateData.localRating = String(localRating);
+  if (numRatings !== undefined) updateData.numRatings = String(numRatings);
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).json({ message: "No fields to update" });
