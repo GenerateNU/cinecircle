@@ -1,8 +1,10 @@
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+
 type SearchBarProps = {
     onBack?: () => void;
     placeholder?: string;
 };
+
 export default function SearchBar({ onBack, placeholder = "Enter search text" }: SearchBarProps) {
     return (
         <View style={styles.container}>
@@ -22,6 +24,7 @@ export default function SearchBar({ onBack, placeholder = "Enter search text" }:
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
