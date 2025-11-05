@@ -11,7 +11,6 @@ import {
   Modal,
 } from 'react-native';
 import MovieChosenScreen from './MovieChosenScreen';
-import Tag from '../components/Tag'
 interface Movie {
   id: number;
   title: string;
@@ -71,10 +70,6 @@ export default function MoviesScreen() {
   };
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={{flexDirection: "row", gap: 10}}>
-        <Tag label="Hello world"/>
-        <Tag label="USA" pressed={true}/>
-      </View>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
