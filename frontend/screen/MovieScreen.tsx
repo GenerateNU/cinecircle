@@ -70,7 +70,6 @@ export default function MoviesScreen() {
   };
   return (
     <SafeAreaView style={styles.screen}>
-
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <TextInput
