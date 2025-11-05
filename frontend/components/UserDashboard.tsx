@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
 import ProfilePage from '../screen/ProfilePage';
+import Events from './Events'
 
 type Props = {
   user: any;
@@ -21,6 +22,7 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
   const [backendMessage, setBackendMessage] = useState('');
   const [dbMessage, setDbMessage] = useState('');
   const [showProfile, setShowProfile] = useState(false);
+  const [showEvents, setShowEventsPage] = useState(false);
 
   const callProtectedBackend = async () => {
     const {
@@ -90,6 +92,18 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     );
   }
 
+  if (showEvents) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Button
+          title="← Back to Dashboard"
+          onPress={() => setShowEventsPage(false)}
+        />
+        <Events />
+      </View>
+    );
+  }
+
   return (
     <View>
       <Text style={{ marginBottom: 10 }}>Welcome, {user.email}</Text>
@@ -98,6 +112,7 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
         <Button title="Get User Profile" onPress={getUserProfile} />
         <Button title="Test DB" onPress={testDatabase} />
         <Button title="Profile Page" onPress={() => setShowProfile(true)} />
+        <Button title="Events Page" onPress={() => setShowEventsPage(true)} />
 
         {/* <Button title="Profile" onPress={profilePage} /> */}
       </View>

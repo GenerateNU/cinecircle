@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, ScrollView } from 'react-native';
 import { supabase } from '../lib/supabase';
-import EventDetails from './EventDetails';
 
 type Props = {
   onAuthSuccess: (user: any) => void;
