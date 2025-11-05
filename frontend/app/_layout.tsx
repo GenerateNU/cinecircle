@@ -1,5 +1,3 @@
-// app/_layout.tsx
-import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
