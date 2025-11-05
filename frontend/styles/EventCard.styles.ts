@@ -9,16 +9,19 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   small: {
-    width: width * 0.4,
-    marginRight: width * 0.015,
+    width: width * 0.3,
+    height: height * 0.4,
+    marginRight: width * 0.001,
   },
   medium: {
-    width: width * 0.5,
-    marginRight: width * 0.0275,
+    width: width * 0.4,
+    height: height * 0.5,
+    marginRight: width * 0.002,
   },
   large: {
-    width: width * 0.7,
-    marginRight: width * 0.04,
+    width: width * 0.5,
+    height: height * 0.6,
+    marginRight: width * 0.003,
   },
   image: {
     width: '100%',
@@ -39,18 +42,18 @@ export const styles = StyleSheet.create({
     paddingBottom: width * 0.0125,
   },
   smallTitle: {
-    fontSize: width * 0.025,
+    fontSize: width * 0.015,
     padding: width * 0.015,
     paddingBottom: width * 0.01,
   },
   mediumTitle: {
-    fontSize: width * 0.035,
+    fontSize: width * 0.025,
   },
   largeTitle: {
-    fontSize: width * 0.04,
+    fontSize: width * 0.03,
   },
   details: {
-    paddingHorizontal: width * 0.0275,
+    paddingHorizontal: width * 0.0375,
     paddingBottom: width * 0.0275,
   },
   location: {
@@ -61,14 +64,14 @@ export const styles = StyleSheet.create({
     color: '#666',
   },
   smallText: {
-    fontSize: width * 0.0175,
+    fontSize: width * 0.0075,
     paddingHorizontal: width * 0.015,
     paddingBottom: width * 0.015,
   },
   mediumText: {
-    fontSize: width * 0.025,
+    fontSize: width * 0.015,
   },
   largeText: {
-    fontSize: width * 0.03,
+    fontSize: width * 0.02,
   },
 });

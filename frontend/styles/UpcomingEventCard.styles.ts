@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: width * 0.0275,
     padding: width * 0.0275,
+    marginRight: width * 0.01
   },
   small: {
     padding: width * 0.02,
