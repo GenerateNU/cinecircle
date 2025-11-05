@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "cinecircle-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -16,18 +16,7 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
-    "start": "docker-compose -f ../docker-compose.dev.yml up --build",
-    "stop": "docker-compose -f ../docker-compose.dev.yml down --volumes",
-    "test": "docker exec -it cinecircle-backend-1 npm run test",
-    "test:watch": "docker exec -it cinecircle-backend-1 npm run test:watch",
-    "test:coverage": "docker exec cinecircle-backend-1 npm run test:coverage",
-    "lint": "docker exec cinecircle-backend-1 npm run lint",
-    "format": "docker exec cinecircle-backend-1 npm run format",
-    "build": "docker exec cinecircle-backend-1 npm run build",
-    "shell": "docker exec -it cinecircle-backend-1 sh",
-    "logs": "docker-compose -f docker-compose.dev.yml logs -f",
-    "clean": "docker-compose -f docker-compose.dev.yml down --volumes --rmi all"
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "keywords": [],
   "author": "",

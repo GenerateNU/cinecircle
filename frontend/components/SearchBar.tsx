@@ -19,7 +19,7 @@ export default function SearchBar({ onBack, placeholder = "Enter search text" }:
                 placeholderTextColor="#999"
             />
             <View style={styles.searchIcon}>
-                <Text>🔍</Text>
+                <Text>:mag:</Text>
             </View>
         </View>
     );

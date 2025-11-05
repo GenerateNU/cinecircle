@@ -4,15 +4,15 @@ export default function ActionButtons() {
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonIcon}>🔔</Text>
+                <Text style={styles.buttonIcon}>:bell:</Text>
                 <Text style={styles.buttonText}>Follow</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonIcon}>👁</Text>
+                <Text style={styles.buttonIcon}>:eye:</Text>
                 <Text style={styles.buttonText}>Watch</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonIcon}>🔖</Text>
+                <Text style={styles.buttonIcon}>:bookmark:</Text>
                 <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
         </View>

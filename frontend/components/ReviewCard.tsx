@@ -22,23 +22,22 @@ export default function ReviewCard() {
                         <Text key={star} style={styles.reviewStar}>★</Text>
                     ))}
                     <TouchableOpacity style={styles.bookmarkIcon}>
-                        <Text>🔖</Text>
+                        <Text>:bookmark:</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-
             <View style={styles.actions}>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>❤️ 1.23k</Text>
+                    <Text style={styles.actionText}>:heart: 1.23k</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>💬 1.23k</Text>
+                    <Text style={styles.actionText}>:speech_balloon: 1.23k</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>🔁 1.23k</Text>
+                    <Text style={styles.actionText}>:repeat: 1.23k</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
-                    <Text style={styles.actionText}>↗️</Text>
+                    <Text style={styles.actionText}>:arrow_upper_right:</Text>
                 </TouchableOpacity>
             </View>
         </View>
