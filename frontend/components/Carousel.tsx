@@ -21,10 +21,9 @@ export default function MyCarousel({ components, width, height }: CarouselProps)
   const carouselHeight = (height / 100) * screenHeight;
 
   return (
-    <View style={styles.carouselContainer}>
+    <View style={[styles.carouselContainer, { width: carouselWidth, height: carouselHeight }]}>
       <Carousel
         loop
-        mode="horizontal"
         width={carouselWidth}
         height={carouselHeight}
         data={components}
@@ -41,15 +40,15 @@ export default function MyCarousel({ components, width, height }: CarouselProps)
 
 const styles = StyleSheet.create({
   carouselContainer: {
-    width: "auto", 
-    height: "25vw", 
+    justifyContent: "center",
+    alignItems: "center",
   },
   carouselItem: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "pink", //for testing 
-    borderRadius: "25px",
+    borderRadius: "16",
     marginHorizontal: 10,
    
   },
