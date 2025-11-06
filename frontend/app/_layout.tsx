@@ -1,13 +1,29 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Stack } from 'expo-router';
+import { Slot, useSegments, Stack, router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AuthForm from '../components/AuthForm';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import BottomNavBar from '../components/BottomNavBar';
 
 function RootLayoutContent() {
   const { user, loading } = useAuth();
+  const segments = useSegments();
+
+  useEffect(() => {
+    if (loading) return;
+
+    const inOnboarding = segments[0] === 'onboarding';
+    const onLoginScreen = segments[0] === 'login';
+    const mainAppRoutes = ['movies', 'events', 'profile', 'profilePage'];
+    const inMainApp = mainAppRoutes.includes(segments[0]);
+
+    if (!user && !inOnboarding && !onLoginScreen) {
+      router.replace('/onboarding/welcome');
+    } else if (user && (inOnboarding || onLoginScreen)) {
+      router.replace('/homes');
+    }
+  }, [user, loading, segments]);
 
   // Splash while checking session
   if (loading) {
@@ -20,31 +36,11 @@ function RootLayoutContent() {
     );
   }
 
-  // Not logged in -> show Auth form
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>CineCircle Frontend</Text>
-        <AuthForm onAuthSuccess={() => {}} />
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
-
   // Logged in -> mount Router navigator
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-          name="profilePage/index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="profilePage/settings"
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-      </Stack>
-      <BottomNavBar />
+      <Slot />
+      {user && <BottomNavBar />}
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

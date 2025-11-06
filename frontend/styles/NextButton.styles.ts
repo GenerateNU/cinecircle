@@ -4,7 +4,6 @@ const {width, height} = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   button: {
-    borderColor: "#9A0169",
     borderRadius: width * 0.025,
     borderWidth: width * 0.005,
     alignItems: "center",
@@ -12,21 +11,34 @@ export const styles = StyleSheet.create({
     paddingVertical: height * 0.012,
     alignSelf: "flex-start",
   },
+  variation1: {
+    borderColor: "#5C013F",
+    backgroundColor: "#9A0169",
+  },
+  variation2: {
+    borderColor: "#C45AA2",
+    backgroundColor: "#C45AA233",
+  },
   xs: {
-    paddingHorizontal: width * 0.075,
+    width: width * 0.25, 
   },
   small: {
-    paddingHorizontal: width * 0.2,
+    width: width * 0.45, 
   },
   medium: {
-    paddingHorizontal: width * 0.3, 
+    width: width * 0.65,  
   },
   large: {
-    paddingHorizontal: width * 0.42
+    width: width * 0.85,
   },
   text: {
-    color: "#9A0169",
-    fontWeight: "500",
+    fontWeight: "400",
     fontSize: width * 0.045
+  },
+  textVariation1: {
+    color: "#FFFFFF",
+  },
+  textVariation2: {
+    color: "#C45AA2CC",
   },
 });
