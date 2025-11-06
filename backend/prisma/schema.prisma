@@ -56,7 +56,7 @@ model identities {
   last_sign_in_at DateTime?  @db.Timestamptz(6)
   created_at      DateTime?  @db.Timestamptz(6)
   updated_at      DateTime?  @db.Timestamptz(6)
-  email           String?
+  email           String?    
   id              String     @id @default(uuid()) @db.Uuid
   users           auth_users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -64,110 +64,6 @@ model identities {
   @@index([email])
   @@index([user_id])
   @@schema("auth")
-}
-
-model UserProfile {
-  userId              String   @id @db.Uuid
-  username            String?
-  preferredLanguages  String[] @default([])
-  preferredCategories String[] @default([])
-  favoriteMovies      String[] @default([])
-
-  reviews   Rating[]   @relation("UserReviews")
-  comments  Comment[]  @relation("UserComments")
-  posts     Post[]     @relation("UserPosts")
-  postLikes PostLike[] @relation("UserPostLikes")
-
-  followers UserFollow[] @relation("Followers")
-  following UserFollow[] @relation("Following")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@schema("public")
-}
-
-model UserFollow {
-  id          String @id @default(uuid())
-  followerId  String @db.Uuid
-  followingId String @db.Uuid
-
-  follower  UserProfile @relation("Followers", fields: [followerId], references: [userId])
-  following UserProfile @relation("Following", fields: [followingId], references: [userId])
-
-  @@unique([followerId, followingId])
-  @@schema("public")
-}
-
-model Comment {
-  id             String   @id @default(uuid())
-  userId         String   @db.Uuid
-  ratingId       String?
-  postId         String?
-  content        String
-  parentId       String?
-  createdAt      DateTime @default(now())
-
-
-  parent_comment Comment?    @relation("CommentThread", fields: [parentId], references: [id])
-  child_comment  Comment[]   @relation("CommentThread")
-
-  user   UserProfile @relation("UserComments", fields: [userId], references: [userId])
-  rating Rating?     @relation("RatingComments", fields: [ratingId], references: [id])
-  post   Post?       @relation("PostComments", fields: [postId], references: [postId])
-
-  @@schema("public")
-}
-
-model Post {
-  postId    String   @id @default(uuid())
-  userId    String   @db.Uuid
-  content   String
-  postType  PostType
-  votes     Int      @default(0)
-  createdAt DateTime @default(now())
-
-  // threading relationships
-  parentPostId String? @db.Uuid
-  parentPost   Post?   @relation("PostReplies", fields: [parentPostId], references: [postId], onDelete: Cascade)
-  replies      Post[]  @relation("PostReplies")
-
-  // related to rating for long post type
-  ratingId String? @unique
-  rating   Rating? @relation("PostRating", fields: [ratingId], references: [id], onDelete: Cascade)
-
-  user     UserProfile @relation("UserPosts", fields: [userId], references: [userId], onDelete: Cascade)
-  likes    PostLike[]
-  comments Comment[]   @relation("PostComments")
-
-  @@index([userId])
-  @@index([parentPostId])
-  @@index([postType])
-  @@index([createdAt])
-  @@schema("public")
-}
-
-enum PostType {
-  SHORT_POST
-  LONG_POST
-
-  @@schema("public")
-}
-
-// Post Likes Model
-model PostLike {
-  likeId    String   @id @default(uuid())
-  postId    String
-  userId    String   @db.Uuid
-  createdAt DateTime @default(now())
-
-  post Post        @relation(fields: [postId], references: [postId], onDelete: Cascade)
-  user UserProfile @relation("UserPostLikes", fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@unique([postId, userId]) // prevent duplicate likes
-  @@index([postId])
-  @@index([userId])
-  @@schema("public")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -237,22 +133,64 @@ model mfa_factors {
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model oauth_clients {
-  id                 String                  @id @db.Uuid
-  client_id          String                  @unique
-  client_secret_hash String
-  registration_type  oauth_registration_type
-  redirect_uris      String
-  grant_types        String
-  client_name        String?
-  client_uri         String?
-  logo_uri           String?
-  created_at         DateTime                @default(now()) @db.Timestamptz(6)
-  updated_at         DateTime                @default(now()) @db.Timestamptz(6)
-  deleted_at         DateTime?               @db.Timestamptz(6)
+model oauth_authorizations {
+  id                    String                     @id @db.Uuid
+  authorization_id      String                     @unique
+  client_id             String                     @db.Uuid
+  user_id               String?                    @db.Uuid
+  redirect_uri          String
+  scope                 String
+  state                 String?
+  resource              String?
+  code_challenge        String?
+  code_challenge_method code_challenge_method?
+  response_type         oauth_response_type        @default(code)
+  status                oauth_authorization_status @default(pending)
+  authorization_code    String?                    @unique
+  created_at            DateTime                   @default(now()) @db.Timestamptz(6)
+  expires_at            DateTime                   @default(dbgenerated("(now() + '00:03:00'::interval)")) @db.Timestamptz(6)
+  approved_at           DateTime?                  @db.Timestamptz(6)
+  oauth_clients         oauth_clients              @relation(fields: [client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                 auth_users?                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([client_id])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oauth_clients {
+  id                   String                  @id @db.Uuid
+  client_secret_hash   String?
+  registration_type    oauth_registration_type
+  redirect_uris        String
+  grant_types          String
+  client_name          String?
+  client_uri           String?
+  logo_uri             String?
+  created_at           DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime                @default(now()) @db.Timestamptz(6)
+  deleted_at           DateTime?               @db.Timestamptz(6)
+  client_type          oauth_client_type       @default(confidential)
+  oauth_authorizations oauth_authorizations[]
+  oauth_consents       oauth_consents[]
+  sessions             sessions[]
+
   @@index([deleted_at])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oauth_consents {
+  id            String        @id @db.Uuid
+  user_id       String        @db.Uuid
+  client_id     String        @db.Uuid
+  scopes        String
+  granted_at    DateTime      @default(now()) @db.Timestamptz(6)
+  revoked_at    DateTime?     @db.Timestamptz(6)
+  oauth_clients oauth_clients @relation(fields: [client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         auth_users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, client_id], map: "oauth_consents_user_client_unique")
+  @@index([user_id, granted_at(sort: Desc)], map: "oauth_consents_user_order_idx")
   @@schema("auth")
 }
 
@@ -294,22 +232,6 @@ model refresh_tokens {
   @@index([session_id, revoked])
   @@index([updated_at(sort: Desc)])
   @@schema("auth")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model local_event {
-  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
-  title       String
-  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
-  description String
-  genre       String
-  cost        Float?    @db.Real
-  occasion    String?
-  languages   String[]
-  lat         Float?
-  lon         Float?
-
-  @@schema("public")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -363,22 +285,25 @@ model schema_migrations {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model sessions {
-  id             String           @id @db.Uuid
-  user_id        String           @db.Uuid
-  created_at     DateTime?        @db.Timestamptz(6)
-  updated_at     DateTime?        @db.Timestamptz(6)
-  factor_id      String?          @db.Uuid
-  aal            aal_level?
-  not_after      DateTime?        @db.Timestamptz(6)
-  refreshed_at   DateTime?        @db.Timestamp(6)
-  user_agent     String?
-  ip             String?          @db.Inet
-  tag            String?
-  mfa_amr_claims mfa_amr_claims[]
-  refresh_tokens refresh_tokens[]
-  users          auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id              String           @id @db.Uuid
+  user_id         String           @db.Uuid
+  created_at      DateTime?        @db.Timestamptz(6)
+  updated_at      DateTime?        @db.Timestamptz(6)
+  factor_id       String?          @db.Uuid
+  aal             aal_level?
+  not_after       DateTime?        @db.Timestamptz(6)
+  refreshed_at    DateTime?        @db.Timestamp(6)
+  user_agent      String?
+  ip              String?          @db.Inet
+  tag             String?
+  oauth_client_id String?          @db.Uuid
+  mfa_amr_claims  mfa_amr_claims[]
+  refresh_tokens  refresh_tokens[]
+  oauth_clients   oauth_clients?   @relation(fields: [oauth_client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([not_after(sort: Desc)])
+  @@index([oauth_client_id])
   @@index([user_id])
   @@index([user_id, created_at], map: "user_id_created_at_idx")
   @@schema("auth")
@@ -423,43 +348,45 @@ model sso_providers {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model auth_users {
-  instance_id                 String?           @db.Uuid
-  id                          String            @id @db.Uuid
-  aud                         String?           @db.VarChar(255)
-  role                        String?           @db.VarChar(255)
-  email                       String?           @db.VarChar(255)
-  encrypted_password          String?           @db.VarChar(255)
-  email_confirmed_at          DateTime?         @db.Timestamptz(6)
-  invited_at                  DateTime?         @db.Timestamptz(6)
-  confirmation_token          String?           @db.VarChar(255)
-  confirmation_sent_at        DateTime?         @db.Timestamptz(6)
-  recovery_token              String?           @db.VarChar(255)
-  recovery_sent_at            DateTime?         @db.Timestamptz(6)
-  email_change_token_new      String?           @db.VarChar(255)
-  email_change                String?           @db.VarChar(255)
-  email_change_sent_at        DateTime?         @db.Timestamptz(6)
-  last_sign_in_at             DateTime?         @db.Timestamptz(6)
+  instance_id                 String?                @db.Uuid
+  id                          String                 @id @db.Uuid
+  aud                         String?                @db.VarChar(255)
+  role                        String?                @db.VarChar(255)
+  email                       String?                @db.VarChar(255)
+  encrypted_password          String?                @db.VarChar(255)
+  email_confirmed_at          DateTime?              @db.Timestamptz(6)
+  invited_at                  DateTime?              @db.Timestamptz(6)
+  confirmation_token          String?                @db.VarChar(255)
+  confirmation_sent_at        DateTime?              @db.Timestamptz(6)
+  recovery_token              String?                @db.VarChar(255)
+  recovery_sent_at            DateTime?              @db.Timestamptz(6)
+  email_change_token_new      String?                @db.VarChar(255)
+  email_change                String?                @db.VarChar(255)
+  email_change_sent_at        DateTime?              @db.Timestamptz(6)
+  last_sign_in_at             DateTime?              @db.Timestamptz(6)
   raw_app_meta_data           Json?
   raw_user_meta_data          Json?
   is_super_admin              Boolean?
-  created_at                  DateTime?         @db.Timestamptz(6)
-  updated_at                  DateTime?         @db.Timestamptz(6)
-  phone                       String?           @unique
-  phone_confirmed_at          DateTime?         @db.Timestamptz(6)
-  phone_change                String?           @default("")
-  phone_change_token          String?           @default("") @db.VarChar(255)
-  phone_change_sent_at        DateTime?         @db.Timestamptz(6)
-  confirmed_at                DateTime?         @db.Timestamptz(6)
-  email_change_token_current  String?           @default("") @db.VarChar(255)
-  email_change_confirm_status Int?              @default(0) @db.SmallInt
-  banned_until                DateTime?         @db.Timestamptz(6)
-  reauthentication_token      String?           @default("") @db.VarChar(255)
-  reauthentication_sent_at    DateTime?         @db.Timestamptz(6)
-  is_sso_user                 Boolean           @default(false)
-  deleted_at                  DateTime?         @db.Timestamptz(6)
-  is_anonymous                Boolean           @default(false)
+  created_at                  DateTime?              @db.Timestamptz(6)
+  updated_at                  DateTime?              @db.Timestamptz(6)
+  phone                       String?                @unique
+  phone_confirmed_at          DateTime?              @db.Timestamptz(6)
+  phone_change                String?                @default("")
+  phone_change_token          String?                @default("") @db.VarChar(255)
+  phone_change_sent_at        DateTime?              @db.Timestamptz(6)
+  confirmed_at                DateTime?               @db.Timestamptz(6)
+  email_change_token_current  String?                @default("") @db.VarChar(255)
+  email_change_confirm_status Int?                   @default(0) @db.SmallInt
+  banned_until                DateTime?              @db.Timestamptz(6)
+  reauthentication_token      String?                @default("") @db.VarChar(255)
+  reauthentication_sent_at    DateTime?              @db.Timestamptz(6)
+  is_sso_user                 Boolean                @default(false)
+  deleted_at                  DateTime?              @db.Timestamptz(6)
+  is_anonymous                Boolean                @default(false)
   identities                  identities[]
   mfa_factors                 mfa_factors[]
+  oauth_authorizations        oauth_authorizations[]
+  oauth_consents              oauth_consents[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
 
@@ -469,19 +396,72 @@ model auth_users {
   @@schema("auth")
 }
 
-model Rating {
-  id       String   @id @default(uuid())
-  userId   String   @db.Uuid
-  movieId  String
-  stars    Int
-  comments String[] @default([])
-  tags     String[] @default([])
-  date     DateTime
-  votes    Int      @default(0)
+model Comment {
+  id          String      @id
+  userId      String      @db.Uuid
+  ratingId    String?
+  postId      String?
+  content     String
+  createdAt   DateTime    @default(now())
+  Post        Post?       @relation(fields: [postId], references: [id])
+  Rating      Rating?     @relation(fields: [ratingId], references: [id])
+  UserProfile UserProfile @relation(fields: [userId], references: [userId])
 
-  user             UserProfile @relation("UserReviews", fields: [userId], references: [userId])
-  threadedComments Comment[]   @relation("RatingComments")
-  post             Post?       @relation("PostRating")
+  @@schema("public")
+}
+
+model Post {
+  id          String      @id
+  userId      String      @db.Uuid
+  content     String
+  type        PostType
+  votes       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  Comment     Comment[]
+  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+
+  @@schema("public")
+}
+
+model Rating {
+  id          String      @id
+  userId      String      @db.Uuid
+  movieId     String
+  stars       Int
+  comment     String?
+  tags        String[]    @default([])
+  date        DateTime
+  votes       Int         @default(0)
+  Comment     Comment[]
+  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+
+  @@schema("public")
+}
+
+model UserFollow {
+  id                                              String      @id
+  followerId                                      String      @db.Uuid
+  followingId                                     String      @db.Uuid
+  UserProfile_UserFollow_followerIdToUserProfile  UserProfile @relation("UserFollow_followerIdToUserProfile", fields: [followerId], references: [userId])
+  UserProfile_UserFollow_followingIdToUserProfile UserProfile @relation("UserFollow_followingIdToUserProfile", fields: [followingId], references: [userId])
+
+  @@unique([followerId, followingId])
+  @@schema("public")
+}
+
+model UserProfile {
+  userId                                         String       @id @db.Uuid
+  username                                       String?
+  preferredLanguages                             String[]     @default([])
+  preferredCategories                            String[]     @default([])
+  favoriteMovies                                 String[]     @default([])
+  createdAt                                      DateTime     @default(now())
+  updatedAt                                      DateTime
+  Comment                                        Comment[]
+  Post                                           Post[]
+  Rating                                         Rating[]
+  UserFollow_UserFollow_followerIdToUserProfile  UserFollow[] @relation("UserFollow_followerIdToUserProfile")
+  UserFollow_UserFollow_followingIdToUserProfile UserFollow[] @relation("UserFollow_followingIdToUserProfile")
 
   @@schema("public")
 }
@@ -495,7 +475,21 @@ model bootcamp {
   @@schema("public")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model local_event {
+  id          String    @id(map: "local_events_pkey") @db.Uuid
+  title       String
+  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  description String
+  genre       String
+  cost        Float?    @db.Real
+  occasion    String?
+  languages   String[]
+  lat         Float?
+  lon         Float?
+
+  @@schema("public")
+}
+
 model movie {
   movieId     String  @id
   localRating String?
@@ -509,7 +503,7 @@ model movie {
 }
 
 model public_users {
-  user_id    String    @id @default(uuid()) @db.Uuid
+  user_id    String    @id @db.Uuid
   username   String?
   created_at DateTime? @default(now()) @db.Timestamptz(6)
 
@@ -547,9 +541,31 @@ enum factor_type {
   @@schema("auth")
 }
 
+enum oauth_authorization_status {
+  pending
+  approved
+  denied
+  expired
+
+  @@schema("auth")
+}
+
+enum oauth_client_type {
+  public
+  confidential
+
+  @@schema("auth")
+}
+
 enum oauth_registration_type {
   dynamic
   manual
+
+  @@schema("auth")
+}
+
+enum oauth_response_type {
+  code
 
   @@schema("auth")
 }
@@ -563,4 +579,11 @@ enum one_time_token_type {
   phone_change_token
 
   @@schema("auth")
+}
+
+enum PostType {
+  SHORT
+  LONG
+
+  @@schema("public")
 }

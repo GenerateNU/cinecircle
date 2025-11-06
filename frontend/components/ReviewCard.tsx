@@ -10,6 +10,7 @@ export default function ReviewCard() {
                     <Text style={styles.userHandle}>@username Date</Text>
                 </View>
             </View>
+
             <View style={styles.nestedReview}>
                 <View style={styles.nestedHeader}>
                     <View style={styles.smallAvatar} />
@@ -42,6 +43,7 @@ export default function ReviewCard() {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#FFF',
@@ -126,12 +128,3 @@ const styles = StyleSheet.create({
         color: '#666',
     },
 });
-
-
-
-
-
-
-
-
-

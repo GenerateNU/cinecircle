@@ -1,7 +1,5 @@
-// app/events.tsx
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 
 interface Event {
   id: string;
@@ -118,11 +116,6 @@ export default function Events() {
           </View>
         ))}
       </ScrollView>
-
-      {/* Fixed Bottom Nav */}
-      <View style={styles.bottomBar}>
-        <BottomNavBar />
-      </View>
     </View>
   );
 }

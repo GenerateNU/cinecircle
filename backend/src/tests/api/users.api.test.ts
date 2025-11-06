@@ -59,6 +59,7 @@ describe("User Profile API Tests", () => {
           data: {
             userId: TEST_USER_ID,
             username: "initialuser",
+            updatedAt: new Date(), // Add updatedAt
           },
         });
   
@@ -124,6 +125,7 @@ describe("User Profile API Tests", () => {
           data: {
             userId: TEST_USER_ID,
             username: "testuser",
+            updatedAt: new Date(), // Add updatedAt
           },
         });
       
@@ -183,6 +185,7 @@ describe("User Profile API Tests", () => {
             create: {
               userId: TEST_USER_ID,
               username: "testuser",
+              updatedAt: new Date(), // Add updatedAt
             },
           });
       
