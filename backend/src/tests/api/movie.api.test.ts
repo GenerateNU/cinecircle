@@ -5,15 +5,12 @@ import { HTTP_STATUS } from "../helpers/constants.js";
 import { deleteMovie, getMovie, getMovieById, updateMovie } from "../../controllers/tmdb.js";
 import { prisma } from "../../services/db.js";
 import { Prisma } from "@prisma/client";
+import axios from 'axios'; 
 
-/**
- * Movie API Tests
- *
- * Tests the GET /movies/:movieId endpoint which fetches movies from TMDB
- * and saves them to the local database.
- *
- * Route: GET /movies/:movieId (movieId is the TMDB ID)
- */
+// Mock axios
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 describe("Movie API Tests", () => {
   let app: express.Express;
 
@@ -22,13 +19,30 @@ describe("Movie API Tests", () => {
   });
 
   afterAll(async () => {
-    // Give time for any pending connections to close
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await prisma.$disconnect();
+    jest.clearAllMocks();
   });
 
   describe("GET /movies/:movieId", () => {
+    beforeEach(() => {
+      // Mock TMDB API responses
+      mockedAxios.get.mockResolvedValue({
+        data: {
+          id: 278,
+          title: "The Shawshank Redemption",
+          overview: "Two imprisoned men bond over a number of years...",
+          vote_average: 8.7,
+          spoken_languages: [{ iso_639_1: "en", name: "English" }],
+          vote_count: 25000
+        }
+      });
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
     it("should fetch a movie from TMDB and save to database", async () => {
-      // Should be The Shawshank Redemption
       const tmdbId = "278";
 
       const response = await request(app)
@@ -413,7 +427,7 @@ describe("Movie API Tests", () => {
           title: "Updated Title",
           description: "Updated description",
           languages: ["English", "Tamil"],
-          imdbRating: 86,
+          imdbRating: BigInt(86),
           localRating: 4.7,  // coerced from "4.7"
           numRatings: 1234,  // coerced from "1234"
         },

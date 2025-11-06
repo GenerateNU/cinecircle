@@ -10,7 +10,6 @@ import {
   Image,
   Modal,
 } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 import MovieChosenScreen from './MovieChosenScreen';
 interface Movie {
   id: number;
@@ -122,7 +121,6 @@ export default function MoviesScreen() {
         {renderSection('Genre', MOCK_MOVIES.slice(6, 9))}
       </ScrollView>
       {/* Bottom Navigation */}
-      <BottomNavBar />
       {/* Movie Detail Modal */}
       <Modal
         visible={showMovieDetail}
