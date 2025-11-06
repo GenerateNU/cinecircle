@@ -41,18 +41,32 @@ const Events: React.FC = () => {
       date: 'Date',
       time: 'Time',
     },
+    {
+      id: '3',
+      title: 'Event Title',
+      location: 'Location',
+      date: 'Date',
+      time: 'Time',
+    },
   ];
 
   const upcomingEvents: Event[] = [
     {
-      id: '3',
+      id: '4',
       title: 'XYZ Meet and Greet',
       location: 'Boston, MA',
       date: 'Nov 14',
       time: '7:15 PM EST',
     },
     {
-      id: '4',
+      id: '5',
+      title: 'Another Event',
+      location: 'Boston, MA',
+      date: 'Nov 14',
+      time: '8:00 PM EST',
+    },
+    {
+      id: '6',
       title: 'Another Event',
       location: 'Boston, MA',
       date: 'Nov 14',

@@ -18,13 +18,13 @@ export const styles = StyleSheet.create({
     height: '100%',
   },
   medium: {
-    height: height * 0.22,
+    height: height * 0.25,
   },
   mediumImage: {
     height: '100%',
   },
   large: {
-    height: height * 0.38,
+    height: height * 0.48,
   },
   largeImage: {
     height: '100%',
