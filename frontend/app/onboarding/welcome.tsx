@@ -2,12 +2,11 @@ import { Text, Image, View, useWindowDimensions } from 'react-native'
 import { router } from 'expo-router'
 import logo from '../../assets/icon.png'
 import NextButton from '../../components/NextButton';
-
 import { styles } from '../../styles/Welcome.styles'
 
 export default function welcome () {
     const { width, height } = useWindowDimensions();
-    const go = (to: string) => router.replace(to);
+    const go = (to: string) => router.push(to);
 
     return (
         <View style={styles.container}>
@@ -33,7 +32,7 @@ export default function welcome () {
                 />
                 <NextButton 
                     title="Sign up" 
-                    onPress={() => go("/sign-up")} 
+                    onPress={() => go("/onboarding/signUp")} 
                     size="large"
                 />
             </View>

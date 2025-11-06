@@ -1,12 +1,3 @@
-/*
-SCREEN TWO
-
-### DATA
-    - username
-
-username (text input component)
-
-*/
 import { View } from 'react-native'
 import { router } from 'expo-router'
 import TextInputComponent from '../../components/TextInputComponent';
@@ -17,10 +8,10 @@ export default function username() {
     return (
         <View>
             <TextInputComponent
-                title="Set your username"
-                field="Username"
+                title="What city?"
+                placeholder="Start typing where you're from!"
             />
-            <NextButton onPress={() => go("onboarding/profileSelect")}/>
+            <NextButton onPress={() => go("onboarding/languageSelect")}/>
         </View>
     );
 };
