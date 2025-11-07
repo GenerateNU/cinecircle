@@ -2,43 +2,37 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-nati
 
 const { width } = Dimensions.get('window');
 
-type TabToggleProps = {
-  activeTab: 'forYou' | 'recByFriends';
-  onTabChange: (tab: 'forYou' | 'recByFriends') => void;
+type Tab = {
+  key: string;
+  label: string;
 };
 
-export default function TabToggle({ activeTab, onTabChange }: TabToggleProps) {
+type TabToggleProps = {
+  tabs: Tab[];
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+};
+
+export default function TabToggle({ tabs, activeTab, onTabChange }: TabToggleProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={[
-          styles.tab,
-          activeTab === 'forYou' && styles.activeTab
-        ]}
-        onPress={() => onTabChange('forYou')}
-      >
-        <Text style={[
-          styles.tabText,
-          activeTab === 'forYou' && styles.activeTabText
-        ]}>
-          For You
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        style={[
-          styles.tab,
-          activeTab === 'recByFriends' && styles.activeTab
-        ]}
-        onPress={() => onTabChange('recByFriends')}
-      >
-        <Text style={[
-          styles.tabText,
-          activeTab === 'recByFriends' && styles.activeTabText
-        ]}>
-          Recommended by friends
-        </Text>
-      </TouchableOpacity>
+      {tabs.map((tab) => (
+        <TouchableOpacity
+          key={tab.key}
+          style={[
+            styles.tab,
+            activeTab === tab.key && styles.activeTab
+          ]}
+          onPress={() => onTabChange(tab.key)}
+        >
+          <Text style={[
+            styles.tabText,
+            activeTab === tab.key && styles.activeTabText
+          ]}>
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 }
