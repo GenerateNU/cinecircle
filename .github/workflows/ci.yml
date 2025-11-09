@@ -21,9 +21,13 @@ jobs:
         run: |
           cat > backend/.env << EOF
           NODE_ENV=test
+          PORT=3001
           DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
           DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
           SYNC_FROM_PRODUCTION=false
+          TMDB_API_TOKEN=dummy-token-for-ci-tests
+          SUPABASE_JWT_SECRET=dummy-jwt-secret-for-ci-tests
+          SUPABASE_URL=https://dummy.supabase.co
           EOF
 
       - name: Start services
