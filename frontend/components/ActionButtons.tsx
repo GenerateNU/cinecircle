@@ -1,4 +1,5 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+
 export default function ActionButtons() {
     return (
         <View style={styles.container}>
@@ -17,6 +18,7 @@ export default function ActionButtons() {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',

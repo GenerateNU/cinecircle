@@ -65,6 +65,12 @@ router.get("/api/local-event/:id", getLocalEvent);
 router.post("/api/local-event", createLocalEvent);
 router.delete("/api/local-event/:id", deleteLocalEvent);
 router.put("/api/local-event/:id", updateLocalEvent);
+//Ratings routes
+router.post('api/ratings', createRating);
+router.get('api/ratings', getRatings);
+router.get('api/ratings/:id', getRatingById);
+router.put('api/ratings/:id', updateRating);
+router.delete('api/ratings/:id', deleteRating);
 
 // Post routes
 router.post("/post", createPost);

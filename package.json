@@ -26,14 +26,21 @@
     "backend:db:sync": "docker exec -it cinecircle-backend-1 npm run db:sync",
     "backend:install": "cd backend && npm install",
     "frontend:start": "cd frontend && npm start",
+    "frontend:test": "cd frontend && npm test",
     "frontend:android": "cd frontend && npm run android",
     "frontend:ios": "cd frontend && npm run ios",
     "frontend:web": "cd frontend && npm run web",
     "frontend:clean": "cd frontend && npm run clean",
     "frontend:install": "cd frontend && npm install"
   },
-  "dependencies": {
-    "expo": "^54.0.23",
-    "lucide-react-native": "^0.548.0"
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsd": "^0.33.0",
+    "vitest": "^3.2.4"
   }
 }
