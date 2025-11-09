@@ -1,12 +1,12 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 dotenv.config();
 
 const requiredEnv = [
-  "DATABASE_URL",
-  "DIRECT_URL",
-  "PORT",
-  "SUPABASE_JWT_SECRET",
-  "SUPABASE_URL",
+  'DATABASE_URL',
+  'DIRECT_URL',
+  'PORT',
+  'SUPABASE_JWT_SECRET',
+  'SUPABASE_URL',
 ];
 
 for (const key of requiredEnv) {

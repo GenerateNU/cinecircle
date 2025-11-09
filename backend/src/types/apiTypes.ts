@@ -1,4 +1,4 @@
-import type { ApiEnvelope } from "../services/apiClient";
+import type { ApiEnvelope } from '../services/apiClient';
 import type {
   Movie,
   UserProfile,
@@ -6,7 +6,7 @@ import type {
   Rating,
   Comment,
   FollowEdge,
-} from "./models";
+} from './models';
 
 /** -------- Health -------- */
 export type PingResponse = { message?: string; [k: string]: unknown };
@@ -32,7 +32,7 @@ export type GetUserProfileBasicResponse = {
 export type UpdateUserProfileInput = Partial<
   Pick<
     UserProfile,
-    "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies"
+    'username' | 'preferredLanguages' | 'preferredCategories' | 'favoriteMovies'
   >
 >;
 
@@ -55,12 +55,12 @@ export type GetMovieEnvelope = ApiEnvelope<Movie>;
 export type UpdateMovieInput = Partial<
   Pick<
     Movie,
-    | "title"
-    | "description"
-    | "languages"
-    | "imdbRating"
-    | "localRating"
-    | "numRatings"
+    | 'title'
+    | 'description'
+    | 'languages'
+    | 'imdbRating'
+    | 'localRating'
+    | 'numRatings'
   >
 >;
 export type UpdateMovieEnvelope = ApiEnvelope<Movie>;

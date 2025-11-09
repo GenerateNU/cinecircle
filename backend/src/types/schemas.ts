@@ -1,5 +1,5 @@
 // src/types/schemas.ts
-import { z } from "zod";
+import { z } from 'zod';
 
 export const MovieSchema = z.object({
   movieId: z.string(),

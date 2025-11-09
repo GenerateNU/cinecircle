@@ -1,7 +1,7 @@
-import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import jwksClient from "jwks-rsa";
-import { SUPABASE_JWT_SECRET, SUPABASE_URL } from "../config/env.js";
+import type { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
+import { SUPABASE_JWT_SECRET, SUPABASE_URL } from '../config/env.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -35,36 +35,36 @@ function getKey(header: any, callback: any) {
 export const authenticateUser = (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const timestamp = new Date().toISOString();
-  const ip = req.ip || req.connection.remoteAddress || "Unknown";
-  const userAgent = req.get("User-Agent") || "Unknown";
+  const ip = req.ip || req.connection.remoteAddress || 'Unknown';
+  const userAgent = req.get('User-Agent') || 'Unknown';
 
   console.log(`[${timestamp}] Authentication attempt from IP: ${ip}`);
   console.log(`[${timestamp}] User-Agent: ${userAgent}`);
 
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     console.log(
-      `[${timestamp}] Authentication failed: Missing or invalid authorization header`,
+      `[${timestamp}] Authentication failed: Missing or invalid authorization header`
     );
     return res.status(401).json({
-      message: "Unauthorized: Missing or invalid token",
+      message: 'Unauthorized: Missing or invalid token',
       timestamp,
       ip,
     });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(' ')[1];
 
   if (!token) {
     console.log(
-      `[${timestamp}] Authentication failed: Token not found in header`,
+      `[${timestamp}] Authentication failed: Token not found in header`
     );
     return res.status(401).json({
-      message: "Unauthorized: Token not found in header",
+      message: 'Unauthorized: Token not found in header',
       timestamp,
       ip,
     });
@@ -77,21 +77,21 @@ export const authenticateUser = (
     jwt.verify(
       token,
       getKey,
-      { algorithms: ["RS256"] },
+      { algorithms: ['RS256'] },
       (err, decoded: any) => {
         if (err) {
           console.log(
-            `[${timestamp}] JWKS verification failed, trying fallback: ${err.message}`,
+            `[${timestamp}] JWKS verification failed, trying fallback: ${err.message}`
           );
 
           // Fallback to simple JWT verification with secret (for development)
           try {
             const fallbackDecoded = jwt.verify(
               token,
-              SUPABASE_JWT_SECRET,
+              SUPABASE_JWT_SECRET
             ) as any;
             console.log(
-              `[${timestamp}] Fallback JWT verification successful for user: ${fallbackDecoded.sub}`,
+              `[${timestamp}] Fallback JWT verification successful for user: ${fallbackDecoded.sub}`
             );
 
             req.user = {
@@ -103,17 +103,17 @@ export const authenticateUser = (
           } catch (fallbackError) {
             console.error(
               `[${timestamp}] Fallback JWT verification failed:`,
-              fallbackError,
+              fallbackError
             );
             return res.status(401).json({
-              message: "Unauthorized: Token verification failed",
+              message: 'Unauthorized: Token verification failed',
               timestamp,
               ip,
             });
           }
         } else {
           console.log(
-            `[${timestamp}] JWKS verification successful for user: ${decoded.sub}`,
+            `[${timestamp}] JWKS verification successful for user: ${decoded.sub}`
           );
 
           req.user = {
@@ -123,12 +123,12 @@ export const authenticateUser = (
           };
           next();
         }
-      },
+      }
     );
   } catch (error) {
     console.error(`[${timestamp}] JWT verification error:`, error);
     return res.status(401).json({
-      message: "Unauthorized: Token verification failed",
+      message: 'Unauthorized: Token verification failed',
       timestamp,
       ip,
     });

@@ -1,15 +1,15 @@
-import type { Request, Response } from "express";
-import type { AuthenticatedRequest } from "../middleware/auth.ts";
-import { prisma } from "../services/db.js";
-import { Prisma } from "@prisma/client";
-import { UserProfile } from "../types/models";
+import type { Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../middleware/auth.ts';
+import { prisma } from '../services/db.js';
+import { Prisma } from '@prisma/client';
+import { UserProfile } from '../types/models';
 
 export const updateUserProfile = async (
   req: AuthenticatedRequest,
-  res: Response,
+  res: Response
 ) => {
   const { user } = req;
-  if (!user) return res.status(401).json({ message: "Unauthorized" });
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
   const {
     username,
@@ -34,41 +34,41 @@ export const updateUserProfile = async (
     });
 
     res.json({
-      message: "Profile updated",
+      message: 'Profile updated',
       data: mapUserProfileDbToApi(updated),
     });
   } catch (error) {
-    console.error("updateUserProfile error:", error);
-    res.status(500).json({ message: "Failed to update profile" });
+    console.error('updateUserProfile error:', error);
+    res.status(500).json({ message: 'Failed to update profile' });
   }
 };
 
 export const deleteUserProfile = async (
   req: AuthenticatedRequest,
-  res: Response,
+  res: Response
 ) => {
   const { user } = req;
-  if (!user) return res.status(401).json({ message: "Unauthorized" });
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
   try {
     await prisma.userProfile.delete({
       where: { userId: user.id },
     });
 
-    res.json({ message: "User profile deleted" });
+    res.json({ message: 'User profile deleted' });
   } catch (error) {
-    console.error("deleteUserProfile error:", error);
-    res.status(500).json({ message: "Failed to delete profile" });
+    console.error('deleteUserProfile error:', error);
+    res.status(500).json({ message: 'Failed to delete profile' });
   }
 };
 
 export const ensureUserProfile = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: Function,
+  next: Function
 ) => {
   if (!req.user?.id) {
-    return res.status(401).json({ message: "Not authenticated" });
+    return res.status(401).json({ message: 'Not authenticated' });
   }
 
   try {
@@ -88,24 +88,24 @@ export const ensureUserProfile = async (
 
     next();
   } catch (error) {
-    console.error("Failed to ensure user profile:", error);
-    res.status(500).json({ message: "Internal error creating user profile" });
+    console.error('Failed to ensure user profile:', error);
+    res.status(500).json({ message: 'Internal error creating user profile' });
   }
 };
 
 export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
   console.log(
-    `[${timestamp}] getUserProfile called by user: ${req.user?.id || "unknown"}`,
+    `[${timestamp}] getUserProfile called by user: ${req.user?.id || 'unknown'}`
   );
 
   try {
     if (!req.user) {
       console.log(`[${timestamp}] getUserProfile failed: No user in request`);
       return res.status(401).json({
-        message: "User not authenticated",
+        message: 'User not authenticated',
         timestamp,
-        endpoint: "/api/user/profile",
+        endpoint: '/api/user/profile',
       });
     }
 
@@ -116,32 +116,32 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
     };
 
     console.log(
-      `[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`,
+      `[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`
     );
 
     res.json({
-      message: "User profile retrieved successfully",
+      message: 'User profile retrieved successfully',
       user: userProfile,
       timestamp,
-      endpoint: "/api/user/profile",
+      endpoint: '/api/user/profile',
     });
   } catch (error) {
     console.error(`[${timestamp}] getUserProfile error:`, error);
     res.status(500).json({
-      message: "Internal server error while retrieving user profile",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: 'Internal server error while retrieving user profile',
+      error: error instanceof Error ? error.message : 'Unknown error',
       timestamp,
-      endpoint: "/api/user/profile",
+      endpoint: '/api/user/profile',
     });
   }
 };
 export const getUserRatings = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<void> => {
   const { user_id } = req.query;
 
-  if (!user_id || typeof user_id !== "string") {
+  if (!user_id || typeof user_id !== 'string') {
     res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
     return;
   }
@@ -149,7 +149,7 @@ export const getUserRatings = async (
   try {
     const ratings = await prisma.rating.findMany({
       where: { userId: user_id },
-      orderBy: { date: "desc" },
+      orderBy: { date: 'desc' },
       include: { Comment: true },
     });
 
@@ -179,25 +179,25 @@ export const getUserRatings = async (
     }
 
     res.json({
-      message: "User ratings retrieved",
+      message: 'User ratings retrieved',
       ratings,
       userProfile: mappedUserProfile,
     });
   } catch (error) {
-    console.error("getUserRatings error:", error);
+    console.error('getUserRatings error:', error);
     res
       .status(500)
-      .json({ message: "Internal server error while fetching ratings" });
+      .json({ message: 'Internal server error while fetching ratings' });
   }
 };
 
 export const getUserComments = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<void> => {
   const { user_id } = req.query;
 
-  if (!user_id || typeof user_id !== "string") {
+  if (!user_id || typeof user_id !== 'string') {
     res.status(400).json({ message: "Missing or invalid 'user_id' parameter" });
     return;
   }
@@ -205,7 +205,7 @@ export const getUserComments = async (
   try {
     const comments = await prisma.comment.findMany({
       where: { userId: user_id },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       include: { Rating: true, Post: true },
     });
 
@@ -235,15 +235,15 @@ export const getUserComments = async (
     }
 
     res.json({
-      message: "User comments retrieved",
+      message: 'User comments retrieved',
       comments,
       userProfile: mappedUserProfile,
     });
   } catch (error) {
-    console.error("getUserComments error:", error);
+    console.error('getUserComments error:', error);
     res
       .status(500)
-      .json({ message: "Internal server error while fetching comments" });
+      .json({ message: 'Internal server error while fetching comments' });
   }
 };
 
@@ -275,26 +275,26 @@ export function mapUserProfilePatchToUpdateData(
   patch: Partial<
     Pick<
       UserProfile,
-      | "username"
-      | "preferredLanguages"
-      | "preferredCategories"
-      | "favoriteMovies"
-      | "updatedAt"
+      | 'username'
+      | 'preferredLanguages'
+      | 'preferredCategories'
+      | 'favoriteMovies'
+      | 'updatedAt'
     >
-  >,
+  >
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
 
-  if (Object.prototype.hasOwnProperty.call(patch, "username")) {
+  if (Object.prototype.hasOwnProperty.call(patch, 'username')) {
     data.username = patch.username ?? null;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "preferredLanguages")) {
+  if (Object.prototype.hasOwnProperty.call(patch, 'preferredLanguages')) {
     data.preferredLanguages = patch.preferredLanguages ?? [];
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "preferredCategories")) {
+  if (Object.prototype.hasOwnProperty.call(patch, 'preferredCategories')) {
     data.preferredCategories = patch.preferredCategories ?? [];
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
+  if (Object.prototype.hasOwnProperty.call(patch, 'favoriteMovies')) {
     data.favoriteMovies = patch.favoriteMovies ?? [];
   }
 

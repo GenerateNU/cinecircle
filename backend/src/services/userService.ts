@@ -1,4 +1,4 @@
-import { api } from "./apiClient";
+import { api } from './apiClient';
 import type {
   ProtectedResponse,
   GetUserProfileBasicResponse,
@@ -7,7 +7,7 @@ import type {
   DeleteUserProfileResponse,
   GetUserRatingsResponse,
   GetUserCommentsResponse,
-} from "../types/apiTypes";
+} from '../types/apiTypes';
 
 export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);

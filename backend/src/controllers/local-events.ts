@@ -1,5 +1,5 @@
-import type { Request, Response } from "express";
-import { prisma } from "../services/db.js";
+import type { Request, Response } from 'express';
+import { prisma } from '../services/db.js';
 
 type LocalEvent = {
   id: string;
@@ -16,12 +16,12 @@ type LocalEvent = {
 
 export const getLocalEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
-  if (!id) return res.status(400).json({ message: "Event ID is required." });
+  if (!id) return res.status(400).json({ message: 'Event ID is required.' });
 
   try {
     const event = await prisma.local_event.findUnique({ where: { id } });
     if (!event)
-      return res.status(404).json({ message: "Local event not found." });
+      return res.status(404).json({ message: 'Local event not found.' });
 
     const data: LocalEvent = {
       id: event.id,
@@ -36,9 +36,9 @@ export const getLocalEvent = async (req: Request, res: Response) => {
       lon: event.lon,
     };
 
-    res.status(200).json({ message: "Local event retrieved.", data });
+    res.status(200).json({ message: 'Local event retrieved.', data });
   } catch (err) {
-    res.status(404).json({ message: "Local event not found." });
+    res.status(404).json({ message: 'Local event not found.' });
   }
 };
 
@@ -66,7 +66,7 @@ export const createLocalEvent = async (req: Request, res: Response) => {
     lat == null ||
     lon == null
   ) {
-    return res.status(400).json({ message: "Missing required event fields." });
+    return res.status(400).json({ message: 'Missing required event fields.' });
   }
 
   try {
@@ -85,7 +85,7 @@ export const createLocalEvent = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
-      message: "Local event created.",
+      message: 'Local event created.',
       data: {
         id: event.id,
         title: event.title,
@@ -101,8 +101,8 @@ export const createLocalEvent = async (req: Request, res: Response) => {
     });
   } catch (err) {
     res.status(500).json({
-      message: "Failed to create local event.",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to create local event.',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -121,12 +121,12 @@ export const updateLocalEvent = async (req: Request, res: Response) => {
     lon,
   } = req.body;
 
-  if (!id) return res.status(400).json({ message: "Event ID is required." });
+  if (!id) return res.status(400).json({ message: 'Event ID is required.' });
 
   try {
     const existing = await prisma.local_event.findUnique({ where: { id } });
     if (!existing) {
-      return res.status(404).json({ message: "Local event not found." });
+      return res.status(404).json({ message: 'Local event not found.' });
     }
 
     const updated = await prisma.local_event.update({
@@ -145,7 +145,7 @@ export const updateLocalEvent = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      message: "Local event updated.",
+      message: 'Local event updated.',
       data: {
         id: updated.id,
         title: updated.title,
@@ -160,23 +160,23 @@ export const updateLocalEvent = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    res.status(404).json({ message: "Local event not found." });
+    res.status(404).json({ message: 'Local event not found.' });
   }
 };
 
 export const deleteLocalEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
-  if (!id) return res.status(400).json({ message: "Event ID is required." });
+  if (!id) return res.status(400).json({ message: 'Event ID is required.' });
 
   try {
     const existing = await prisma.local_event.findUnique({ where: { id } });
     if (!existing) {
-      return res.status(404).json({ message: "Local event not found." });
+      return res.status(404).json({ message: 'Local event not found.' });
     }
 
     await prisma.local_event.delete({ where: { id } });
-    res.status(200).json({ message: "Local event deleted successfully." });
+    res.status(200).json({ message: 'Local event deleted successfully.' });
   } catch (err) {
-    res.status(404).json({ message: "Local event not found." });
+    res.status(404).json({ message: 'Local event not found.' });
   }
 };

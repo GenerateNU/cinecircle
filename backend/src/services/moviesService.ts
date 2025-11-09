@@ -1,10 +1,10 @@
-import { api } from "./apiClient";
+import { api } from './apiClient';
 import type {
   GetMovieEnvelope,
   UpdateMovieInput,
   UpdateMovieEnvelope,
   DeleteMovieResponse,
-} from "../types/apiTypes";
+} from '../types/apiTypes';
 
 export function fetchAndSaveByTmdbId(tmdbId: string) {
   return api.get<GetMovieEnvelope>(`/movies/${tmdbId}`);
@@ -16,7 +16,7 @@ export function getMovieByCinecircleId(movieId: string) {
 
 export function updateMovieByCinecircleId(
   movieId: string,
-  payload: UpdateMovieInput,
+  payload: UpdateMovieInput
 ) {
   return api.put<UpdateMovieEnvelope>(`/movies/cinecircle/${movieId}`, payload);
 }

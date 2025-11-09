@@ -1,15 +1,15 @@
-import { Request, Response } from "express";
-import { prisma } from "../../services/db.js";
+import { Request, Response } from 'express';
+import { prisma } from '../../services/db.js';
 import {
   followUser,
   unfollowUser,
   getFollowers,
   getFollowing,
-} from "../../controllers/userFollows";
-import { AuthenticatedRequest } from "../../middleware/auth";
+} from '../../controllers/userFollows';
+import { AuthenticatedRequest } from '../../middleware/auth';
 
 // Mock dependencies - paths should match the actual imports
-jest.mock("../../services/db.js", () => ({
+jest.mock('../../services/db.js', () => ({
   prisma: {
     userFollow: {
       create: jest.fn(),
@@ -19,7 +19,7 @@ jest.mock("../../services/db.js", () => ({
   },
 }));
 
-jest.mock("../../controllers/user", () => ({
+jest.mock('../../controllers/user', () => ({
   mapUserProfileDbToApi: jest.fn((user) => ({
     userId: user.userId,
     username: user.username,
@@ -28,7 +28,7 @@ jest.mock("../../controllers/user", () => ({
   })),
 }));
 
-describe("Follow Controller", () => {
+describe('Follow Controller', () => {
   let mockReq: Partial<AuthenticatedRequest>;
   let mockRes: Partial<Response>;
   let jsonMock: jest.Mock;
@@ -46,128 +46,128 @@ describe("Follow Controller", () => {
     jest.clearAllMocks();
   });
 
-  describe("followUser", () => {
+  describe('followUser', () => {
     beforeEach(() => {
       mockReq = {
-        user: { id: "follower-id" },
-        body: { followingId: "following-id" },
+        user: { id: 'follower-id' },
+        body: { followingId: 'following-id' },
       } as AuthenticatedRequest;
     });
 
-    it("should return 400 if followerId is missing", async () => {
+    it('should return 400 if followerId is missing', async () => {
       mockReq.user = undefined;
 
       await followUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Missing follower or following ID",
+        message: 'Missing follower or following ID',
       });
       expect(prisma.userFollow.create).not.toHaveBeenCalled();
     });
 
-    it("should return 400 if followingId is missing", async () => {
+    it('should return 400 if followingId is missing', async () => {
       mockReq.body = {};
 
       await followUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Missing follower or following ID",
+        message: 'Missing follower or following ID',
       });
       expect(prisma.userFollow.create).not.toHaveBeenCalled();
     });
 
-    it("should return 409 if already following the user", async () => {
-      const duplicateError = { code: "P2002" };
+    it('should return 409 if already following the user', async () => {
+      const duplicateError = { code: 'P2002' };
       (prisma.userFollow.create as jest.Mock).mockRejectedValue(duplicateError);
 
       await followUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(409);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Already following this user",
+        message: 'Already following this user',
       });
     });
 
-    it("should return 500 on database error", async () => {
-      const dbError = new Error("Database error");
+    it('should return 500 on database error', async () => {
+      const dbError = new Error('Database error');
       (prisma.userFollow.create as jest.Mock).mockRejectedValue(dbError);
 
       await followUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Failed to follow user",
+        message: 'Failed to follow user',
       });
     });
   });
 
-  describe("unfollowUser", () => {
+  describe('unfollowUser', () => {
     beforeEach(() => {
       mockReq = {
-        user: { id: "follower-id" },
-        body: { followingId: "following-id" },
+        user: { id: 'follower-id' },
+        body: { followingId: 'following-id' },
       } as AuthenticatedRequest;
     });
 
-    it("should return 400 if followerId is missing", async () => {
+    it('should return 400 if followerId is missing', async () => {
       mockReq.user = undefined;
 
       await unfollowUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Missing follower or following ID",
+        message: 'Missing follower or following ID',
       });
       expect(prisma.userFollow.delete).not.toHaveBeenCalled();
     });
 
-    it("should return 400 if followingId is missing", async () => {
+    it('should return 400 if followingId is missing', async () => {
       mockReq.body = {};
 
       await unfollowUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Missing follower or following ID",
+        message: 'Missing follower or following ID',
       });
       expect(prisma.userFollow.delete).not.toHaveBeenCalled();
     });
 
-    it("should return 500 on database error", async () => {
-      const dbError = new Error("Database error");
+    it('should return 500 on database error', async () => {
+      const dbError = new Error('Database error');
       (prisma.userFollow.delete as jest.Mock).mockRejectedValue(dbError);
 
       await unfollowUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Failed to unfollow user",
+        message: 'Failed to unfollow user',
       });
     });
   });
 
-  describe("getFollowers", () => {
+  describe('getFollowers', () => {
     beforeEach(() => {
       mockReq = {
-        params: { userId: "user-id" },
+        params: { userId: 'user-id' },
       } as Partial<Request>;
     });
 
-    it("should return 500 on database error", async () => {
-      const dbError = new Error("Database error");
+    it('should return 500 on database error', async () => {
+      const dbError = new Error('Database error');
       (prisma.userFollow.findMany as jest.Mock).mockRejectedValue(dbError);
 
       await getFollowers(mockReq as Request, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Failed to get followers",
+        message: 'Failed to get followers',
       });
     });
 
-    it("should return empty array when user has no followers", async () => {
+    it('should return empty array when user has no followers', async () => {
       (prisma.userFollow.findMany as jest.Mock).mockResolvedValue([]);
 
       await getFollowers(mockReq as Request, mockRes as Response);
@@ -176,26 +176,26 @@ describe("Follow Controller", () => {
     });
   });
 
-  describe("getFollowing", () => {
+  describe('getFollowing', () => {
     beforeEach(() => {
       mockReq = {
-        params: { userId: "user-id" },
+        params: { userId: 'user-id' },
       } as Partial<Request>;
     });
 
-    it("should return 500 on database error", async () => {
-      const dbError = new Error("Database error");
+    it('should return 500 on database error', async () => {
+      const dbError = new Error('Database error');
       (prisma.userFollow.findMany as jest.Mock).mockRejectedValue(dbError);
 
       await getFollowing(mockReq as Request, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: "Failed to get following",
+        message: 'Failed to get following',
       });
     });
 
-    it("should return empty array when user is not following anyone", async () => {
+    it('should return empty array when user is not following anyone', async () => {
       (prisma.userFollow.findMany as jest.Mock).mockResolvedValue([]);
 
       await getFollowing(mockReq as Request, mockRes as Response);

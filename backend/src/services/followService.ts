@@ -1,6 +1,6 @@
 // src/services/followService.ts
-import { api } from "./apiClient";
-import type { FollowEdge } from "../types/models";
+import { api } from './apiClient';
+import type { FollowEdge } from '../types/models';
 
 /** POST /api/user/follow  Body: { followingId } */
 export function followUser(followingId: string) {

@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { prisma } from "../services/db.js";
-import { Prisma } from "@prisma/client";
+import { Request, Response } from 'express';
+import { prisma } from '../services/db.js';
+import { Prisma } from '@prisma/client';
 
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
@@ -10,13 +10,13 @@ export const createPost = async (req: Request, res: Response) => {
     // Validation
     if (!userId || !content) {
       return res.status(400).json({
-        message: "userId and content are required",
+        message: 'userId and content are required',
       });
     }
 
-    if (postType && !["LONG_POST", "SHORT_POST"].includes(postType)) {
+    if (postType && !['LONG_POST', 'SHORT_POST'].includes(postType)) {
       return res.status(400).json({
-        message: "Invalid postType. Must be LONG_POST or SHORT_POST",
+        message: 'Invalid postType. Must be LONG_POST or SHORT_POST',
       });
     }
 
@@ -26,7 +26,7 @@ export const createPost = async (req: Request, res: Response) => {
         where: { postId: parentPostId },
       });
       if (!parentPost) {
-        return res.status(404).json({ message: "Parent post not found" });
+        return res.status(404).json({ message: 'Parent post not found' });
       }
     }
 
@@ -36,7 +36,7 @@ export const createPost = async (req: Request, res: Response) => {
         where: { reviewId },
       });
       if (!review) {
-        return res.status(404).json({ message: "Review not found" });
+        return res.status(404).json({ message: 'Review not found' });
       }
     }
 
@@ -44,7 +44,7 @@ export const createPost = async (req: Request, res: Response) => {
       data: {
         userId,
         content,
-        postType: postType || "SHORT_POST",
+        postType: postType || 'SHORT_POST',
         parentPostId,
         reviewId,
       },
@@ -59,14 +59,14 @@ export const createPost = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
-      message: "Post created successfully",
+      message: 'Post created successfully',
       data: newPost,
     });
   } catch (err) {
-    console.error("createPost error:", err);
+    console.error('createPost error:', err);
     res.status(500).json({
-      message: "Failed to create post",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to create post',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -77,7 +77,7 @@ export const getPostById = async (req: Request, res: Response) => {
     const { postId } = req.params;
 
     if (!postId) {
-      return res.status(400).json({ message: "Post ID is required" });
+      return res.status(400).json({ message: 'Post ID is required' });
     }
 
     const post = await prisma.post.findUnique({
@@ -99,7 +99,7 @@ export const getPostById = async (req: Request, res: Response) => {
             },
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
         },
         likes: true,
@@ -108,11 +108,11 @@ export const getPostById = async (req: Request, res: Response) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     res.json({
-      message: "Post found successfully",
+      message: 'Post found successfully',
       data: {
         ...post,
         likeCount: post.likes.length,
@@ -120,10 +120,10 @@ export const getPostById = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.error("getPostById error:", err);
+    console.error('getPostById error:', err);
     res.status(500).json({
-      message: "Failed to retrieve post",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to retrieve post',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -135,15 +135,15 @@ export const getPosts = async (req: Request, res: Response) => {
       userId,
       postType,
       parentPostId,
-      limit = "20",
-      offset = "0",
+      limit = '20',
+      offset = '0',
     } = req.query;
 
     const where: Prisma.PostWhereInput = {};
 
     if (userId) where.userId = userId as string;
-    if (postType) where.postType = postType as "LONG_POST" | "SHORT_POST";
-    if (parentPostId === "null") {
+    if (postType) where.postType = postType as 'LONG_POST' | 'SHORT_POST';
+    if (parentPostId === 'null') {
       where.parentPostId = null; // Top-level posts only
     } else if (parentPostId) {
       where.parentPostId = parentPostId as string;
@@ -166,7 +166,7 @@ export const getPosts = async (req: Request, res: Response) => {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
       take: parseInt(limit as string),
       skip: parseInt(offset as string),
@@ -179,7 +179,7 @@ export const getPosts = async (req: Request, res: Response) => {
     }));
 
     res.json({
-      message: "Posts retrieved successfully",
+      message: 'Posts retrieved successfully',
       data: postsWithCounts,
       pagination: {
         limit: parseInt(limit as string),
@@ -188,10 +188,10 @@ export const getPosts = async (req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.error("getPosts error:", err);
+    console.error('getPosts error:', err);
     res.status(500).json({
-      message: "Failed to retrieve posts",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to retrieve posts',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -203,23 +203,23 @@ export const updatePost = async (req: Request, res: Response) => {
     const { content, postType } = req.body;
 
     if (!postId) {
-      return res.status(400).json({ message: "Post ID is required" });
+      return res.status(400).json({ message: 'Post ID is required' });
     }
 
     const updateData: Prisma.PostUpdateInput = {};
 
     if (content !== undefined) updateData.content = content;
     if (postType !== undefined) {
-      if (!["LONG_POST", "SHORT_POST"].includes(postType)) {
+      if (!['LONG_POST', 'SHORT_POST'].includes(postType)) {
         return res.status(400).json({
-          message: "Invalid postType",
+          message: 'Invalid postType',
         });
       }
       updateData.postType = postType;
     }
 
     if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({ message: "No fields to update" });
+      return res.status(400).json({ message: 'No fields to update' });
     }
 
     const updatedPost = await prisma.post.update({
@@ -236,22 +236,22 @@ export const updatePost = async (req: Request, res: Response) => {
     });
 
     res.json({
-      message: "Post updated successfully",
+      message: 'Post updated successfully',
       data: updatedPost,
     });
   } catch (err) {
-    console.error("updatePost error:", err);
+    console.error('updatePost error:', err);
 
     if (
       err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2025"
+      err.code === 'P2025'
     ) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     res.status(500).json({
-      message: "Failed to update post",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to update post',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -262,7 +262,7 @@ export const deletePost = async (req: Request, res: Response) => {
     const { postId } = req.params;
 
     if (!postId) {
-      return res.status(400).json({ message: "Post ID is required" });
+      return res.status(400).json({ message: 'Post ID is required' });
     }
 
     await prisma.post.delete({
@@ -270,21 +270,21 @@ export const deletePost = async (req: Request, res: Response) => {
     });
 
     res.json({
-      message: "Post deleted successfully",
+      message: 'Post deleted successfully',
     });
   } catch (err) {
-    console.error("deletePost error:", err);
+    console.error('deletePost error:', err);
 
     if (
       err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2025"
+      err.code === 'P2025'
     ) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     res.status(500).json({
-      message: "Failed to delete post",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to delete post',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -297,7 +297,7 @@ export const toggleLikePost = async (req: Request, res: Response) => {
 
     if (!postId || !userId) {
       return res.status(400).json({
-        message: "postId and userId are required",
+        message: 'postId and userId are required',
       });
     }
 
@@ -307,7 +307,7 @@ export const toggleLikePost = async (req: Request, res: Response) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     // Check if like already exists
@@ -329,7 +329,7 @@ export const toggleLikePost = async (req: Request, res: Response) => {
       });
 
       return res.json({
-        message: "Post unliked successfully",
+        message: 'Post unliked successfully',
         liked: false,
       });
     } else {
@@ -342,15 +342,15 @@ export const toggleLikePost = async (req: Request, res: Response) => {
       });
 
       return res.json({
-        message: "Post liked successfully",
+        message: 'Post liked successfully',
         liked: true,
       });
     }
   } catch (err) {
-    console.error("toggleLikePost error:", err);
+    console.error('toggleLikePost error:', err);
     res.status(500).json({
-      message: "Failed to toggle like",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to toggle like',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -361,7 +361,7 @@ export const getPostLikes = async (req: Request, res: Response) => {
     const { postId } = req.params;
 
     if (!postId) {
-      return res.status(400).json({ message: "Post ID is required" });
+      return res.status(400).json({ message: 'Post ID is required' });
     }
 
     const likes = await prisma.postLike.findMany({
@@ -375,20 +375,20 @@ export const getPostLikes = async (req: Request, res: Response) => {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     res.json({
-      message: "Likes retrieved successfully",
+      message: 'Likes retrieved successfully',
       data: likes,
       count: likes.length,
     });
   } catch (err) {
-    console.error("getPostLikes error:", err);
+    console.error('getPostLikes error:', err);
     res.status(500).json({
-      message: "Failed to retrieve likes",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to retrieve likes',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
@@ -399,7 +399,7 @@ export const getPostReplies = async (req: Request, res: Response) => {
     const { postId } = req.params;
 
     if (!postId) {
-      return res.status(400).json({ message: "Post ID is required" });
+      return res.status(400).json({ message: 'Post ID is required' });
     }
 
     const replies = await prisma.post.findMany({
@@ -419,7 +419,7 @@ export const getPostReplies = async (req: Request, res: Response) => {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -430,15 +430,15 @@ export const getPostReplies = async (req: Request, res: Response) => {
     }));
 
     res.json({
-      message: "Replies retrieved successfully",
+      message: 'Replies retrieved successfully',
       data: repliesWithCounts,
       count: replies.length,
     });
   } catch (err) {
-    console.error("getPostReplies error:", err);
+    console.error('getPostReplies error:', err);
     res.status(500).json({
-      message: "Failed to retrieve replies",
-      error: err instanceof Error ? err.message : "Unknown error",
+      message: 'Failed to retrieve replies',
+      error: err instanceof Error ? err.message : 'Unknown error',
     });
   }
 };
