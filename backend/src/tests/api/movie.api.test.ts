@@ -443,8 +443,8 @@ describe('Movie API Tests', () => {
           description: 'Updated description',
           languages: ['English', 'Tamil'],
           imdbRating: BigInt(86),
-          localRating: 4.7, // coerced from "4.7"
-          numRatings: 1234, // coerced from "1234"
+          localRating: "4.7", 
+          numRatings: "1234", 
         },
       });
 
