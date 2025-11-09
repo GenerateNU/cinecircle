@@ -7,7 +7,13 @@ import { HTTP_STATUS } from "../helpers/constants";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
 jest.mock('../../middleware/auth', () => ({
-    authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    authenticateUser: (req: AuthenticatedRequest, res: any, next: NextFunction) => {
+      // Check for Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+      
       req.user = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         email: 'testuser@example.com',
@@ -53,6 +59,7 @@ describe("User Profile API Tests", () => {
           data: {
             userId: TEST_USER_ID,
             username: "initialuser",
+            updatedAt: new Date(), // Add updatedAt
           },
         });
   
@@ -118,6 +125,7 @@ describe("User Profile API Tests", () => {
           data: {
             userId: TEST_USER_ID,
             username: "testuser",
+            updatedAt: new Date(), // Add updatedAt
           },
         });
       
@@ -177,6 +185,7 @@ describe("User Profile API Tests", () => {
             create: {
               userId: TEST_USER_ID,
               username: "testuser",
+              updatedAt: new Date(), // Add updatedAt
             },
           });
       
