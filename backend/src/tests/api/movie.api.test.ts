@@ -9,11 +9,9 @@ import {
 } from '../../controllers/tmdb.js';
 import { prisma } from '../../services/db.js';
 import { Prisma } from '@prisma/client';
-import axios from 'axios';
 
-// Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// Mock global fetch
+global.fetch = jest.fn();
 
 describe('Movie API Tests', () => {
   let app: express.Express;
@@ -29,16 +27,18 @@ describe('Movie API Tests', () => {
 
   describe('GET /movies/:movieId', () => {
     beforeEach(() => {
-      // Mock TMDB API responses
-      mockedAxios.get.mockResolvedValue({
-        data: {
+      // Mock TMDB API responses with fetch
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
           id: 278,
           title: 'The Shawshank Redemption',
           overview: 'Two imprisoned men bond over a number of years...',
           vote_average: 8.7,
           spoken_languages: [{ iso_639_1: 'en', name: 'English' }],
           vote_count: 25000,
-        },
+        }),
       });
     });
 
