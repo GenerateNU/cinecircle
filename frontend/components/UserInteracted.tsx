@@ -1,19 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Heart, Repeat2 } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
 
 interface InteractionHeaderProps {
     username: string;
-    interactionType: 'loved' | 'reposted'; // either loved or reposted (?)
+    interactionType: 'loved' | 'reposted';
     size?: 'small' | 'medium' | 'large';
 }
 
 export const InteractionHeader = ({
-    username, // e.g. Rowen
-    interactionType, // e.g. Loved
+    username,
+    interactionType,
     size = 'medium'
   }: InteractionHeaderProps) => {
-    // adjustable styles ? can be changed according to diff platforms
     const sizeConfig = {
       small: { iconSize: 14, fontSize: 12, spacing: 6 },
       medium: { iconSize: 16, fontSize: 14, spacing: 8 },
@@ -26,13 +25,14 @@ export const InteractionHeader = ({
     return (
         <View style={[styles.container, { gap: config.spacing }]}>
           {isLoved ? (
-            <Heart 
+            <Feather 
+              name="heart" 
               size={config.iconSize} 
               color="#6B7280" 
-              fill="#6B7280"
             />
           ) : (
-            <Repeat2 
+            <Feather 
+              name="repeat" 
               size={config.iconSize} 
               color="#6B7280"
             />
@@ -56,5 +56,3 @@ export const InteractionHeader = ({
           fontWeight: '500',
         },
       });
-
-

@@ -33,6 +33,7 @@
     "frontend:install": "cd frontend && npm install"
   },
   "dependencies": {
+    "expo": "^54.0.23",
     "lucide-react-native": "^0.548.0"
   }
 }
