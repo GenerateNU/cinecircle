@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../services/db.js';
+import { v4 as uuid } from 'uuid';
 
 type LocalEvent = {
   id: string;
@@ -72,6 +73,7 @@ export const createLocalEvent = async (req: Request, res: Response) => {
   try {
     const event = await prisma.local_event.create({
       data: {
+        id: uuid(),
         title,
         time: new Date(time),
         description,

@@ -75,6 +75,7 @@ describe('Local Event API Tests', () => {
       create: {
         userId: TEST_USER_ID,
         username: 'testuser',
+        updatedAt: new Date(),
       },
     });
     await prisma.local_event.createMany({ data: TEST_EVENTS });
@@ -219,8 +220,10 @@ describe('Local Event API Tests', () => {
   // ────────────────────────────────────────────────
   describe('DELETE /api/local-event/:id', () => {
     it('should delete an existing event successfully', async () => {
+      const { v4: uuid } = await import('uuid');
       const event = await prisma.local_event.create({
         data: {
+          id: uuid(),
           title: 'Disposable Event',
           time: new Date('2025-10-15T00:00:00Z'),
           description: 'Temporary test event',

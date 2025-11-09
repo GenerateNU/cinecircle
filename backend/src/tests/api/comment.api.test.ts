@@ -5,6 +5,7 @@ import { prisma } from '../../services/db';
 import jwt from 'jsonwebtoken';
 import { HTTP_STATUS } from '../helpers/constants';
 import { AuthenticatedRequest } from '../../middleware/auth';
+import { v4 as uuid } from 'uuid';
 
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (
@@ -64,6 +65,7 @@ describe('Comment API Tests', () => {
       create: {
         userId: TEST_USER_ID,
         username: 'testuser',
+        updatedAt: new Date(),
       },
     });
 
@@ -74,6 +76,7 @@ describe('Comment API Tests', () => {
       create: {
         userId: OTHER_USER_ID,
         username: 'otheruser',
+        updatedAt: new Date(),
       },
     });
   });
@@ -83,6 +86,7 @@ describe('Comment API Tests', () => {
     // Create a new rating for each test
     const rating = await prisma.rating.create({
       data: {
+        id: uuid(),
         userId: TEST_USER_ID,
         movieId: 'test-movie-555',
         stars: 5,
@@ -94,6 +98,7 @@ describe('Comment API Tests', () => {
     // Create a new post for each test
     const post = await prisma.post.create({
       data: {
+        id: uuid(),
         userId: TEST_USER_ID,
         type: 'SHORT',
         content: 'This is a test post!',
@@ -105,6 +110,7 @@ describe('Comment API Tests', () => {
     // Create a test comment
     const comment = await prisma.comment.create({
       data: {
+        id: uuid(),
         userId: TEST_USER_ID,
         ratingId: testRatingId,
         postId: testPostId,
@@ -218,6 +224,7 @@ describe('Comment API Tests', () => {
     it("should return 403 when updating another user's comment", async () => {
       const otherUserComment = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: OTHER_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -311,6 +318,7 @@ describe('Comment API Tests', () => {
       // Create a comment owned by another user
       const otherUserComment = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: OTHER_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -345,6 +353,7 @@ describe('Comment API Tests', () => {
       // Create multiple child comments
       const childComment1 = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -356,6 +365,7 @@ describe('Comment API Tests', () => {
 
       const childComment2 = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: OTHER_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -430,6 +440,7 @@ describe('Comment API Tests', () => {
       // Create child comments
       const reply1 = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -441,6 +452,7 @@ describe('Comment API Tests', () => {
 
       const reply2 = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: OTHER_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -496,6 +508,7 @@ describe('Comment API Tests', () => {
       // Create a child comment
       const reply = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -522,6 +535,7 @@ describe('Comment API Tests', () => {
       // Create a child comment
       const childComment = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: OTHER_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -534,6 +548,7 @@ describe('Comment API Tests', () => {
       // Create a grandchild comment (reply to the child)
       const grandchildComment = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -571,6 +586,7 @@ describe('Comment API Tests', () => {
       // Create a child comment
       const childComment = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -603,6 +619,7 @@ describe('Comment API Tests', () => {
       // Create a child comment
       const childComment = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -647,6 +664,7 @@ describe('Comment API Tests', () => {
       // Create a separate parent comment for this test
       const separateParent = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -658,6 +676,7 @@ describe('Comment API Tests', () => {
       // Create child comments
       const child1 = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,
@@ -669,6 +688,7 @@ describe('Comment API Tests', () => {
 
       const child2 = await prisma.comment.create({
         data: {
+          id: uuid(),
           userId: OTHER_USER_ID,
           ratingId: testRatingId,
           postId: testPostId,

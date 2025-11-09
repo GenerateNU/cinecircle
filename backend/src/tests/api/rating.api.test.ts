@@ -5,6 +5,7 @@ import { prisma } from '../../services/db';
 import jwt from 'jsonwebtoken';
 import { HTTP_STATUS } from '../helpers/constants';
 import { AuthenticatedRequest } from '../../middleware/auth';
+import { v4 as uuid } from 'uuid';
 
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (
@@ -168,6 +169,7 @@ describe('Ratings API Tests', () => {
     beforeAll(async () => {
       const rating = await prisma.rating.create({
         data: {
+          id: uuid(),
           userId: TEST_USER_ID,
           movieId: 'movie-4',
           stars: 2,

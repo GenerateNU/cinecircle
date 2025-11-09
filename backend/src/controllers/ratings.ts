@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import type { Response } from 'express';
+import { v4 as uuid } from 'uuid';
 
 const prisma = new PrismaClient();
 
@@ -26,6 +27,7 @@ export const createRating = async (
       });
     }
     const newRatingData = {
+      id: uuid(),
       userId: req.user.id,
       movieId: req.body.movieId,
       stars,
