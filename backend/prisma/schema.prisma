@@ -111,20 +111,21 @@ model mfa_challenges {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model mfa_factors {
-  id                   String           @id @db.Uuid
-  user_id              String           @db.Uuid
-  friendly_name        String?
-  factor_type          factor_type
-  status               factor_status
-  created_at           DateTime         @db.Timestamptz(6)
-  updated_at           DateTime         @db.Timestamptz(6)
-  secret               String?
-  phone                String?
-  last_challenged_at   DateTime?        @unique @db.Timestamptz(6)
-  web_authn_credential Json?
-  web_authn_aaguid     String?          @db.Uuid
-  mfa_challenges       mfa_challenges[]
-  users                auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                           String           @id @db.Uuid
+  user_id                      String           @db.Uuid
+  friendly_name                String?
+  factor_type                  factor_type
+  status                       factor_status
+  created_at                   DateTime         @db.Timestamptz(6)
+  updated_at                   DateTime         @db.Timestamptz(6)
+  secret                       String?
+  phone                        String?
+  last_challenged_at           DateTime?        @unique @db.Timestamptz(6)
+  web_authn_credential         Json?
+  web_authn_aaguid             String?          @db.Uuid
+  last_webauthn_challenge_data Json?
+  mfa_challenges               mfa_challenges[]
+  users                        auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, phone], map: "unique_phone_factor_per_user")
   @@index([user_id, created_at], map: "factor_id_created_at_idx")
@@ -285,22 +286,24 @@ model schema_migrations {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model sessions {
-  id              String           @id @db.Uuid
-  user_id         String           @db.Uuid
-  created_at      DateTime?        @db.Timestamptz(6)
-  updated_at      DateTime?        @db.Timestamptz(6)
-  factor_id       String?          @db.Uuid
-  aal             aal_level?
-  not_after       DateTime?        @db.Timestamptz(6)
-  refreshed_at    DateTime?        @db.Timestamp(6)
-  user_agent      String?
-  ip              String?          @db.Inet
-  tag             String?
-  oauth_client_id String?          @db.Uuid
-  mfa_amr_claims  mfa_amr_claims[]
-  refresh_tokens  refresh_tokens[]
-  oauth_clients   oauth_clients?   @relation(fields: [oauth_client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users           auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                     String           @id @db.Uuid
+  user_id                String           @db.Uuid
+  created_at             DateTime?        @db.Timestamptz(6)
+  updated_at             DateTime?        @db.Timestamptz(6)
+  factor_id              String?          @db.Uuid
+  aal                    aal_level?
+  not_after              DateTime?        @db.Timestamptz(6)
+  refreshed_at           DateTime?        @db.Timestamp(6)
+  user_agent             String?
+  ip                     String?          @db.Inet
+  tag                    String?
+  oauth_client_id        String?          @db.Uuid
+  refresh_token_hmac_key String?
+  refresh_token_counter  BigInt?
+  mfa_amr_claims         mfa_amr_claims[]
+  refresh_tokens         refresh_tokens[]
+  oauth_clients          oauth_clients?   @relation(fields: [oauth_client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                  auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([not_after(sort: Desc)])
   @@index([oauth_client_id])

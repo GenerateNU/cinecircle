@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { prisma } from "../services/db.js";
-import { PrismaClient } from "@prisma/client";
 
 type LocalEvent = {
   id: string;
@@ -21,7 +20,8 @@ export const getLocalEvent = async (req: Request, res: Response) => {
 
   try {
     const event = await prisma.local_event.findUnique({ where: { id } });
-    if (!event) return res.status(404).json({ message: "Local event not found." });
+    if (!event)
+      return res.status(404).json({ message: "Local event not found." });
 
     const data: LocalEvent = {
       id: event.id,
@@ -43,7 +43,17 @@ export const getLocalEvent = async (req: Request, res: Response) => {
 };
 
 export const createLocalEvent = async (req: Request, res: Response) => {
-  const { title, time, description, genre, languages, cost, occasion, lat, lon } = req.body;
+  const {
+    title,
+    time,
+    description,
+    genre,
+    languages,
+    cost,
+    occasion,
+    lat,
+    lon,
+  } = req.body;
 
   if (
     !title ||
@@ -99,7 +109,17 @@ export const createLocalEvent = async (req: Request, res: Response) => {
 
 export const updateLocalEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, time, description, genre, languages, cost, occasion, lat, lon } = req.body;
+  const {
+    title,
+    time,
+    description,
+    genre,
+    languages,
+    cost,
+    occasion,
+    lat,
+    lon,
+  } = req.body;
 
   if (!id) return res.status(400).json({ message: "Event ID is required." });
 

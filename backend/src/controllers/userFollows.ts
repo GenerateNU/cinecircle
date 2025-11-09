@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import { prisma } from '../services/db';
+import { Request, Response } from "express";
+import { prisma } from "../services/db";
 import type { Prisma } from "@prisma/client";
-import type { AuthenticatedRequest } from '../middleware/auth';
+import type { AuthenticatedRequest } from "../middleware/auth";
 import { mapUserProfileDbToApi } from "./user";
 import { FollowEdge } from "../types/models";
 
@@ -10,7 +10,9 @@ export const followUser = async (req: AuthenticatedRequest, res: Response) => {
   const { followingId } = req.body;
 
   if (!followerId || !followingId) {
-    return res.status(400).json({ message: 'Missing follower or following ID' });
+    return res
+      .status(400)
+      .json({ message: "Missing follower or following ID" });
   }
 
   try {
@@ -19,20 +21,25 @@ export const followUser = async (req: AuthenticatedRequest, res: Response) => {
     });
     res.status(201).json({ message: `You are now following ${followingId}` });
   } catch (error) {
-    if ((error as any).code === 'P2002') {
-      return res.status(409).json({ message: 'Already following this user' });
+    if ((error as any).code === "P2002") {
+      return res.status(409).json({ message: "Already following this user" });
     }
-    console.error('followUser error:', error);
-    res.status(500).json({ message: 'Failed to follow user' });
+    console.error("followUser error:", error);
+    res.status(500).json({ message: "Failed to follow user" });
   }
 };
 
-export const unfollowUser = async (req: AuthenticatedRequest, res: Response) => {
+export const unfollowUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   const followerId = req.user?.id;
   const { followingId } = req.body;
 
   if (!followerId || !followingId) {
-    return res.status(400).json({ message: 'Missing follower or following ID' });
+    return res
+      .status(400)
+      .json({ message: "Missing follower or following ID" });
   }
 
   try {
@@ -43,8 +50,8 @@ export const unfollowUser = async (req: AuthenticatedRequest, res: Response) => 
     });
     res.json({ message: `Unfollowed user ${followingId}` });
   } catch (error) {
-    console.error('unfollowUser error:', error);
-    res.status(500).json({ message: 'Failed to unfollow user' });
+    console.error("unfollowUser error:", error);
+    res.status(500).json({ message: "Failed to unfollow user" });
   }
 };
 
@@ -54,9 +61,9 @@ export const getFollowers = async (req: Request, res: Response) => {
   try {
     const followers = await prisma.userFollow.findMany({
       where: { followingId: userId },
-      include: { 
+      include: {
         follower: true,
-        following: true 
+        following: true,
       },
     });
 
@@ -64,8 +71,8 @@ export const getFollowers = async (req: Request, res: Response) => {
 
     res.json({ followers: mappedFollowers });
   } catch (error) {
-    console.error('getFollowers error:', error);
-    res.status(500).json({ message: 'Failed to get followers' });
+    console.error("getFollowers error:", error);
+    res.status(500).json({ message: "Failed to get followers" });
   }
 };
 
@@ -75,9 +82,9 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const following = await prisma.userFollow.findMany({
       where: { followerId: userId },
-      include: { 
+      include: {
         follower: true,
-        following: true 
+        following: true,
       },
     });
 
@@ -85,8 +92,8 @@ export const getFollowing = async (req: Request, res: Response) => {
 
     res.json({ following: mappedFollowing });
   } catch (error) {
-    console.error('getFollowing error:', error);
-    res.status(500).json({ message: 'Failed to get following' });
+    console.error("getFollowing error:", error);
+    res.status(500).json({ message: "Failed to get following" });
   }
 };
 
@@ -104,6 +111,8 @@ export function mapUserFollowDbToApi(row: UserFollowWithProfiles): FollowEdge {
   };
 }
 
-export function mapUserFollowsDbToApi(rows: UserFollowWithProfiles[]): FollowEdge[] {
+export function mapUserFollowsDbToApi(
+  rows: UserFollowWithProfiles[],
+): FollowEdge[] {
   return rows.map(mapUserFollowDbToApi);
 }

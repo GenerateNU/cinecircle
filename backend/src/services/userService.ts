@@ -26,9 +26,13 @@ export function deleteUserProfile() {
 }
 
 export function getUserRatings(userId: string) {
-  return api.get<GetUserRatingsResponse>(`/api/user/ratings`, { user_id: userId });
+  return api.get<GetUserRatingsResponse>(`/api/user/ratings`, {
+    user_id: userId,
+  });
 }
 
 export function getUserComments(userId: string) {
-  return api.get<GetUserCommentsResponse>(`/api/user/comments`, { user_id: userId });
+  return api.get<GetUserCommentsResponse>(`/api/user/comments`, {
+    user_id: userId,
+  });
 }

@@ -8,7 +8,9 @@ import { prisma } from "../services/db";
  */
 export const getComment = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] getComment called by user: ${req.user?.id || "unknown"}`);
+  console.log(
+    `[${timestamp}] getComment called by user: ${req.user?.id || "unknown"}`,
+  );
 
   if (!req.user) {
     console.log(`[${timestamp}] getComment failed: Unauthorized`);
@@ -33,15 +35,15 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const comment = await prisma.comment.findUnique({
       where: { id },
-      ...(includeReplies === 'true' && {
+      ...(includeReplies === "true" && {
         include: {
           child_comment: {
             orderBy: {
-              createdAt: 'asc'
-            }
-          }
-        }
-      })
+              createdAt: "asc",
+            },
+          },
+        },
+      }),
     });
 
     if (!comment) {
@@ -66,9 +68,14 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
  * POST /api/comment
  * Body: { content: string, postId?: string, ratingId?: string, parentId?: string }
  */
-export const createComment = async (req: AuthenticatedRequest, res: Response) => {
+export const createComment = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] createComment called by user: ${req.user?.id || "unknown"}`);
+  console.log(
+    `[${timestamp}] createComment called by user: ${req.user?.id || "unknown"}`,
+  );
 
   if (!req.user) {
     return res.status(401).json({
@@ -117,9 +124,14 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
  * PUT /api/comment/:id
  * Body: { content?: string }
  */
-export const updateComment = async (req: AuthenticatedRequest, res: Response) => {
+export const updateComment = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] updateComment called by user: ${req.user?.id || "unknown"}`);
+  console.log(
+    `[${timestamp}] updateComment called by user: ${req.user?.id || "unknown"}`,
+  );
 
   if (!req.user) {
     return res.status(401).json({
@@ -183,9 +195,14 @@ export const updateComment = async (req: AuthenticatedRequest, res: Response) =>
 /**
  * DELETE /api/comment/:id
  */
-export const deleteComment = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteComment = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] deleteComment called by user: ${req.user?.id || "unknown"}`);
+  console.log(
+    `[${timestamp}] deleteComment called by user: ${req.user?.id || "unknown"}`,
+  );
 
   if (!req.user) {
     return res.status(401).json({

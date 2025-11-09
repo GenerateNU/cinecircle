@@ -1,4 +1,9 @@
-import { createPost, getPostById, updatePost, deletePost } from "../../controllers/post.js";
+import {
+  createPost,
+  getPostById,
+  updatePost,
+  deletePost,
+} from "../../controllers/post.js";
 import { Request, Response } from "express";
 import { prisma } from "../../services/db.js";
 import { Prisma } from "@prisma/client";
@@ -64,7 +69,9 @@ describe("Post Controller Unit Tests", () => {
         },
       };
 
-      jest.spyOn(prisma.post, "create").mockResolvedValueOnce(mockCreatedPost as any);
+      jest
+        .spyOn(prisma.post, "create")
+        .mockResolvedValueOnce(mockCreatedPost as any);
 
       await createPost(mockRequest as Request, mockResponse as Response);
 
@@ -136,11 +143,17 @@ describe("Post Controller Unit Tests", () => {
           username: "testuser",
         },
         replies: [{ postId: "reply-1" }, { postId: "reply-2" }],
-        likes: [{ likeId: "like-1" }, { likeId: "like-2" }, { likeId: "like-3" }],
+        likes: [
+          { likeId: "like-1" },
+          { likeId: "like-2" },
+          { likeId: "like-3" },
+        ],
         review: null,
       };
 
-      jest.spyOn(prisma.post, "findUnique").mockResolvedValueOnce(mockPost as any);
+      jest
+        .spyOn(prisma.post, "findUnique")
+        .mockResolvedValueOnce(mockPost as any);
 
       await getPostById(mockRequest as Request, mockResponse as Response);
 
@@ -189,7 +202,9 @@ describe("Post Controller Unit Tests", () => {
         },
       };
 
-      jest.spyOn(prisma.post, "update").mockResolvedValueOnce(mockUpdatedPost as any);
+      jest
+        .spyOn(prisma.post, "update")
+        .mockResolvedValueOnce(mockUpdatedPost as any);
 
       await updatePost(mockRequest as Request, mockResponse as Response);
 
@@ -203,10 +218,13 @@ describe("Post Controller Unit Tests", () => {
       mockRequest.params = { postId: "non-existent" };
       mockRequest.body = { content: "Updated" };
 
-      const prismaError = new Prisma.PrismaClientKnownRequestError("Not found", {
-        code: "P2025",
-        clientVersion: "4.0.0",
-      });
+      const prismaError = new Prisma.PrismaClientKnownRequestError(
+        "Not found",
+        {
+          code: "P2025",
+          clientVersion: "4.0.0",
+        },
+      );
 
       jest.spyOn(prisma.post, "update").mockRejectedValueOnce(prismaError);
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
@@ -241,10 +259,13 @@ describe("Post Controller Unit Tests", () => {
     it("should return 404 if post not found", async () => {
       mockRequest.params = { postId: "non-existent" };
 
-      const prismaError = new Prisma.PrismaClientKnownRequestError("Not found", {
-        code: "P2025",
-        clientVersion: "4.0.0",
-      });
+      const prismaError = new Prisma.PrismaClientKnownRequestError(
+        "Not found",
+        {
+          code: "P2025",
+          clientVersion: "4.0.0",
+        },
+      );
 
       jest.spyOn(prisma.post, "delete").mockRejectedValueOnce(prismaError);
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();

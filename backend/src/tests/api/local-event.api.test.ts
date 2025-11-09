@@ -6,12 +6,16 @@ import { prisma } from "../../services/db";
 import jwt from "jsonwebtoken";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
-jest.mock('../../middleware/auth', () => ({
-  authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+jest.mock("../../middleware/auth", () => ({
+  authenticateUser: (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     req.user = {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      email: 'testuser@example.com',
-      role: 'USER',
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      email: "testuser@example.com",
+      role: "USER",
     };
     next();
   },
@@ -27,7 +31,7 @@ describe("Local Event API Tests", () => {
     return jwt.sign(
       { id: TEST_USER_ID, email: TEST_USER_EMAIL, role: TEST_USER_ROLE },
       process.env.JWT_SECRET || "test-secret",
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   };
 
@@ -115,7 +119,7 @@ describe("Local Event API Tests", () => {
     });
 
     it("should return 400 if the ID param is missing", async () => {
-      const response = await request(app)
+      await request(app)
         .get("/api/local-event/")
         .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND); // Express catches this as 404 (no route)
@@ -234,9 +238,7 @@ describe("Local Event API Tests", () => {
         .set(authHeader())
         .expect(HTTP_STATUS.OK);
 
-      expect(response.body.message).toBe(
-        "Local event deleted successfully."
-      );
+      expect(response.body.message).toBe("Local event deleted successfully.");
 
       const check = await prisma.local_event.findUnique({
         where: { id: event.id },

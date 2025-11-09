@@ -6,18 +6,22 @@ import jwt from "jsonwebtoken";
 import { HTTP_STATUS } from "../helpers/constants";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
-jest.mock('../../middleware/auth', () => ({
-  authenticateUser: (req: AuthenticatedRequest, res: any, next: NextFunction) => {
+jest.mock("../../middleware/auth", () => ({
+  authenticateUser: (
+    req: AuthenticatedRequest,
+    res: any,
+    next: NextFunction,
+  ) => {
     // Check for Authorization header
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'User not authenticated' });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "User not authenticated" });
     }
-    
+
     req.user = {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      email: 'testuser@example.com',
-      role: 'USER',
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      email: "testuser@example.com",
+      role: "USER",
     };
     next();
   },
@@ -32,7 +36,7 @@ describe("Ratings API Tests", () => {
     return jwt.sign(
       { id: TEST_USER_ID, email: "testuser@example.com", role: "USER" },
       process.env.JWT_SECRET || "test-secret",
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   };
 
@@ -108,7 +112,10 @@ describe("Ratings API Tests", () => {
         .set(authHeader())
         .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(res.body).toHaveProperty("message", "Stars must be between 0 and 5");
+      expect(res.body).toHaveProperty(
+        "message",
+        "Stars must be between 0 and 5",
+      );
     });
   });
 
@@ -117,20 +124,20 @@ describe("Ratings API Tests", () => {
       await prisma.rating.createMany({
         data: [
           {
-            id: 'rating-1',
+            id: "rating-1",
             userId: TEST_USER_ID,
             movieId: "movie-2",
             stars: 4,
             date: new Date(),
-            votes: 0, 
+            votes: 0,
           },
           {
-            id: 'rating-2',
+            id: "rating-2",
             userId: TEST_USER_ID,
             movieId: "movie-3",
             stars: 3,
             date: new Date(),
-            votes: 0, 
+            votes: 0,
           },
         ],
       });
@@ -180,7 +187,9 @@ describe("Ratings API Tests", () => {
 
       expect(res.body).toHaveProperty("message", "Rating deleted");
 
-      const deleted = await prisma.rating.findUnique({ where: { id: ratingId } });
+      const deleted = await prisma.rating.findUnique({
+        where: { id: ratingId },
+      });
       expect(deleted).toBeNull();
     });
 

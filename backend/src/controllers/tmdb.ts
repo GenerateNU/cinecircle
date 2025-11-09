@@ -46,8 +46,10 @@ export function mapTmdbToMovie(
       .map((l) => l.english_name)
       .filter(Boolean) as string[],
     imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75 (stored as BigInt)
-    localRating: defaults.localRating !== undefined ? String(defaults.localRating) : "0",
-    numRatings: defaults.numRatings !== undefined ? String(defaults.numRatings) : "0",
+    localRating:
+      defaults.localRating !== undefined ? String(defaults.localRating) : "0",
+    numRatings:
+      defaults.numRatings !== undefined ? String(defaults.numRatings) : "0",
   };
 }
 
@@ -117,7 +119,8 @@ export const getMovie = async (req: Request, res: Response) => {
 // PUT /movies/:movieId
 export const updateMovie = async (req: Request, res: Response) => {
   const { movieId } = req.params;
-  if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
+  if (!movieId)
+    return res.status(400).json({ message: "Movie ID is required" });
 
   const body = req.body as Partial<Movie>;
   const updateData = mapMovieToPrismaUpdate(body);
@@ -134,14 +137,20 @@ export const updateMovie = async (req: Request, res: Response) => {
 
     const movieResponse = {
       ...updatedMovie,
-      imdbRating: updatedMovie.imdbRating != null ? Number(updatedMovie.imdbRating) : null,
+      imdbRating:
+        updatedMovie.imdbRating != null
+          ? Number(updatedMovie.imdbRating)
+          : null,
     };
 
     res.json({ message: "Movie updated successfully", data: movieResponse });
   } catch (err) {
     console.error("updateMovie error:", err);
 
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
       return res.status(404).json({ message: "Movie not found" });
     }
 
@@ -185,7 +194,8 @@ export const deleteMovie = async (req: Request, res: Response) => {
 
 export const getMovieById = async (req: Request, res: Response) => {
   const { movieId } = req.params;
-  if (!movieId) return res.status(400).json({ message: "Movie ID is required" });
+  if (!movieId)
+    return res.status(400).json({ message: "Movie ID is required" });
 
   try {
     const movie = await prisma.movie.findUnique({ where: { movieId } });
@@ -209,9 +219,9 @@ const isNonEmptyString = (v: unknown): v is string =>
 
 const toBigIntNullable = (
   v: unknown,
-  { forUpdate = false }: { forUpdate?: boolean } = {}
+  { forUpdate = false }: { forUpdate?: boolean } = {},
 ): bigint | null | undefined => {
-  if (v === undefined) return undefined;  // skip
+  if (v === undefined) return undefined; // skip
   if (v === null) return forUpdate ? null : undefined; // update: explicit null, create: skip
 
   if (typeof v === "bigint") return v;
@@ -237,8 +247,8 @@ const toBigIntNullable = (
 };
 
 const toJsonStringArray = (v: unknown): string[] | undefined => {
-  if (v == null) return undefined;              // undefined or null => skip
-  if (Array.isArray(v)) return v.filter(x => x != null).map(String);
+  if (v == null) return undefined; // undefined or null => skip
+  if (Array.isArray(v)) return v.filter((x) => x != null).map(String);
   return undefined;
 };
 
@@ -255,12 +265,14 @@ export function mapMovieDbToApi(dbMovie: Prisma.movieGetPayload<{}>): Movie {
   };
 }
 
-export function mapMoviesDbToApi(dbMovies: Prisma.movieGetPayload<{}>[]): Movie[] {
+export function mapMoviesDbToApi(
+  dbMovies: Prisma.movieGetPayload<{}>[],
+): Movie[] {
   return dbMovies.map(mapMovieDbToApi);
 }
 
 export const mapMovieToPrismaUpdate = (
-  patch: Partial<Movie>
+  patch: Partial<Movie>,
 ): Prisma.movieUpdateInput => {
   const data: Prisma.movieUpdateInput = {};
 
@@ -269,17 +281,16 @@ export const mapMovieToPrismaUpdate = (
 
   if ("languages" in patch) {
     if (patch.languages === null) {
-      data.languages = Prisma.DbNull;             // clear JSON column
+      data.languages = Prisma.DbNull; // clear JSON column
     } else {
       data.languages = toJsonStringArray(patch.languages); // string[] | undefined
     }
   }
 
   if ("imdbRating" in patch) {
-    data.imdbRating = toBigIntNullable(patch.imdbRating, { forUpdate: true }) as
-      | bigint
-      | null
-      | undefined;
+    data.imdbRating = toBigIntNullable(patch.imdbRating, {
+      forUpdate: true,
+    }) as bigint | null | undefined;
   }
 
   if ("localRating" in patch) {
@@ -304,5 +315,3 @@ export const mapMovieToPrismaUpdate = (
 
   return data;
 };
-
-

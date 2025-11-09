@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import { prisma } from "../../services/db.js";
 import {
   followUser,
@@ -7,11 +7,11 @@ import {
   getFollowing,
   mapUserFollowDbToApi,
   mapUserFollowsDbToApi,
-} from '../../controllers/userFollows';
+} from "../../controllers/userFollows";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
 // Mock dependencies - paths should match the actual imports
-jest.mock('../../services/db.js', () => ({
+jest.mock("../../services/db.js", () => ({
   prisma: {
     userFollow: {
       create: jest.fn(),
@@ -21,7 +21,7 @@ jest.mock('../../services/db.js', () => ({
   },
 }));
 
-jest.mock('../../controllers/user', () => ({
+jest.mock("../../controllers/user", () => ({
   mapUserProfileDbToApi: jest.fn((user) => ({
     userId: user.userId,
     username: user.username,
@@ -30,7 +30,7 @@ jest.mock('../../controllers/user', () => ({
   })),
 }));
 
-describe('Follow Controller', () => {
+describe("Follow Controller", () => {
   let mockReq: Partial<AuthenticatedRequest>;
   let mockRes: Partial<Response>;
   let jsonMock: jest.Mock;
@@ -39,7 +39,7 @@ describe('Follow Controller', () => {
   beforeEach(() => {
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
-    
+
     mockRes = {
       json: jsonMock,
       status: statusMock,
@@ -48,49 +48,49 @@ describe('Follow Controller', () => {
     jest.clearAllMocks();
   });
 
-  describe('followUser', () => {
+  describe("followUser", () => {
     beforeEach(() => {
       mockReq = {
-        user: { id: 'follower-id' },
-        body: { followingId: 'following-id' },
+        user: { id: "follower-id" },
+        body: { followingId: "following-id" },
       } as AuthenticatedRequest;
     });
 
-    it('should successfully follow a user', async () => {
+    it("should successfully follow a user", async () => {
       (prisma.userFollow.create as jest.Mock).mockResolvedValue({
-        id: 'follow-id',
-        followerId: 'follower-id',
-        followingId: 'following-id',
+        id: "follow-id",
+        followerId: "follower-id",
+        followingId: "following-id",
       });
 
       await followUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(prisma.userFollow.create).toHaveBeenCalledWith({
         data: {
-          followerId: 'follower-id',
-          followingId: 'following-id',
+          followerId: "follower-id",
+          followingId: "following-id",
         },
       });
       expect(statusMock).toHaveBeenCalledWith(201);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: 'You are now following following-id',
+        message: "You are now following following-id",
       });
     });
   });
 
-  describe('unfollowUser', () => {
+  describe("unfollowUser", () => {
     beforeEach(() => {
       mockReq = {
-        user: { id: 'follower-id' },
-        body: { followingId: 'following-id' },
+        user: { id: "follower-id" },
+        body: { followingId: "following-id" },
       } as AuthenticatedRequest;
     });
 
-    it('should successfully unfollow a user', async () => {
+    it("should successfully unfollow a user", async () => {
       (prisma.userFollow.delete as jest.Mock).mockResolvedValue({
-        id: 'follow-id',
-        followerId: 'follower-id',
-        followingId: 'following-id',
+        id: "follow-id",
+        followerId: "follower-id",
+        followingId: "following-id",
       });
 
       await unfollowUser(mockReq as AuthenticatedRequest, mockRes as Response);
@@ -98,64 +98,66 @@ describe('Follow Controller', () => {
       expect(prisma.userFollow.delete).toHaveBeenCalledWith({
         where: {
           followerId_followingId: {
-            followerId: 'follower-id',
-            followingId: 'following-id',
+            followerId: "follower-id",
+            followingId: "following-id",
           },
         },
       });
       expect(jsonMock).toHaveBeenCalledWith({
-        message: 'Unfollowed user following-id',
+        message: "Unfollowed user following-id",
       });
     });
   });
 
-  describe('getFollowers', () => {
+  describe("getFollowers", () => {
     beforeEach(() => {
       mockReq = {
-        params: { userId: 'user-id' },
+        params: { userId: "user-id" },
       } as Partial<Request>;
     });
 
-    it('should successfully get followers', async () => {
+    it("should successfully get followers", async () => {
       const mockFollowers = [
         {
-          id: 'follow-1',
-          followerId: 'follower-1',
-          followingId: 'user-id',
+          id: "follow-1",
+          followerId: "follower-1",
+          followingId: "user-id",
           follower: {
-            userId: 'follower-1',
-            username: 'follower1',
-            email: 'follower1@test.com',
+            userId: "follower-1",
+            username: "follower1",
+            email: "follower1@test.com",
           },
           following: {
-            userId: 'user-id',
-            username: 'user',
-            email: 'user@test.com',
+            userId: "user-id",
+            username: "user",
+            email: "user@test.com",
           },
         },
         {
-          id: 'follow-2',
-          followerId: 'follower-2',
-          followingId: 'user-id',
+          id: "follow-2",
+          followerId: "follower-2",
+          followingId: "user-id",
           follower: {
-            userId: 'follower-2',
-            username: 'follower2',
-            email: 'follower2@test.com',
+            userId: "follower-2",
+            username: "follower2",
+            email: "follower2@test.com",
           },
           following: {
-            userId: 'user-id',
-            username: 'user',
-            email: 'user@test.com',
+            userId: "user-id",
+            username: "user",
+            email: "user@test.com",
           },
         },
       ];
 
-      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(mockFollowers);
+      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(
+        mockFollowers,
+      );
 
       await getFollowers(mockReq as Request, mockRes as Response);
 
       expect(prisma.userFollow.findMany).toHaveBeenCalledWith({
-        where: { followingId: 'user-id' },
+        where: { followingId: "user-id" },
         include: {
           follower: true,
           following: true,
@@ -164,20 +166,20 @@ describe('Follow Controller', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         followers: expect.arrayContaining([
           expect.objectContaining({
-            id: 'follow-1',
-            followerId: 'follower-1',
-            followingId: 'user-id',
+            id: "follow-1",
+            followerId: "follower-1",
+            followingId: "user-id",
           }),
           expect.objectContaining({
-            id: 'follow-2',
-            followerId: 'follower-2',
-            followingId: 'user-id',
+            id: "follow-2",
+            followerId: "follower-2",
+            followingId: "user-id",
           }),
         ]),
       });
     });
 
-    it('should return empty array when user has no followers', async () => {
+    it("should return empty array when user has no followers", async () => {
       (prisma.userFollow.findMany as jest.Mock).mockResolvedValue([]);
 
       await getFollowers(mockReq as Request, mockRes as Response);
@@ -186,53 +188,55 @@ describe('Follow Controller', () => {
     });
   });
 
-  describe('getFollowing', () => {
+  describe("getFollowing", () => {
     beforeEach(() => {
       mockReq = {
-        params: { userId: 'user-id' },
+        params: { userId: "user-id" },
       } as Partial<Request>;
     });
 
-    it('should successfully get following', async () => {
+    it("should successfully get following", async () => {
       const mockFollowing = [
         {
-          id: 'follow-1',
-          followerId: 'user-id',
-          followingId: 'following-1',
+          id: "follow-1",
+          followerId: "user-id",
+          followingId: "following-1",
           follower: {
-            userId: 'user-id',
-            username: 'user',
-            email: 'user@test.com',
+            userId: "user-id",
+            username: "user",
+            email: "user@test.com",
           },
           following: {
-            userId: 'following-1',
-            username: 'following1',
-            email: 'following1@test.com',
+            userId: "following-1",
+            username: "following1",
+            email: "following1@test.com",
           },
         },
         {
-          id: 'follow-2',
-          followerId: 'user-id',
-          followingId: 'following-2',
+          id: "follow-2",
+          followerId: "user-id",
+          followingId: "following-2",
           follower: {
-            userId: 'user-id',
-            username: 'user',
-            email: 'user@test.com',
+            userId: "user-id",
+            username: "user",
+            email: "user@test.com",
           },
           following: {
-            userId: 'following-2',
-            username: 'following2',
-            email: 'following2@test.com',
+            userId: "following-2",
+            username: "following2",
+            email: "following2@test.com",
           },
         },
       ];
 
-      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(mockFollowing);
+      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(
+        mockFollowing,
+      );
 
       await getFollowing(mockReq as Request, mockRes as Response);
 
       expect(prisma.userFollow.findMany).toHaveBeenCalledWith({
-        where: { followerId: 'user-id' },
+        where: { followerId: "user-id" },
         include: {
           follower: true,
           following: true,
@@ -241,20 +245,20 @@ describe('Follow Controller', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         following: expect.arrayContaining([
           expect.objectContaining({
-            id: 'follow-1',
-            followerId: 'user-id',
-            followingId: 'following-1',
+            id: "follow-1",
+            followerId: "user-id",
+            followingId: "following-1",
           }),
           expect.objectContaining({
-            id: 'follow-2',
-            followerId: 'user-id',
-            followingId: 'following-2',
+            id: "follow-2",
+            followerId: "user-id",
+            followingId: "following-2",
           }),
         ]),
       });
     });
 
-    it('should return empty array when user is not following anyone', async () => {
+    it("should return empty array when user is not following anyone", async () => {
       (prisma.userFollow.findMany as jest.Mock).mockResolvedValue([]);
 
       await getFollowing(mockReq as Request, mockRes as Response);
@@ -263,53 +267,53 @@ describe('Follow Controller', () => {
     });
   });
 
-  describe('mapUserFollowDbToApi', () => {
-    it('should map database follow to API follow with profiles', () => {
+  describe("mapUserFollowDbToApi", () => {
+    it("should map database follow to API follow with profiles", () => {
       const dbFollow = {
-        id: 'follow-id',
-        followerId: 'follower-id',
-        followingId: 'following-id',
+        id: "follow-id",
+        followerId: "follower-id",
+        followingId: "following-id",
         follower: {
-          userId: 'follower-id',
-          username: 'follower',
-          email: 'follower@test.com',
+          userId: "follower-id",
+          username: "follower",
+          email: "follower@test.com",
         },
         following: {
-          userId: 'following-id',
-          username: 'following',
-          email: 'following@test.com',
+          userId: "following-id",
+          username: "following",
+          email: "following@test.com",
         },
       } as any;
 
       const result = mapUserFollowDbToApi(dbFollow);
 
       expect(result).toEqual({
-        id: 'follow-id',
-        followerId: 'follower-id',
-        followingId: 'following-id',
+        id: "follow-id",
+        followerId: "follower-id",
+        followingId: "following-id",
         follower: expect.objectContaining({
-          userId: 'follower-id',
-          username: 'follower',
-          email: 'follower@test.com',
+          userId: "follower-id",
+          username: "follower",
+          email: "follower@test.com",
         }),
         following: expect.objectContaining({
-          userId: 'following-id',
-          username: 'following',
-          email: 'following@test.com',
+          userId: "following-id",
+          username: "following",
+          email: "following@test.com",
         }),
       });
     });
 
-    it('should handle missing follower profile', () => {
+    it("should handle missing follower profile", () => {
       const dbFollow = {
-        id: 'follow-id',
-        followerId: 'follower-id',
-        followingId: 'following-id',
+        id: "follow-id",
+        followerId: "follower-id",
+        followingId: "following-id",
         follower: null,
         following: {
-          userId: 'following-id',
-          username: 'following',
-          email: 'following@test.com',
+          userId: "following-id",
+          username: "following",
+          email: "following@test.com",
         },
       } as any;
 
@@ -319,15 +323,15 @@ describe('Follow Controller', () => {
       expect(result.following).toBeDefined();
     });
 
-    it('should handle missing following profile', () => {
+    it("should handle missing following profile", () => {
       const dbFollow = {
-        id: 'follow-id',
-        followerId: 'follower-id',
-        followingId: 'following-id',
+        id: "follow-id",
+        followerId: "follower-id",
+        followingId: "following-id",
         follower: {
-          userId: 'follower-id',
-          username: 'follower',
-          email: 'follower@test.com',
+          userId: "follower-id",
+          username: "follower",
+          email: "follower@test.com",
         },
         following: null,
       } as any;
@@ -339,37 +343,37 @@ describe('Follow Controller', () => {
     });
   });
 
-  describe('mapUserFollowsDbToApi', () => {
-    it('should map multiple database follows to API follows', () => {
+  describe("mapUserFollowsDbToApi", () => {
+    it("should map multiple database follows to API follows", () => {
       const dbFollows = [
         {
-          id: 'follow-1',
-          followerId: 'follower-1',
-          followingId: 'following-1',
+          id: "follow-1",
+          followerId: "follower-1",
+          followingId: "following-1",
           follower: {
-            userId: 'follower-1',
-            username: 'follower1',
-            email: 'follower1@test.com',
+            userId: "follower-1",
+            username: "follower1",
+            email: "follower1@test.com",
           },
           following: {
-            userId: 'following-1',
-            username: 'following1',
-            email: 'following1@test.com',
+            userId: "following-1",
+            username: "following1",
+            email: "following1@test.com",
           },
         },
         {
-          id: 'follow-2',
-          followerId: 'follower-2',
-          followingId: 'following-2',
+          id: "follow-2",
+          followerId: "follower-2",
+          followingId: "following-2",
           follower: {
-            userId: 'follower-2',
-            username: 'follower2',
-            email: 'follower2@test.com',
+            userId: "follower-2",
+            username: "follower2",
+            email: "follower2@test.com",
           },
           following: {
-            userId: 'following-2',
-            username: 'following2',
-            email: 'following2@test.com',
+            userId: "following-2",
+            username: "following2",
+            email: "following2@test.com",
           },
         },
       ] as any[];
@@ -377,11 +381,11 @@ describe('Follow Controller', () => {
       const result = mapUserFollowsDbToApi(dbFollows);
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('follow-1');
-      expect(result[1].id).toBe('follow-2');
+      expect(result[0].id).toBe("follow-1");
+      expect(result[1].id).toBe("follow-2");
     });
 
-    it('should return empty array for empty input', () => {
+    it("should return empty array for empty input", () => {
       const result = mapUserFollowsDbToApi([]);
 
       expect(result).toEqual([]);

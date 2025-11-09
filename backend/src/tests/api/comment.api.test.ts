@@ -7,7 +7,11 @@ import { HTTP_STATUS } from "../helpers/constants";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
 jest.mock("../../middleware/auth", () => ({
-  authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  authenticateUser: (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     req.user = {
       id: "123e4567-e89b-12d3-a456-426614174000",
       email: "testuser@example.com",
@@ -32,7 +36,7 @@ describe("Comment API Tests", () => {
     return jwt.sign(
       { id: TEST_USER_ID, email: TEST_USER_EMAIL, role: TEST_USER_ROLE },
       process.env.JWT_SECRET || "test-secret",
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   };
 
@@ -43,15 +47,12 @@ describe("Comment API Tests", () => {
   // Create app and set up user profiles
   beforeAll(async () => {
     app = createApp();
-    
+
     // Clean up any existing test data
-    await prisma.comment.deleteMany({ 
-      where: { 
-        OR: [
-          { userId: TEST_USER_ID },
-          { userId: OTHER_USER_ID }
-        ]
-      } 
+    await prisma.comment.deleteMany({
+      where: {
+        OR: [{ userId: TEST_USER_ID }, { userId: OTHER_USER_ID }],
+      },
     });
     await prisma.post.deleteMany({ where: { userId: TEST_USER_ID } });
     await prisma.rating.deleteMany({ where: { userId: TEST_USER_ID } });
@@ -118,35 +119,36 @@ describe("Comment API Tests", () => {
   afterEach(async () => {
     // Delete comments first (they reference ratings and posts)
     if (testCommentId) {
-      await prisma.comment.deleteMany({ 
-        where: { 
-          OR: [
-            { id: testCommentId },
-            { ratingId: testRatingId },
-            { postId: testPostId }
-          ]
-        } 
-      }).catch(() => {});
+      await prisma.comment
+        .deleteMany({
+          where: {
+            OR: [
+              { id: testCommentId },
+              { ratingId: testRatingId },
+              { postId: testPostId },
+            ],
+          },
+        })
+        .catch(() => {});
     }
-    
+
     // Then delete posts and ratings
     if (testPostId) {
       await prisma.post.delete({ where: { id: testPostId } }).catch(() => {});
     }
     if (testRatingId) {
-      await prisma.rating.delete({ where: { id: testRatingId } }).catch(() => {});
+      await prisma.rating
+        .delete({ where: { id: testRatingId } })
+        .catch(() => {});
     }
   });
 
   // Clean up at the end
   afterAll(async () => {
-    await prisma.comment.deleteMany({ 
-      where: { 
-        OR: [
-          { userId: TEST_USER_ID },
-          { userId: OTHER_USER_ID }
-        ]
-      } 
+    await prisma.comment.deleteMany({
+      where: {
+        OR: [{ userId: TEST_USER_ID }, { userId: OTHER_USER_ID }],
+      },
     });
     await prisma.post.deleteMany({ where: { userId: TEST_USER_ID } });
     await prisma.rating.deleteMany({ where: { userId: TEST_USER_ID } });
@@ -160,7 +162,7 @@ describe("Comment API Tests", () => {
         .set(authHeader())
         .expect(HTTP_STATUS.OK)
         .expect("Content-Type", /json/);
-      
+
       expect(res.body).toHaveProperty("comment");
       expect(res.body).toHaveProperty("message");
       expect(res.body).toHaveProperty("timestamp");
@@ -176,12 +178,12 @@ describe("Comment API Tests", () => {
 
     it("should return 404 for non-existent comment", async () => {
       const nonExistentId = "999e4567-e89b-12d3-a456-426614174999";
-      
+
       const res = await request(app)
         .get(`/api/comment/${nonExistentId}`)
         .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND);
-      
+
       expect(res.body.message).toEqual("Comment not found");
     });
   });
@@ -189,7 +191,7 @@ describe("Comment API Tests", () => {
   describe("PUT /api/comment/:id", () => {
     it("should update comment content", async () => {
       const payload = {
-        content: "The test contents are now updated!"
+        content: "The test contents are now updated!",
       };
 
       const res = await request(app)
@@ -197,7 +199,7 @@ describe("Comment API Tests", () => {
         .send(payload)
         .set(authHeader())
         .expect(HTTP_STATUS.OK);
-      
+
       expect(res.body.comment).toMatchObject({
         id: testCommentId,
         userId: TEST_USER_ID,
@@ -206,9 +208,11 @@ describe("Comment API Tests", () => {
 
       // Verify the update persisted
       const updatedComment = await prisma.comment.findUnique({
-        where: { id: testCommentId }
+        where: { id: testCommentId },
       });
-      expect(updatedComment?.content).toBe("The test contents are now updated!");
+      expect(updatedComment?.content).toBe(
+        "The test contents are now updated!",
+      );
     });
 
     it("should return 403 when updating another user's comment", async () => {
@@ -223,18 +227,20 @@ describe("Comment API Tests", () => {
       });
 
       const payload = {
-        content: "Trying to update someone else's comment!"
+        content: "Trying to update someone else's comment!",
       };
-      
+
       const res = await request(app)
         .put(`/api/comment/${otherUserComment.id}`)
         .send(payload)
         .set(authHeader())
         .expect("Content-Type", /json/)
         .expect(403);
-      
-      expect(res.body.message).toEqual("You do not have permission to edit this comment");
-      
+
+      expect(res.body.message).toEqual(
+        "You do not have permission to edit this comment",
+      );
+
       // Clean up
       await prisma.comment.delete({ where: { id: otherUserComment.id } });
     });
@@ -242,29 +248,29 @@ describe("Comment API Tests", () => {
     it("should return 404 when updating non-existent comment", async () => {
       const nonExistentId = "999e4567-e89b-12d3-a456-426614174999";
       const payload = {
-        content: "Updated content"
+        content: "Updated content",
       };
-      
+
       const res = await request(app)
         .put(`/api/comment/${nonExistentId}`)
         .send(payload)
         .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND);
-      
+
       expect(res.body.message).toEqual("Comment not found");
     });
 
     it("should return 400 when content is empty", async () => {
       const payload = {
-        content: ""
+        content: "",
       };
-      
+
       const res = await request(app)
         .put(`/api/comment/${testCommentId}`)
         .send(payload)
         .set(authHeader())
         .expect(HTTP_STATUS.BAD_REQUEST);
-      
+
       expect(res.body.message).toBe("Content must be a non-empty string");
     });
   });
@@ -275,29 +281,29 @@ describe("Comment API Tests", () => {
         .delete(`/api/comment/${testCommentId}`)
         .set(authHeader())
         .expect(HTTP_STATUS.OK);
-      
+
       expect(res.body).toHaveProperty("message");
       expect(res.body).toHaveProperty("timestamp");
       expect(res.body.message).toContain("deleted");
-      
+
       // Verify the comment is actually deleted
       const deletedComment = await prisma.comment.findUnique({
-        where: { id: testCommentId }
+        where: { id: testCommentId },
       });
       expect(deletedComment).toBeNull();
-      
+
       // Clear testCommentId so afterEach doesn't try to delete it again
       testCommentId = "";
     });
 
     it("should return 404 when deleting non-existent comment", async () => {
       const nonExistentId = "999e4567-e89b-12d3-a456-426614174999";
-      
+
       const res = await request(app)
         .delete(`/api/comment/${nonExistentId}`)
         .set(authHeader())
         .expect(HTTP_STATUS.NOT_FOUND);
-      
+
       expect(res.body.message).toEqual("Comment not found");
     });
 
@@ -318,15 +324,17 @@ describe("Comment API Tests", () => {
         .set(authHeader())
         .expect("Content-Type", /json/)
         .expect(403);
-      
-      expect(res.body.message).toEqual("You do not have permission to delete this comment");
-      
+
+      expect(res.body.message).toEqual(
+        "You do not have permission to delete this comment",
+      );
+
       // Verify comment still exists
       const stillExists = await prisma.comment.findUnique({
-        where: { id: otherUserComment.id }
+        where: { id: otherUserComment.id },
       });
       expect(stillExists).not.toBeNull();
-      
+
       // Clean up
       await prisma.comment.delete({ where: { id: otherUserComment.id } });
     });
@@ -363,8 +371,8 @@ describe("Comment API Tests", () => {
         include: {
           child_comment: {
             orderBy: {
-              createdAt: 'asc'
-            }
+              createdAt: "asc",
+            },
           },
         },
       });
@@ -394,9 +402,12 @@ describe("Comment API Tests", () => {
         .send(payload)
         .set(authHeader())
         .expect(HTTP_STATUS.CREATED);
-      
+
       expect(res.body.comment).toHaveProperty("parentId", testCommentId);
-      expect(res.body.comment).toHaveProperty("content", "This is a reply to the parent comment");
+      expect(res.body.comment).toHaveProperty(
+        "content",
+        "This is a reply to the parent comment",
+      );
       expect(res.body.comment).toHaveProperty("userId", TEST_USER_ID);
 
       // Verify the parent-child relationship
@@ -407,7 +418,9 @@ describe("Comment API Tests", () => {
         },
       });
 
-      expect(parentComment?.child_comment.some(c => c.id === res.body.comment.id)).toBe(true);
+      expect(
+        parentComment?.child_comment.some((c) => c.id === res.body.comment.id),
+      ).toBe(true);
 
       // Clean up
       await prisma.comment.delete({ where: { id: res.body.comment.id } });
@@ -442,20 +455,20 @@ describe("Comment API Tests", () => {
         .get(`/api/comment/${testCommentId}?includeReplies=true`)
         .set(authHeader())
         .expect(HTTP_STATUS.OK);
-      
+
       // If the API doesn't support includeReplies yet, skip this part
       // Otherwise, verify the response includes child comments
       if (res.body.comment.child_comment) {
         expect(res.body.comment.child_comment).toBeInstanceOf(Array);
         expect(res.body.comment.child_comment.length).toBe(2);
-        
+
         // Verify replies are ordered chronologically
         expect(res.body.comment.child_comment[0]).toMatchObject({
           id: reply1.id,
           content: "First reply",
           parentId: testCommentId,
         });
-        
+
         expect(res.body.comment.child_comment[1]).toMatchObject({
           id: reply2.id,
           content: "Second reply",
@@ -466,12 +479,12 @@ describe("Comment API Tests", () => {
         // Verify using direct Prisma query instead
         const commentWithReplies = await prisma.comment.findUnique({
           where: { id: testCommentId },
-          include: { child_comment: { orderBy: { createdAt: 'asc' } } }
+          include: { child_comment: { orderBy: { createdAt: "asc" } } },
         });
-        
+
         expect(commentWithReplies?.child_comment).toBeInstanceOf(Array);
         expect(commentWithReplies?.child_comment.length).toBe(2);
-        console.log('Note: API does not yet support includeReplies parameter');
+        console.log("Note: API does not yet support includeReplies parameter");
       }
 
       // Clean up
@@ -497,7 +510,7 @@ describe("Comment API Tests", () => {
         .get(`/api/comment/${testCommentId}`)
         .set(authHeader())
         .expect(HTTP_STATUS.OK);
-      
+
       // Should not include child_comment in response
       expect(res.body.comment).not.toHaveProperty("child_comment");
 
@@ -545,7 +558,9 @@ describe("Comment API Tests", () => {
       expect(parentWithTree?.child_comment.length).toBe(1);
       expect(parentWithTree?.child_comment[0].id).toBe(childComment.id);
       expect(parentWithTree?.child_comment[0].child_comment.length).toBe(1);
-      expect(parentWithTree?.child_comment[0].child_comment[0].id).toBe(grandchildComment.id);
+      expect(parentWithTree?.child_comment[0].child_comment[0].id).toBe(
+        grandchildComment.id,
+      );
 
       // Clean up (delete in reverse order to avoid FK constraints)
       await prisma.comment.delete({ where: { id: grandchildComment.id } });
@@ -576,7 +591,9 @@ describe("Comment API Tests", () => {
       expect(childWithParent).not.toBeNull();
       expect(childWithParent?.parent_comment).not.toBeNull();
       expect(childWithParent?.parent_comment?.id).toBe(testCommentId);
-      expect(childWithParent?.parent_comment?.content).toBe("This is a test comment!");
+      expect(childWithParent?.parent_comment?.content).toBe(
+        "This is a test comment!",
+      );
 
       // Clean up
       await prisma.comment.delete({ where: { id: childComment.id } });
@@ -599,7 +616,7 @@ describe("Comment API Tests", () => {
       // Prisma/PostgreSQL doesn't automatically prevent this at the DB level
       // This should be prevented by application logic, not the database
       // For now, we'll test that we can detect this condition
-      
+
       // Update parent to point to child (this will create a circular reference)
       await prisma.comment.update({
         where: { id: testCommentId },
@@ -616,13 +633,13 @@ describe("Comment API Tests", () => {
 
       // Your application should have validation to prevent this
       // This test documents that the database allows it but shouldn't
-      
+
       // Clean up - reset parent
       await prisma.comment.update({
         where: { id: testCommentId },
         data: { parentId: null },
       });
-      
+
       await prisma.comment.delete({ where: { id: childComment.id } });
     });
 
@@ -665,8 +682,12 @@ describe("Comment API Tests", () => {
       await prisma.comment.delete({ where: { id: separateParent.id } });
 
       // Verify children behavior based on your schema's onDelete setting
-      const remainingChild1 = await prisma.comment.findUnique({ where: { id: child1.id } });
-      const remainingChild2 = await prisma.comment.findUnique({ where: { id: child2.id } });
+      const remainingChild1 = await prisma.comment.findUnique({
+        where: { id: child1.id },
+      });
+      const remainingChild2 = await prisma.comment.findUnique({
+        where: { id: child2.id },
+      });
 
       // Your schema appears to use SET NULL (not CASCADE)
       // Children should still exist but with parentId set to null

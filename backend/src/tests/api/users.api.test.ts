@@ -1,28 +1,32 @@
 import request from "supertest";
 import express, { NextFunction } from "express";
-import { createApp } from "../../app"; 
+import { createApp } from "../../app";
 import { prisma } from "../../services/db";
 import jwt from "jsonwebtoken";
 import { HTTP_STATUS } from "../helpers/constants";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
-jest.mock('../../middleware/auth', () => ({
-    authenticateUser: (req: AuthenticatedRequest, res: any, next: NextFunction) => {
-      // Check for Authorization header
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'User not authenticated' });
-      }
-      
-      req.user = {
-        id: '123e4567-e89b-12d3-a456-426614174000',
-        email: 'testuser@example.com',
-        role: 'USER',
-      };
-      next();
-    },
-  })); 
-  
+jest.mock("../../middleware/auth", () => ({
+  authenticateUser: (
+    req: AuthenticatedRequest,
+    res: any,
+    next: NextFunction,
+  ) => {
+    // Check for Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    req.user = {
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      email: "testuser@example.com",
+      role: "USER",
+    };
+    next();
+  },
+}));
+
 describe("User Profile API Tests", () => {
   let app: express.Express;
   const TEST_USER_ID = "123e4567-e89b-12d3-a456-426614174000";
@@ -33,7 +37,7 @@ describe("User Profile API Tests", () => {
     return jwt.sign(
       { id: TEST_USER_ID, email: TEST_USER_EMAIL, role: TEST_USER_ROLE },
       process.env.JWT_SECRET || "test-secret",
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   };
 
@@ -52,35 +56,33 @@ describe("User Profile API Tests", () => {
   });
 
   describe("GET /api/user/profile", () => {
-
-      it("should return user profile for authenticated user", async () => {
-        // Ensure user profile exists
-        await prisma.userProfile.create({
-          data: {
-            userId: TEST_USER_ID,
-            username: "initialuser",
-            updatedAt: new Date(), // Add updatedAt
-          },
-        });
-  
-        const res = await request(app)
-          .get("/api/user/profile")
-          .set(authHeader())
-          .expect(HTTP_STATUS.OK)
-          .expect("Content-Type", /json/);
-  
-        expect(res.body).toHaveProperty("message");
-        expect(res.body).toHaveProperty("user");
-        expect(res.body.user).toEqual({
-          id: TEST_USER_ID,
-          email: TEST_USER_EMAIL,
-          role: TEST_USER_ROLE,
-        });
+    it("should return user profile for authenticated user", async () => {
+      // Ensure user profile exists
+      await prisma.userProfile.create({
+        data: {
+          userId: TEST_USER_ID,
+          username: "initialuser",
+          updatedAt: new Date(), // Add updatedAt
+        },
       });
+
+      const res = await request(app)
+        .get("/api/user/profile")
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK)
+        .expect("Content-Type", /json/);
+
+      expect(res.body).toHaveProperty("message");
+      expect(res.body).toHaveProperty("user");
+      expect(res.body.user).toEqual({
+        id: TEST_USER_ID,
+        email: TEST_USER_EMAIL,
+        role: TEST_USER_ROLE,
+      });
+    });
   });
 
   describe("PUT /api/user/profile", () => {
-
     it("should update user profile fields", async () => {
       const payload = {
         username: "updateduser",
@@ -102,7 +104,6 @@ describe("User Profile API Tests", () => {
   });
 
   describe("DELETE /api/user/profile", () => {
-
     it("should delete the user profile", async () => {
       const res = await request(app)
         .delete("/api/user/profile")
@@ -121,34 +122,33 @@ describe("User Profile API Tests", () => {
 
   describe("GET /api/user/ratings", () => {
     beforeAll(async () => {
-        await prisma.userProfile.create({
-          data: {
-            userId: TEST_USER_ID,
-            username: "testuser",
-            updatedAt: new Date(), // Add updatedAt
-          },
-        });
-      
-        await prisma.rating.createMany({
-          data: [
-            {
-              id: 'rating-1',
-              userId: TEST_USER_ID,
-              movieId: "movie-1",
-              stars: 4,
-              date: new Date(),
-            },
-            {
-              id: 'rating-2',
-              userId: TEST_USER_ID,
-              movieId: "movie-2",
-              stars: 5,
-              date: new Date(),
-            },
-          ],
-        });
+      await prisma.userProfile.create({
+        data: {
+          userId: TEST_USER_ID,
+          username: "testuser",
+          updatedAt: new Date(), // Add updatedAt
+        },
       });
-      
+
+      await prisma.rating.createMany({
+        data: [
+          {
+            id: "rating-1",
+            userId: TEST_USER_ID,
+            movieId: "movie-1",
+            stars: 4,
+            date: new Date(),
+          },
+          {
+            id: "rating-2",
+            userId: TEST_USER_ID,
+            movieId: "movie-2",
+            stars: 5,
+            date: new Date(),
+          },
+        ],
+      });
+    });
 
     afterAll(async () => {
       await prisma.rating.deleteMany({
@@ -173,71 +173,73 @@ describe("User Profile API Tests", () => {
         .set(authHeader())
         .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(res.body).toHaveProperty("message", "Missing or invalid 'user_id' parameter");
+      expect(res.body).toHaveProperty(
+        "message",
+        "Missing or invalid 'user_id' parameter",
+      );
     });
   });
 
   describe("GET /api/user/comments", () => {
     beforeAll(async () => {
-        await prisma.userProfile.upsert({
-            where: { userId: TEST_USER_ID },
-            update: {},
-            create: {
-              userId: TEST_USER_ID,
-              username: "testuser",
-              updatedAt: new Date(), // Add updatedAt
-            },
-          });
-      
-        // Create a post
-        const post = await prisma.post.create({
-          data: {
-            id: 'post-1',
-            userId: TEST_USER_ID,
-            content: 'Test content',
-            type: 'SHORT',
-          },
-        });
-      
-        // Create a rating
-        const rating = await prisma.rating.create({
-          data: {
-            id: 'rating-comment-1',
-            userId: TEST_USER_ID,
-            movieId: "movie-1",
-            stars: 5,
-            date: new Date(),
-          },
-        });
-      
-        // Create comments
-        await prisma.comment.createMany({
-          data: [
-            {
-              id: 'comment-1',
-              userId: TEST_USER_ID,
-              ratingId: rating.id,
-              postId: post.id,
-              content: 'Awesome!',
-              createdAt: new Date(),
-            },
-            {
-              id: 'comment-2',
-              userId: TEST_USER_ID,
-              ratingId: rating.id,
-              postId: post.id,
-              content: 'Loved it!',
-              createdAt: new Date(),
-            },
-          ],
-        });
+      await prisma.userProfile.upsert({
+        where: { userId: TEST_USER_ID },
+        update: {},
+        create: {
+          userId: TEST_USER_ID,
+          username: "testuser",
+          updatedAt: new Date(), // Add updatedAt
+        },
       });
-      
+
+      // Create a post
+      const post = await prisma.post.create({
+        data: {
+          id: "post-1",
+          userId: TEST_USER_ID,
+          content: "Test content",
+          type: "SHORT",
+        },
+      });
+
+      // Create a rating
+      const rating = await prisma.rating.create({
+        data: {
+          id: "rating-comment-1",
+          userId: TEST_USER_ID,
+          movieId: "movie-1",
+          stars: 5,
+          date: new Date(),
+        },
+      });
+
+      // Create comments
+      await prisma.comment.createMany({
+        data: [
+          {
+            id: "comment-1",
+            userId: TEST_USER_ID,
+            ratingId: rating.id,
+            postId: post.id,
+            content: "Awesome!",
+            createdAt: new Date(),
+          },
+          {
+            id: "comment-2",
+            userId: TEST_USER_ID,
+            ratingId: rating.id,
+            postId: post.id,
+            content: "Loved it!",
+            createdAt: new Date(),
+          },
+        ],
+      });
+    });
 
     afterAll(async () => {
       await prisma.comment.deleteMany({ where: { userId: TEST_USER_ID } });
       await prisma.rating.deleteMany({ where: { userId: TEST_USER_ID } });
-      await prisma.post.deleteMany({ where: { id: 'post-1' } });
+      await prisma.post.deleteMany({ where: { id: "post-1" } });
     });
 
     it("should return comments for the user", async () => {
@@ -257,8 +259,10 @@ describe("User Profile API Tests", () => {
         .set(authHeader())
         .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(res.body).toHaveProperty("message", "Missing or invalid 'user_id' parameter");
+      expect(res.body).toHaveProperty(
+        "message",
+        "Missing or invalid 'user_id' parameter",
+      );
     });
   });
-
 });

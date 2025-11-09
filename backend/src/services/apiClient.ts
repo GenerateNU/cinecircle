@@ -1,8 +1,4 @@
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-
-import Config from "react-native-config";
-
+/* eslint-disable no-undef */
 /**
  * Usage:
  *   import { api } from "./apiClient";
@@ -20,7 +16,10 @@ export class ApiError extends Error {
   url?: string;
   body?: unknown;
 
-  constructor(message: string, opts?: { status?: number; url?: string; body?: unknown }) {
+  constructor(
+    message: string,
+    opts?: { status?: number; url?: string; body?: unknown },
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = opts?.status;
@@ -34,7 +33,7 @@ type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type ApiClientOptions = {
   baseUrl: string;
   getToken?: () => string | undefined;
-  defaultHeaders?: HeadersInit;
+  defaultHeaders?: Record<string, string>;
   timeoutMs?: number;
 };
 
@@ -93,7 +92,10 @@ export class ApiClient {
 
   private withTimeout<T>(promise: Promise<T>, ms: number) {
     return new Promise<T>((resolve, reject) => {
-      const id = setTimeout(() => reject(new ApiError(`Request timed out after ${ms}ms`)), ms);
+      const id = setTimeout(
+        () => reject(new ApiError(`Request timed out after ${ms}ms`)),
+        ms,
+      );
       promise.then(
         (v) => {
           clearTimeout(id);
@@ -110,17 +112,18 @@ export class ApiClient {
   private async request<T>(
     method: HttpMethod,
     path: string,
-    opts?: { body?: unknown; headers?: HeadersInit; signal?: AbortSignal }
+    opts?: { body?: unknown; headers?: HeadersInit; signal?: AbortSignal },
   ): Promise<T> {
     const url = joinUrl(this.baseUrl, path);
 
     // Pass FormData through; otherwise JSON.stringify bodies
-    const isForm = typeof FormData !== "undefined" && opts?.body instanceof FormData;
+    const isForm =
+      typeof FormData !== "undefined" && opts?.body instanceof FormData;
     const bodyInit = isForm
       ? (opts?.body as BodyInit)
       : opts?.body !== undefined
-      ? JSON.stringify(opts.body)
-      : undefined;
+        ? JSON.stringify(opts.body)
+        : undefined;
 
     const init: RequestInit = {
       method,
@@ -179,12 +182,9 @@ export class ApiClient {
   }
 }
 
-const BASE_URL =
-  Config.API_BASE_URL ||
-  "http://localhost:3000"; 
+const BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
 
 export const api = new ApiClient({
   baseUrl: BASE_URL,
-  getToken: () =>
-    typeof window !== "undefined" ? localStorage.getItem("token") || undefined : undefined,
+  getToken: () => undefined, // Token handling for backend if needed
 });
