@@ -96,6 +96,12 @@ describe('Movie API Tests', () => {
     });
 
     it('should return 500 for invalid TMDB ID', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
       const response = await request(app)
         .get('/movies/invalid-tmdb-id')
         .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
@@ -105,7 +111,12 @@ describe('Movie API Tests', () => {
     });
 
     it('should handle TMDB API errors gracefully', async () => {
-      // Using a non-existent TMDB ID
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
       const response = await request(app)
         .get('/movies/999999999')
         .expect(HTTP_STATUS.INTERNAL_SERVER_ERROR);
