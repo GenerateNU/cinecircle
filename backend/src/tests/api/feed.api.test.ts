@@ -49,7 +49,7 @@ beforeAll(async () => {
 
 describe("GET /api/feed", () => {
     beforeAll(async () => {
-      // Ensure profile exists
+      // make sure profile exists
       await prisma.userProfile.upsert({
         where: { userId: TEST_USER_ID },
         update: {},
@@ -60,7 +60,7 @@ describe("GET /api/feed", () => {
         },
       });
   
-      // Follow another user
+      // follow user
       await prisma.userProfile.create({
         data: {
           userId: FOLLOWED_USER_ID,
@@ -77,7 +77,7 @@ describe("GET /api/feed", () => {
         },
       });
   
-      // Create a rating and post from followed user
+      // create a rating and post from followed user
       await prisma.rating.create({
         data: {
           id: "rating-feed-1",
@@ -132,7 +132,7 @@ describe("GET /api/feed", () => {
     });
   
     it("should return fallback feed if user follows no one", async () => {
-      // Clear follows
+      // clear follows
       await prisma.userFollow.deleteMany({ where: { followerId: TEST_USER_ID } });
   
       const res = await request(app)

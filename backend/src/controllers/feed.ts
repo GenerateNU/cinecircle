@@ -12,14 +12,14 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
   }
 
   try {
-    // Step 1: Get IDs of users they follow
+    // get ids of followed users
     const following = await prisma.userFollow.findMany({
       where: { followerId: user.id },
       select: { followingId: true },
     });
     const followingIds = following.map((f) => f.followingId);
 
-    // Step 2: Get recent Ratings by followed users
+    // get their ratings
     const recentRatings = await prisma.rating.findMany({
       where: {
         userId: { in: followingIds },
@@ -28,7 +28,7 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       take: limit,
     });
 
-    // Step 3: Get recent Posts by followed users
+    // get their posts
     const recentPosts = await prisma.post.findMany({
       where: {
         userId: { in: followingIds },
@@ -37,7 +37,7 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       take: limit,
     });
 
-    // Step 4: Get trending Ratings (last 7 days, most votes)
+    // get trending ratings
     const trendingRatings = await prisma.rating.findMany({
       where: {
         date: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
@@ -46,7 +46,7 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       take: 5,
     });
 
-    // Step 5: Get trending Posts
+    // get trending posts
     const trendingPosts = await prisma.post.findMany({
       where: {
         createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
@@ -67,7 +67,7 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       }
       
 
-    // Sort all by newest first
+    // sort by newest
     const sortedFeed = feed.sort((a, b) => {
         const aDate = getTimestamp(a.data);
         const bDate = getTimestamp(b.data);
