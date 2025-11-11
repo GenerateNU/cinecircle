@@ -1,4 +1,3 @@
-// context/AuthContext.ts
 import {
   createContext,
   useContext,

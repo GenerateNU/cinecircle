@@ -32,7 +32,7 @@ export default function welcome () {
                 />
                 <NextButton 
                     title="Sign up" 
-                    onPress={() => go("/onboarding/signUpForm")} 
+                    onPress={() => go("/signup")} 
                     size="large"
                 />
             </View>

@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Slot, router } from 'expo-router';
+import { Slot } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import BottomNavBar from '../components/BottomNavBar';
