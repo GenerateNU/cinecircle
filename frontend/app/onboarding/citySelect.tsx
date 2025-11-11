@@ -11,7 +11,7 @@ export default function username() {
                 title="What city?"
                 placeholder="Start typing where you're from!"
             />
-            <NextButton onPress={() => go("onboarding/languageSelect")}/>
+            <NextButton onPress={() => go("onboarding/genreSelect")}/>
         </View>
     );
 };

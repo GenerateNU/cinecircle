@@ -20,7 +20,7 @@ export default function username() {
     return (
         <View>
             <Tag label="language"/>
-            <NextButton onPress={() => go("onboarding/genreSelect")}/>
+            <NextButton onPress={() => go("onboarding/secondaryLanguageSelect")}/>
         </View>
     );
 };

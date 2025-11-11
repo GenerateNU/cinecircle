@@ -20,7 +20,7 @@ export default function username() {
     return (
         <View>
             <TextInputComponent
-                title="Set your username"
+                title="Set your country"
                 field="Username"
             />
             <NextButton onPress={() => go("onboarding/citySelect")}/>

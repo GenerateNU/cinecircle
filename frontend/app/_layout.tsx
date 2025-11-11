@@ -1,29 +1,23 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Slot, useSegments, Stack, router } from 'expo-router';
+import { Slot, router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import BottomNavBar from '../components/BottomNavBar';
 
 function RootLayoutContent() {
-  const { user, loading } = useAuth();
-  const segments = useSegments();
+  const { user, loading, onboardingComplete } = useAuth();
 
   useEffect(() => {
     if (loading) return;
 
-    const inOnboarding = segments[0] === 'onboarding';
-    const onLoginScreen = segments[0] === 'login';
-    const mainAppRoutes = ['movies', 'events', 'profile', 'profilePage'];
-    const inMainApp = mainAppRoutes.includes(segments[0]);
-
-    if (!user && !inOnboarding && !onLoginScreen) {
-      router.replace('/onboarding/welcome');
-    } else if (user && (inOnboarding || onLoginScreen)) {
-      router.replace('/homes');
+    if (!user) {
+      router.replace('/welcome');
+    } else if (!onboardingComplete) {
+      router.replace('/onboarding/primaryLanguageSelect');
     }
-  }, [user, loading, segments]);
+  }, [user, loading, onboardingComplete]);
 
   // Splash while checking session
   if (loading) {
@@ -36,11 +30,11 @@ function RootLayoutContent() {
     );
   }
 
-  // Logged in -> mount Router navigator
+  // Main app (handles both authenticated and routing states)
   return (
     <SafeAreaProvider>
       <Slot />
-      {user && <BottomNavBar />}
+      {user && onboardingComplete && <BottomNavBar />}
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

@@ -1,11 +1,12 @@
 /*
-SCREEN THREE
+SCREEN SIX
 
 ## DATA
-  - profile pic
+  - Languages, can be multiple
 
-
-unknown component, need to make for this?
+## Components
+  - Spam a bunch of tags
+  - This is more likely to be hardcoded?
 
 */
 
@@ -18,8 +19,8 @@ export default function username() {
     const go = (to: string) => router.push(to);
     return (
         <View>
-            <Tag label="hello world!"/>
-            <NextButton onPress={() => go("onboarding/primaryLanguageSelect")}/>
+            <Tag label="language"/>
+            <NextButton onPress={() => go("onboarding/countrySelect")}/>
         </View>
     );
 };
