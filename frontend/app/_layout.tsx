@@ -7,17 +7,7 @@ import { AuthProvider, useAuth } from '../context/AuthContext';
 import BottomNavBar from '../components/BottomNavBar';
 
 function RootLayoutContent() {
-  const { user, loading, onboardingComplete } = useAuth();
-
-  useEffect(() => {
-    if (loading) return;
-
-    if (!user) {
-      router.replace('/welcome');
-    } else if (!onboardingComplete) {
-      router.replace('/onboarding/primaryLanguageSelect');
-    }
-  }, [user, loading, onboardingComplete]);
+  const { user, loading } = useAuth();
 
   // Splash while checking session
   if (loading) {
@@ -34,7 +24,7 @@ function RootLayoutContent() {
   return (
     <SafeAreaProvider>
       <Slot />
-      {user && onboardingComplete && <BottomNavBar />}
+      {user && <BottomNavBar />}
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

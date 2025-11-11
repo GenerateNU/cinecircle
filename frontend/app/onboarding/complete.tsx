@@ -28,7 +28,7 @@ export default function Complete() {
         try {
             // Create user profile in database
             const { error: insertError } = await supabase
-                .from('users')
+                .from('UserProfile')
                 .insert({
                     id: user.id,
                     username: data.username,
@@ -38,7 +38,6 @@ export default function Complete() {
                     primary_language: data.language,
                     secondary_languages: data.secondaryLanguages || [],
                     favorite_genres: data.genres || [],
-                    created_at: new Date().toISOString(),
                 });
 
             if (insertError) throw insertError;

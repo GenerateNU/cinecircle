@@ -455,8 +455,8 @@ model UserProfile {
   primaryLanguage                                String       @default("English")
   secondaryLanguage                              String[]     @default([])
   profilePicture                                 String       @default("null")
-  country                                        String
-  city                                           String 
+  country                                        String       @default("USA")
+  city                                           String       @default("Boston")
   preferredGenres                                String[]     @default([])
   favoriteMovies                                 String[]     @default([])
   createdAt                                      DateTime     @default(now())

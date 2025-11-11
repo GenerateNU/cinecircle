@@ -10,11 +10,11 @@ const SignUpForm = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
     const { updateData } = useOnboarding();
 
-    const go = (to: string) => router.push(to);
-
     const signUp = async () => {
+      setLoading(true);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -22,20 +22,24 @@ const SignUpForm = () => {
 
       if (error) {
         setMessage(`Sign-up error: ${error.message}`);
+        setLoading(false);
         return;
       }
 
       // Save email/password to onboarding context
       updateData({ email, password });
 
-      // If stuff breaks it's probably this block
-      if (data.user) {
-        setMessage('Account created successfully!');
-        go("/onboarding/username");
-      } else {
+      if (data.user && !data.user.email_confirmed_at) {
         setMessage('Please check your email for the confirmation link!');
-        // add navigation to a pls confirm email screen
+      } else {
+        setMessage('Account created successfully!');
       }
+
+      // Wait 2 seconds before navigating
+      setTimeout(() => {
+        setLoading(false);
+        router.push("/onboarding/confirm-email");
+      }, 2000);
     };
 
     return (
@@ -46,6 +50,7 @@ const SignUpForm = () => {
                 placeholder="example@gmail.com"
                 onChangeText={setEmail}
                 value={email}
+                keyboardType="email-address"
             />
             <TextInputComponent
                 field="Password"
@@ -54,7 +59,7 @@ const SignUpForm = () => {
                 value={password}
                 secureTextEntry={true}
             />
-            <NextButton onPress={signUp}/>
+            <NextButton onPress={signUp} disabled={loading} />
             {message ? <Text>{message}</Text> : null}
         </View>
     );
