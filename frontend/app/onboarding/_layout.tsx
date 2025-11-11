@@ -5,11 +5,12 @@ type OnboardingData = {
   email?: string;
   password?: string;
   username?: string;
-  profilePicture?: string;
-  country?: any;
-  city?: any;
-  language?: any;
-  genres?: any;
+  profilePicture?: string | null;
+  country?: string;
+  city?: string;
+  language?: string;
+  secondaryLanguages?: string[];
+  genres?: string[];
 };
 
 type OnboardingContextType = {

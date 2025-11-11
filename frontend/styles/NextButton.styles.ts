@@ -41,4 +41,11 @@ export const styles = StyleSheet.create({
   textVariation2: {
     color: "#C45AA2CC",
   },
+  disabled: {
+    opacity: 0.5,
+    backgroundColor: '#ccc',
+    },
+    disabledText: {
+    color: '#666',
+    },
 });

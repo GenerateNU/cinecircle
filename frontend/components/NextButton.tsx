@@ -6,16 +6,33 @@ interface NextButtonProps {
   onPress: () => void;
   size?: "xs" | "small" | "medium" | "large";
   variation?: "variation1" | "variation2";
+  disabled?: boolean;
 }
 
-export default function NextButton({ title = "Next", onPress, size = "medium", variation = "variation2" }: NextButtonProps) {
+export default function NextButton({ 
+  title = "Next", 
+  onPress, 
+  size = "medium", 
+  variation = "variation2",
+  disabled = false 
+}: NextButtonProps) {
   return (
     <TouchableOpacity
-      style={[styles.button, styles[size], styles[variation]]}
+      style={[
+        styles.button, 
+        styles[size], 
+        styles[variation],
+        disabled && styles.disabled
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
+      disabled={disabled}
     >
-      <Text style={[styles.text, variation === "variation1" ? styles.textVariation1 : styles.textVariation2]}>
+      <Text style={[
+        styles.text, 
+        variation === "variation1" ? styles.textVariation1 : styles.textVariation2,
+        disabled && styles.disabledText
+      ]}>
         {title}
       </Text>
     </TouchableOpacity>
