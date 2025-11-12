@@ -89,7 +89,7 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
     }
   };
 
-export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
+export const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] getUserProfile called by user: ${req.user?.id || 'unknown'}`);
   
@@ -103,17 +103,48 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
       });
     }
     
-    const userProfile = {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role
-    };
+    // Fetch the full user profile from the database
+    const userProfile = await prisma.userProfile.findUnique({
+      where: {
+        userId: req.user.id
+      }
+    });
+
+    if (!userProfile) {
+      console.log(`[${timestamp}] getUserProfile failed: Profile not found for user ${req.user.id}`);
+      return res.status(404).json({
+        message: 'User profile not found',
+        timestamp,
+        endpoint: '/api/user/profile'
+      });
+    }
+
+    // Map the database profile to API format
+    const mappedUserProfile = mapUserProfileDbToApi({
+      userId: userProfile.userId,
+      username: userProfile.username,
+      primaryLanguage: userProfile.primaryLanguage,
+      secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
+        ? userProfile.secondaryLanguage as string[]
+        : [],
+      profilePicture: userProfile.profilePicture,
+      country: userProfile.country,
+      city: userProfile.city,
+      favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+        ? userProfile.favoriteGenres as string[]
+        : [],
+      favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+        ? userProfile.favoriteMovies as string[]
+        : [],
+      createdAt: userProfile.createdAt,
+      updatedAt: userProfile.updatedAt,
+    });
     
     console.log(`[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`);
     
     res.json({ 
       message: 'User profile retrieved successfully',
-      user: userProfile,
+      userProfile: mappedUserProfile,
       timestamp,
       endpoint: '/api/user/profile'
     });
@@ -127,6 +158,7 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
     });
   }
 };
+
 export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
   const { user_id } = req.query;
 

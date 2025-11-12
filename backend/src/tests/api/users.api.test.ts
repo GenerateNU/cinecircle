@@ -59,7 +59,12 @@ describe("User Profile API Tests", () => {
           data: {
             userId: TEST_USER_ID,
             username: "initialuser",
-            updatedAt: new Date(), // Add updatedAt
+            primaryLanguage: "English",
+            secondaryLanguage: ["Hindi", "Spanish"],
+            country: "USA",
+            city: "Boston",
+            favoriteGenres: ["Action", "Comedy"],
+            updatedAt: new Date(),
           },
         });
   
@@ -68,14 +73,25 @@ describe("User Profile API Tests", () => {
           .set(authHeader())
           .expect(HTTP_STATUS.OK)
           .expect("Content-Type", /json/);
-  
-        expect(res.body).toHaveProperty("message");
-        expect(res.body).toHaveProperty("user");
-        expect(res.body.user).toEqual({
-          id: TEST_USER_ID,
-          email: TEST_USER_EMAIL,
-          role: TEST_USER_ROLE,
-        });
+
+        // Check profile fields
+        expect(res.body.userProfile).toHaveProperty("username");
+        expect(res.body.userProfile).toHaveProperty("primaryLanguage");
+        expect(res.body.userProfile).toHaveProperty("secondaryLanguage");
+        expect(res.body.userProfile).toHaveProperty("country");
+        expect(res.body.userProfile).toHaveProperty("city");
+        expect(res.body.userProfile).toHaveProperty("favoriteGenres");
+
+        // Check field contents
+        expect(res.body.userProfile).toMatchObject({
+            userId: TEST_USER_ID,
+            username: "initialuser",
+            primaryLanguage: "English",
+            secondaryLanguage: ["Hindi", "Spanish"],
+            country: "USA",
+            city: "Boston",
+            favoriteGenres: ["Action", "Comedy"],
+        })
       });
   });
 
@@ -84,8 +100,8 @@ describe("User Profile API Tests", () => {
     it("should update user profile fields", async () => {
       const payload = {
         username: "updateduser",
-        preferredLanguages: ["en", "fr"],
-        preferredCategories: ["sci-fi", "comedy"],
+        secondaryLanguage: ["en", "fr"],
+        favoriteGenres: ["sci-fi", "comedy"],
         favoriteMovies: ["Inception", "The Matrix"],
       };
 
