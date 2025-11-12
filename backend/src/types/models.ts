@@ -15,8 +15,12 @@ export type Movie = {
 export type UserProfile = {
   userId: string;
   username?: string | null;
-  preferredLanguages: string[];
-  preferredCategories: string[];
+  primaryLanguage: string;
+  secondaryLanguage: string[];
+  profilePicture: string;
+  country: string;
+  city: string;
+  favoriteGenres: string[];
   favoriteMovies: string[];
   createdAt?: string;
   updatedAt?: string;
