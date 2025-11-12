@@ -35,6 +35,7 @@ export default function UserLike({
   useEffect(() => {
     let cancelled = false;
 
+    // making it use the currently logged in user's email
     async function fetchLoggedInEmail() {
       setLoading(true);
       try {

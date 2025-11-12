@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
   // darker unliked heart
   icon: {
     fontSize: 28,
-    color: "#555", // previously #ccc — darker gray
+    color: "#555",
   },
   likedIcon: {
     fontSize: 28,
