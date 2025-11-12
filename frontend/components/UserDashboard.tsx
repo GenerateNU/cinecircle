@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import { supabase } from '../lib/supabase';
+import { useNavigation } from '@react-navigation/native';
 import { getProtected, getUserProfileBasic } from '../services/userService';
 import { api } from '../services/apiClient';
 import type { DbTestResponse } from '../types/apiTypes';
+import Events from './Events';
 
 type Props = {
   user: any;
@@ -10,8 +13,11 @@ type Props = {
 };
 
 const UserDashboard = ({ user, onSignOut }: Props) => {
+  const navigation = useNavigation();
   const [backendMessage, setBackendMessage] = useState('');
   const [dbMessage, setDbMessage] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
+  const [showEvents, setShowEventsPage] = useState(false);
 
   const callProtectedBackend = async () => {
     try {
@@ -40,15 +46,32 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     }
   };
 
+  if (showEvents) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Button
+          title="← Back to Dashboard"
+          onPress={() => setShowEventsPage(false)}
+        />
+        <Events />
+      </View>
+    );
+  }
+
   return (
     <View>
       <Text style={{ marginBottom: 10 }}>
         Welcome, {user?.email || 'Guest'}
       </Text>
       <View style={styles.buttonContainer}>
+        <Button
+          title="View Movie (Test)"
+          onPress={() => navigation.navigate('MovieChosen' as never)}
+        />
         <Button title="Call Protected Backend" onPress={callProtectedBackend} />
         <Button title="Get User Profile" onPress={getUserProfile} />
         <Button title="Test DB" onPress={testDatabase} />
+        <Button title="Events Page" onPress={() => setShowEventsPage(true)} />
       </View>
       {backendMessage ? (
         <Text style={styles.result}>{backendMessage}</Text>
