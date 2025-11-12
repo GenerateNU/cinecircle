@@ -7,6 +7,7 @@ import type {
   DeleteUserProfileResponse,
   GetUserRatingsResponse,
   GetUserCommentsResponse,
+  GetUserProfileResponse
 } from "../types/apiTypes";
 
 export function getProtected() {
@@ -14,7 +15,7 @@ export function getProtected() {
 }
 
 export function getUserProfileBasic() {
-  return api.get<GetUserProfileBasicResponse>(`/api/user/profile`);
+  return api.get<GetUserProfileResponse>(`/api/user/profile`);
 }
 
 export function updateUserProfile(payload: UpdateUserProfileInput) {

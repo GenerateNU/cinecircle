@@ -1,9 +1,9 @@
 import type {
   GetMovieEnvelope, UpdateMovieInput, UpdateMovieEnvelope, DeleteMovieResponse,
-  ProtectedResponse, GetUserProfileBasicResponse, UpdateUserProfileInput, UpdateUserProfileResponse,
+  ProtectedResponse, GetUserProfileResponse, UpdateUserProfileInput, UpdateUserProfileResponse,
   DeleteUserProfileResponse, GetUserRatingsResponse, GetUserCommentsResponse,
   GetFollowersResponse, GetFollowingResponse, FollowBody, FollowUnfollowResponse,
-  PingResponse, DbTestResponse
+  PingResponse, DbTestResponse,
 } from "./apiTypes";
 
 export interface Endpoints {
@@ -28,7 +28,7 @@ export interface Endpoints {
 
   "GET /api/protected": { path: () => string; response: ProtectedResponse };
 
-  "GET /api/user/profile": { path: () => string; response: GetUserProfileBasicResponse };
+  "GET /api/user/profile": { path: () => string; response: GetUserProfileResponse };
   "PUT /api/user/profile": { path: () => string; body: UpdateUserProfileInput; response: UpdateUserProfileResponse };
   "DELETE /api/user/profile": { path: () => string; response: DeleteUserProfileResponse };
 
