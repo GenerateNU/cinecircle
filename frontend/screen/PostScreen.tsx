@@ -4,16 +4,11 @@ import {
   SafeAreaView,
   ScrollView,
   KeyboardAvoidingView,
+  StyleSheet,
 } from 'react-native';
 import PostTypeSelector from '../components/PostTypeSelector';
 import CreatePostBar from '../components/CreatePostBar';
 import PostForm from '../components/PostForm';
-
-interface PostData {
-  title: string;
-  content: string;
-  rating: number;
-}
 
 export default function PostScreen() {
   const [postType, setPostType] = useState<'long' | 'short' | 'rating' | null>(
@@ -45,17 +40,38 @@ export default function PostScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safeArea}>
       {postType === null ? (
-        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <View style={styles.selectorContainer}>
           <PostTypeSelector value={postType} onChange={setPostType} />
         </View>
       ) : (
         <>
           <CreatePostBar onBack={() => setPostType(null)} />
-          <ScrollView style={{ flex: 1 }}>{renderPostContent()}</ScrollView>
+          <KeyboardAvoidingView style={{ flex: 1 }}>
+            <ScrollView
+              contentContainerStyle={{
+                padding: 16,
+              }}
+            >
+              {renderPostContent()}
+            </ScrollView>
+          </KeyboardAvoidingView>
         </>
       )}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  selectorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+});
