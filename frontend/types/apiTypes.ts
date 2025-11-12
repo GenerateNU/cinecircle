@@ -20,10 +20,18 @@ export type ProtectedResponse = {
   endpoint: string;
 };
 
+/** -------- User Profile (GET /api/user/profile) -------- */
+export type GetUserProfileResponse = {
+  message: string;
+  userProfile: UserProfile;
+  timestamp?: string;
+  endpoint?: string;
+}
+
 /** -------- User Profile Basic (GET /api/user/profile) -------- */
 export type GetUserProfileBasicResponse = {
   message?: string;
-  user?: UserProfileBasic;
+  userProfile?: UserProfileBasic;
   timestamp?: string;
   endpoint?: string;
 };
