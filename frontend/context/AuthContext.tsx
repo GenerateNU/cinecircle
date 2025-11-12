@@ -12,16 +12,18 @@ type AuthContextType = {
   user: any;
   session: any;
   loading: boolean;
+  onboardingComplete: boolean;
+  setOnboardingComplete: (complete: boolean) => void;
   signOut: () => Promise<void>;
-  checkOnboardingStatus: () => Promise<boolean>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  onboardingComplete: false,
+  setOnboardingComplete: () => {},
   signOut: async () => {},
-  checkOnboardingStatus: async () => false,
 });
 
 export const useAuth = () => {
@@ -40,33 +42,45 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
 
-  const checkOnboardingStatus = async (): Promise<boolean> => {
-    if (!session?.user) return false;
-    
+  const checkOnboardingStatus = async (userId: string) => {
     const { data: userProfile } = await supabase
-      .from('userProfile')
-      .select('id')
-      .eq('id', session.user.id)
+      .from('UserProfile')
+      .select('userId')
+      .eq('userId', userId)
       .maybeSingle();
 
-    return !!userProfile;
+    setOnboardingComplete(!!userProfile);
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setApiToken(session?.access_token);
+
+      // Check onboarding status on initial load
+      if (session?.user) {
+        await checkOnboardingStatus(session.user.id);
+      }
+
       setLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setApiToken(session?.access_token);
+
+      if (!session) {
+        setOnboardingComplete(false);
+      } else if (session.user) {
+        // Check onboarding status when auth state changes
+        await checkOnboardingStatus(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -76,6 +90,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setOnboardingComplete(false);
     setApiToken(undefined);
   };
 
@@ -85,8 +100,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         user, 
         session, 
         loading, 
-        signOut, 
-        checkOnboardingStatus 
+        onboardingComplete,
+        setOnboardingComplete,
+        signOut,
       }}
     >
       {children}

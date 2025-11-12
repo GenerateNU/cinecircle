@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from '../context/AuthContext';
 import BottomNavBar from '../components/BottomNavBar';
 
 function RootLayoutContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, onboardingComplete } = useAuth();
 
   // Splash while checking session
   if (loading) {
@@ -23,7 +23,7 @@ function RootLayoutContent() {
   return (
     <SafeAreaProvider>
       <Slot />
-      {user && <BottomNavBar />}
+      {user && onboardingComplete && <BottomNavBar />}
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

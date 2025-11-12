@@ -1,14 +1,17 @@
 import NextButton from "../components/NextButton";
 import TextInputComponent from "../components/TextInputComponent";
+import { router } from "expo-router"
 import { useState } from 'react';
 import { Text, View } from "react-native";
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext'
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const { onboardingComplete } = useAuth();
 
     const handleSignIn = async () => {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -42,14 +45,14 @@ const SignUp = () => {
             return { success: false, userExists: false };
         }
 
-        // Sign-up succeeded
-        if (data.user && !data.user.email_confirmed_at) {
-            setMessage('Account created! Please check your email for the confirmation link.');
-        } else if (data.user) {
-            setMessage('Account created successfully!');
+        if (!data.user) {
+            return { success: false }
         }
 
-        return { success: true };
+        return {
+            success: true,
+            confirmation: !!data.user.email_confirmed_at
+        };
     };
 
     const dispatchSignUp = async () => {
@@ -61,11 +64,26 @@ const SignUp = () => {
             const signInResult = await handleSignIn();
             
             if (signInResult.success) {
+                if (onboardingComplete) {
+                    router.replace("/movies")
+                } else{
+                    router.replace("onboarding/username")
+                }
                 return;
             }
 
             // If sign-in failed, try to sign up
-            await handleSignUp();
+            const signUpResult = await handleSignUp();
+
+            if (signUpResult.success) {
+                if (signUpResult.confirmation) {
+                    router.replace("/onboarding/username");
+                }
+
+                if (signUpResult.confirmation === false) {
+                    router.replace("/onboarding/confirmEmail");
+                }
+            }
 
         } catch (error) {
             setMessage('An unexpected error occurred');
