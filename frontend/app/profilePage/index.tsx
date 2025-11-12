@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
-import BottomNavBar from '../../components/BottomNavBar';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import tw from 'twrnc';
@@ -18,6 +16,10 @@ import MoviesGrid from './components/MoviesGrid';
 import PostsList from './components/PostsList';
 import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
+import BottomNavBar from '../../components/BottomNavBar';
+import Avatar from '../../components/Avatar';
+import ActionButtons from '../../components/ActionButtons';
+import SectionHeader from '../../components/SectionHeader';
 import { getUserProfileBasic } from '../../services/userService';
 import { getFollowers, getFollowing } from '../../services/followService';
 import type { UserProfileBasic } from '../../types/models';
@@ -151,18 +153,16 @@ const ProfilePage = ({ user: userProp }: Props) => {
 
         {/* Profile block (avatar overlaps the gray header) */}
         <View style={tw`px-5`}>
-          <Image
-            source={{ uri: u.profilePic }}
+          <View
             style={[
+              tw`self-start`,
               {
                 marginTop: -AVATAR_RADIUS,
-                width: AVATAR_SIZE,
-                height: AVATAR_SIZE,
-                borderRadius: AVATAR_RADIUS,
               },
-              tw`self-start`,
             ]}
-          />
+          >
+            <Avatar uri={u.profilePic} size={AVATAR_SIZE} />
+          </View>
 
           {/* Name & Username */}
           <Text style={tw`mt-3 text-[28px] font-extrabold text-black`}>
@@ -192,6 +192,11 @@ const ProfilePage = ({ user: userProp }: Props) => {
             </View>
           </View>
 
+          {/* Quick actions from shared components */}
+          <View style={tw`mt-4`}>
+            <ActionButtons />
+          </View>
+
           {/* Buttons */}
           <View style={tw`mt-3 self-center w-[88%] flex-row gap-3`}>
             <TouchableOpacity
@@ -209,6 +214,11 @@ const ProfilePage = ({ user: userProp }: Props) => {
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Activity header */}
+        <View style={tw`px-5 mt-6`}>
+          <SectionHeader title="Your Activity" size="small" />
         </View>
 
         {/* Tabs row */}
@@ -310,6 +320,13 @@ const ProfilePage = ({ user: userProp }: Props) => {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* Persistent bottom navigation */}
+      <View
+        style={tw`absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white`}
+      >
+        <BottomNavBar />
+      </View>
     </View>
   );
 };
