@@ -30,14 +30,14 @@ export default function Complete() {
             const { error: insertError } = await supabase
                 .from('UserProfile')
                 .insert({
-                    id: user.id,
+                    userId: user.id,
                     username: data.username,
-                    profile_picture: data.profilePicture,
+                    primaryLanguage: data.language,
+                    secondaryLanguage: data.secondaryLanguages,
+                    profilePicture: data.profilePicture,
                     country: data.country,
                     city: data.city,
-                    primary_language: data.language,
-                    secondary_languages: data.secondaryLanguages || [],
-                    favorite_genres: data.genres || [],
+                    favoriteGenres: data.genres,
                 });
 
             if (insertError) throw insertError;

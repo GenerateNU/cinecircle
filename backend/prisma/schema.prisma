@@ -457,7 +457,7 @@ model UserProfile {
   profilePicture                                 String       @default("null")
   country                                        String       @default("USA")
   city                                           String       @default("Boston")
-  preferredGenres                                String[]     @default([])
+  favoriteGenres                                 String[]     @default([])
   favoriteMovies                                 String[]     @default([])
   createdAt                                      DateTime     @default(now())
   updatedAt                                      DateTime

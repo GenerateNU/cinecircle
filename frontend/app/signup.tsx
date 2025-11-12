@@ -78,10 +78,12 @@ const SignUp = () => {
             if (signUpResult.success) {
                 if (signUpResult.confirmation) {
                     router.replace("/onboarding/username");
+                    return;
                 }
 
                 if (signUpResult.confirmation === false) {
                     router.replace("/onboarding/confirmEmail");
+                    return;
                 }
             }
 
