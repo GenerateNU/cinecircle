@@ -10,6 +10,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
 
   const {
     username,
+    onboardingCompleted,
     primaryLanguage,
     secondaryLanguage,
     profilePicture,
@@ -23,6 +24,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
   try {
     const data = mapUserProfilePatchToUpdateData({
       username,
+      onboardingCompleted,
       primaryLanguage,
       secondaryLanguage,
       profilePicture,
@@ -61,33 +63,32 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     }
   };
   
-
 export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response, next: Function) => {
-    if (!req.user?.id) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-  
-    try {
-      const existing = await prisma.userProfile.findUnique({
-        where: { userId: req.user.id },
+  if (!req.user?.id) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  try {
+    const existing = await prisma.userProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!existing) {
+      // Create a minimal profile as a safety net, update null fields when onboarding complete
+      await prisma.userProfile.create({
+        data: {
+          userId: req.user.id,
+          onboardingCompleted: false,
+        },
       });
-  
-      if (!existing) {
-        await prisma.userProfile.create({
-          data: {
-            userId: req.user.id,
-            username: req.user.username || null,
-            updatedAt: new Date(), // Add this line
-          }
-        });
-      }
-  
-      next();
-    } catch (error) {
-      console.error("Failed to ensure user profile:", error);
-      res.status(500).json({ message: "Internal error creating user profile" });
     }
-  };
+
+    next();
+  } catch (error) {
+    console.error("Failed to ensure user profile:", error);
+    res.status(500).json({ message: "Internal error creating user profile" });
+  }
+};
 
 export const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -123,6 +124,7 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
     const mappedUserProfile = mapUserProfileDbToApi({
       userId: userProfile.userId,
       username: userProfile.username,
+      onboardingCompleted: userProfile.onboardingCompleted,
       primaryLanguage: userProfile.primaryLanguage,
       secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
         ? userProfile.secondaryLanguage as string[]
@@ -185,6 +187,7 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
       mappedUserProfile = mapUserProfileDbToApi({
         userId: userProfile.userId,
         username: userProfile.username,
+        onboardingCompleted: userProfile.onboardingCompleted,
         primaryLanguage: userProfile.primaryLanguage,
         secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
           ? userProfile.secondaryLanguage as string[]
@@ -240,11 +243,12 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
       mappedUserProfile = mapUserProfileDbToApi({
         userId: userProfile.userId,
         username: userProfile.username,
+        onboardingCompleted: userProfile.onboardingCompleted,
         primaryLanguage: userProfile.primaryLanguage,
         secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
           ? userProfile.secondaryLanguage as string[]
           : [],
-        profilePicture: userProfile.profilePicture,
+        profilePicture: userProfile.profilePicture ?? null,
         country: userProfile.country,
         city: userProfile.city,
         favoriteGenres: Array.isArray(userProfile.favoriteGenres)
@@ -276,11 +280,12 @@ const toISO = (d?: Date) => (d ? d.toISOString() : undefined);
 export function mapUserProfileDbToApi(row: {
   userId: string;
   username: string | null;
+  onboardingCompleted: boolean;
   primaryLanguage: string;
   secondaryLanguage: string[];
-  profilePicture: string;
-  country: string;
-  city: string;
+  profilePicture: string | null;
+  country: string | null;
+  city: string | null;
   favoriteGenres: string[];
   favoriteMovies: string[];
   createdAt: Date;
@@ -289,6 +294,7 @@ export function mapUserProfileDbToApi(row: {
   return {
     userId: row.userId,
     username: row.username,
+    onboardingCompleted: row.onboardingCompleted,
     primaryLanguage: row.primaryLanguage,
     secondaryLanguage: row.secondaryLanguage ?? [],
     profilePicture: row.profilePicture,
@@ -296,21 +302,24 @@ export function mapUserProfileDbToApi(row: {
     city: row.city,
     favoriteGenres: row.favoriteGenres ?? [],
     favoriteMovies: row.favoriteMovies ?? [],
-    createdAt: toISO(row.createdAt),
-    updatedAt: toISO(row.updatedAt),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt"
+    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
 
   if (Object.prototype.hasOwnProperty.call(patch, "username")) {
     data.username = patch.username ?? null;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "onboardingCompleted")) {
+    data.onboardingCompleted = patch.onboardingCompleted;
   }
   if (Object.prototype.hasOwnProperty.call(patch, "primaryLanguage")) {
     data.primaryLanguage = patch.primaryLanguage;
@@ -335,7 +344,7 @@ export function mapUserProfilePatchToUpdateData(
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one
-  data.updatedAt = toDate(patch.updatedAt) ?? new Date();
+  data.updatedAt = patch.updatedAt ?? new Date();
 
   return data;
 }

@@ -20,6 +20,7 @@ export const UserProfileBasicSchema = z.object({
 export const UserProfileSchema = z.object({
   userId: z.string(),
   username: z.string().nullable().optional(),
+  onboardingCompleted: z.boolean(),
   primaryLanguage: z.string(),
   secondaryLanguage: z.array(z.string()),
   profilePicture: z.string(),

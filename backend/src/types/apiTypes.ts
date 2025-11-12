@@ -31,7 +31,7 @@ export type GetUserProfileBasicResponse = {
 /** -------- User Profile Update/Delete -------- */
 export type UpdateUserProfileInput = Partial<Pick<
   UserProfile,
-  "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies"
+  "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "favoriteGenres" | "favoriteMovies"
 >>;
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };
