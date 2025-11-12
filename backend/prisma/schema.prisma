@@ -452,8 +452,12 @@ model UserFollow {
 model UserProfile {
   userId                                         String       @id @db.Uuid
   username                                       String?
-  preferredLanguages                             String[]     @default([])
-  preferredCategories                            String[]     @default([])
+  primaryLanguage                                String       @default("English")
+  secondaryLanguage                              String[]     @default([])
+  profilePicture                                 String       @default("null")
+  country                                        String       @default("USA")
+  city                                           String       @default("Boston")
+  favoriteGenres                                 String[]     @default([])
   favoriteMovies                                 String[]     @default([])
   createdAt                                      DateTime     @default(now())
   updatedAt                                      DateTime

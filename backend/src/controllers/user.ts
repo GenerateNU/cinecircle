@@ -10,8 +10,12 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
 
   const {
     username,
-    preferredLanguages,
-    preferredCategories,
+    primaryLanguage,
+    secondaryLanguage,
+    profilePicture,
+    country,
+    city,
+    favoriteGenres,
     favoriteMovies,
     updatedAt,
   } = (req.body ?? {}) as Partial<UserProfile>;
@@ -19,8 +23,12 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
   try {
     const data = mapUserProfilePatchToUpdateData({
       username,
-      preferredLanguages,
-      preferredCategories,
+      primaryLanguage,
+      secondaryLanguage,
+      profilePicture,
+      country,
+      city,
+      favoriteGenres,
       favoriteMovies,
       updatedAt,
     });
@@ -145,11 +153,15 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
       mappedUserProfile = mapUserProfileDbToApi({
         userId: userProfile.userId,
         username: userProfile.username,
-        preferredLanguages: Array.isArray(userProfile.preferredLanguages) 
-          ? userProfile.preferredLanguages as string[]
+        primaryLanguage: userProfile.primaryLanguage,
+        secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
+          ? userProfile.secondaryLanguage as string[]
           : [],
-        preferredCategories: Array.isArray(userProfile.preferredCategories)
-          ? userProfile.preferredCategories as string[]
+        profilePicture: userProfile.profilePicture,
+        country: userProfile.country,
+        city: userProfile.city,
+        favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+          ? userProfile.favoriteGenres as string[]
           : [],
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
@@ -196,11 +208,15 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
       mappedUserProfile = mapUserProfileDbToApi({
         userId: userProfile.userId,
         username: userProfile.username,
-        preferredLanguages: Array.isArray(userProfile.preferredLanguages) 
-          ? userProfile.preferredLanguages as string[]
+        primaryLanguage: userProfile.primaryLanguage,
+        secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
+          ? userProfile.secondaryLanguage as string[]
           : [],
-        preferredCategories: Array.isArray(userProfile.preferredCategories)
-          ? userProfile.preferredCategories as string[]
+        profilePicture: userProfile.profilePicture,
+        country: userProfile.country,
+        city: userProfile.city,
+        favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+          ? userProfile.favoriteGenres as string[]
           : [],
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
@@ -228,8 +244,12 @@ const toISO = (d?: Date) => (d ? d.toISOString() : undefined);
 export function mapUserProfileDbToApi(row: {
   userId: string;
   username: string | null;
-  preferredLanguages: string[];
-  preferredCategories: string[];
+  primaryLanguage: string;
+  secondaryLanguage: string[];
+  profilePicture: string;
+  country: string;
+  city: string;
+  favoriteGenres: string[];
   favoriteMovies: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -237,8 +257,12 @@ export function mapUserProfileDbToApi(row: {
   return {
     userId: row.userId,
     username: row.username,
-    preferredLanguages: row.preferredLanguages ?? [],
-    preferredCategories: row.preferredCategories ?? [],
+    primaryLanguage: row.primaryLanguage,
+    secondaryLanguage: row.secondaryLanguage ?? [],
+    profilePicture: row.profilePicture,
+    country: row.country,
+    city: row.city,
+    favoriteGenres: row.favoriteGenres ?? [],
     favoriteMovies: row.favoriteMovies ?? [],
     createdAt: toISO(row.createdAt),
     updatedAt: toISO(row.updatedAt),
@@ -248,7 +272,7 @@ export function mapUserProfileDbToApi(row: {
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies" | "updatedAt"
+    "username" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
@@ -256,11 +280,23 @@ export function mapUserProfilePatchToUpdateData(
   if (Object.prototype.hasOwnProperty.call(patch, "username")) {
     data.username = patch.username ?? null;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "preferredLanguages")) {
-    data.preferredLanguages = patch.preferredLanguages ?? [];
+  if (Object.prototype.hasOwnProperty.call(patch, "primaryLanguage")) {
+    data.primaryLanguage = patch.primaryLanguage;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "preferredCategories")) {
-    data.preferredCategories = patch.preferredCategories ?? [];
+  if (Object.prototype.hasOwnProperty.call(patch, "secondaryLanguage")) {
+    data.secondaryLanguage = patch.secondaryLanguage ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "profilePicture")) {
+    data.profilePicture = patch.profilePicture;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "country")) {
+    data.country = patch.country;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "city")) {
+    data.city = patch.city;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "favoriteGenres")) {
+    data.favoriteGenres = patch.favoriteGenres ?? [];
   }
   if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
     data.favoriteMovies = patch.favoriteMovies ?? [];
