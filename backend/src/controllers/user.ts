@@ -10,8 +10,13 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
 
   const {
     username,
-    preferredLanguages,
-    preferredCategories,
+    onboardingCompleted,
+    primaryLanguage,
+    secondaryLanguage,
+    profilePicture,
+    country,
+    city,
+    favoriteGenres,
     favoriteMovies,
     updatedAt,
   } = (req.body ?? {}) as Partial<UserProfile>;
@@ -19,8 +24,13 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
   try {
     const data = mapUserProfilePatchToUpdateData({
       username,
-      preferredLanguages,
-      preferredCategories,
+      onboardingCompleted,
+      primaryLanguage,
+      secondaryLanguage,
+      profilePicture,
+      country,
+      city,
+      favoriteGenres,
       favoriteMovies,
       updatedAt,
     });
@@ -53,35 +63,34 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     }
   };
   
-
 export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response, next: Function) => {
-    if (!req.user?.id) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-  
-    try {
-      const existing = await prisma.userProfile.findUnique({
-        where: { userId: req.user.id },
-      });
-  
-      if (!existing) {
-        await prisma.userProfile.create({
-          data: {
-            userId: req.user.id,
-            username: req.user.username || null,
-            updatedAt: new Date(), // Add this line
-          }
-        });
-      }
-  
-      next();
-    } catch (error) {
-      console.error("Failed to ensure user profile:", error);
-      res.status(500).json({ message: "Internal error creating user profile" });
-    }
-  };
+  if (!req.user?.id) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
 
-export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const existing = await prisma.userProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!existing) {
+      // Create a minimal profile as a safety net, update null fields when onboarding complete
+      await prisma.userProfile.create({
+        data: {
+          userId: req.user.id,
+          onboardingCompleted: false,
+        },
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Failed to ensure user profile:", error);
+    res.status(500).json({ message: "Internal error creating user profile" });
+  }
+};
+
+export const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] getUserProfile called by user: ${req.user?.id || 'unknown'}`);
   
@@ -95,17 +104,49 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
       });
     }
     
-    const userProfile = {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role
-    };
+    // Fetch the full user profile from the database
+    const userProfile = await prisma.userProfile.findUnique({
+      where: {
+        userId: req.user.id
+      }
+    });
+
+    if (!userProfile) {
+      console.log(`[${timestamp}] getUserProfile failed: Profile not found for user ${req.user.id}`);
+      return res.status(404).json({
+        message: 'User profile not found',
+        timestamp,
+        endpoint: '/api/user/profile'
+      });
+    }
+
+    // Map the database profile to API format
+    const mappedUserProfile = mapUserProfileDbToApi({
+      userId: userProfile.userId,
+      username: userProfile.username,
+      onboardingCompleted: userProfile.onboardingCompleted,
+      primaryLanguage: userProfile.primaryLanguage,
+      secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
+        ? userProfile.secondaryLanguage as string[]
+        : [],
+      profilePicture: userProfile.profilePicture,
+      country: userProfile.country,
+      city: userProfile.city,
+      favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+        ? userProfile.favoriteGenres as string[]
+        : [],
+      favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+        ? userProfile.favoriteMovies as string[]
+        : [],
+      createdAt: userProfile.createdAt,
+      updatedAt: userProfile.updatedAt,
+    });
     
     console.log(`[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`);
     
     res.json({ 
       message: 'User profile retrieved successfully',
-      user: userProfile,
+      userProfile: mappedUserProfile,
       timestamp,
       endpoint: '/api/user/profile'
     });
@@ -119,6 +160,7 @@ export const getUserProfile = (req: AuthenticatedRequest, res: Response) => {
     });
   }
 };
+
 export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
   const { user_id } = req.query;
 
@@ -145,11 +187,16 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
       mappedUserProfile = mapUserProfileDbToApi({
         userId: userProfile.userId,
         username: userProfile.username,
-        preferredLanguages: Array.isArray(userProfile.preferredLanguages) 
-          ? userProfile.preferredLanguages as string[]
+        onboardingCompleted: userProfile.onboardingCompleted,
+        primaryLanguage: userProfile.primaryLanguage,
+        secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
+          ? userProfile.secondaryLanguage as string[]
           : [],
-        preferredCategories: Array.isArray(userProfile.preferredCategories)
-          ? userProfile.preferredCategories as string[]
+        profilePicture: userProfile.profilePicture,
+        country: userProfile.country,
+        city: userProfile.city,
+        favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+          ? userProfile.favoriteGenres as string[]
           : [],
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
@@ -196,11 +243,16 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
       mappedUserProfile = mapUserProfileDbToApi({
         userId: userProfile.userId,
         username: userProfile.username,
-        preferredLanguages: Array.isArray(userProfile.preferredLanguages) 
-          ? userProfile.preferredLanguages as string[]
+        onboardingCompleted: userProfile.onboardingCompleted,
+        primaryLanguage: userProfile.primaryLanguage,
+        secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
+          ? userProfile.secondaryLanguage as string[]
           : [],
-        preferredCategories: Array.isArray(userProfile.preferredCategories)
-          ? userProfile.preferredCategories as string[]
+        profilePicture: userProfile.profilePicture ?? null,
+        country: userProfile.country,
+        city: userProfile.city,
+        favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+          ? userProfile.favoriteGenres as string[]
           : [],
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
@@ -228,8 +280,13 @@ const toISO = (d?: Date) => (d ? d.toISOString() : undefined);
 export function mapUserProfileDbToApi(row: {
   userId: string;
   username: string | null;
-  preferredLanguages: string[];
-  preferredCategories: string[];
+  onboardingCompleted: boolean;
+  primaryLanguage: string;
+  secondaryLanguage: string[];
+  profilePicture: string | null;
+  country: string | null;
+  city: string | null;
+  favoriteGenres: string[];
   favoriteMovies: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -237,18 +294,23 @@ export function mapUserProfileDbToApi(row: {
   return {
     userId: row.userId,
     username: row.username,
-    preferredLanguages: row.preferredLanguages ?? [],
-    preferredCategories: row.preferredCategories ?? [],
+    onboardingCompleted: row.onboardingCompleted,
+    primaryLanguage: row.primaryLanguage,
+    secondaryLanguage: row.secondaryLanguage ?? [],
+    profilePicture: row.profilePicture,
+    country: row.country,
+    city: row.city,
+    favoriteGenres: row.favoriteGenres ?? [],
     favoriteMovies: row.favoriteMovies ?? [],
-    createdAt: toISO(row.createdAt),
-    updatedAt: toISO(row.updatedAt),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies" | "updatedAt"
+    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
@@ -256,18 +318,33 @@ export function mapUserProfilePatchToUpdateData(
   if (Object.prototype.hasOwnProperty.call(patch, "username")) {
     data.username = patch.username ?? null;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "preferredLanguages")) {
-    data.preferredLanguages = patch.preferredLanguages ?? [];
+  if (Object.prototype.hasOwnProperty.call(patch, "onboardingCompleted")) {
+    data.onboardingCompleted = patch.onboardingCompleted;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "preferredCategories")) {
-    data.preferredCategories = patch.preferredCategories ?? [];
+  if (Object.prototype.hasOwnProperty.call(patch, "primaryLanguage")) {
+    data.primaryLanguage = patch.primaryLanguage;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "secondaryLanguage")) {
+    data.secondaryLanguage = patch.secondaryLanguage ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "profilePicture")) {
+    data.profilePicture = patch.profilePicture;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "country")) {
+    data.country = patch.country;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "city")) {
+    data.city = patch.city;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "favoriteGenres")) {
+    data.favoriteGenres = patch.favoriteGenres ?? [];
   }
   if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
     data.favoriteMovies = patch.favoriteMovies ?? [];
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one
-  data.updatedAt = toDate(patch.updatedAt) ?? new Date();
+  data.updatedAt = patch.updatedAt ?? new Date();
 
   return data;
 }

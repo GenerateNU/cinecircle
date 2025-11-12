@@ -28,7 +28,7 @@ router.use('/api', authenticateUser, ensureUserProfile);
 // test protected endpoints
 router.get('/api/protected', protect);
   
-// get current user info
+// User Profile Routes
 router.get('/api/user/profile', getUserProfile);
 router.put("/api/user/profile", updateUserProfile);
 router.delete("/api/user/profile", deleteUserProfile);

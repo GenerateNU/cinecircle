@@ -15,11 +15,16 @@ export type Movie = {
 export type UserProfile = {
   userId: string;
   username?: string | null;
-  preferredLanguages: string[];
-  preferredCategories: string[];
+  onboardingCompleted: boolean;
+  primaryLanguage: string;
+  secondaryLanguage: string[];
+  profilePicture: string | null;
+  country: string | null;
+  city: string | null;
+  favoriteGenres: string[];
   favoriteMovies: string[];
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 /** Ratings & comments (shapes are flexible because you include relations). */
