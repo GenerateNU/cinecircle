@@ -11,43 +11,37 @@ const LANGUAGES = [
     'Hindi', 'Russian', 'Turkish', 'Dutch', 'Swedish'
 ];
 
-export default function SecondaryLanguageSelect() {
-    const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-    const { updateData, data } = useOnboarding();
+export default function PrimaryLanguageSelect() {
+    const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+    const { updateData } = useOnboarding();
     const go = (to: string) => router.push(to);
 
-    const toggleLanguage = (lang: string) => {
-        setSelectedLanguages(prev => 
-            prev.includes(lang) 
-                ? prev.filter(l => l !== lang)
-                : [...prev, lang]
-        );
-    };
-
     const handleNext = () => {
-        updateData({ secondaryLanguages: selectedLanguages });
-        go("/onboarding/countrySelect");
+        if (selectedLanguage) {
+            updateData({ language: selectedLanguage });
+            go("/(onboarding)/secondaryLanguageSelect");
+        }
     };
-
-    // Filter out primary language
-    const availableLanguages = LANGUAGES.filter(lang => lang !== data.language);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Any other languages? (Optional)</Text>
+            <Text style={styles.title}>What's your primary language?</Text>
             
             <ScrollView style={styles.tagContainer}>
-                {availableLanguages.map((lang) => (
+                {LANGUAGES.map((lang) => (
                     <Tag
                         key={lang}
                         label={lang}
-                        pressed={selectedLanguages.includes(lang)}
-                        onPress={() => toggleLanguage(lang)}
+                        pressed={selectedLanguage === lang}
+                        onPress={() => setSelectedLanguage(lang)}
                     />
                 ))}
             </ScrollView>
 
-            <NextButton onPress={handleNext} />
+            <NextButton 
+                onPress={handleNext}
+                disabled={!selectedLanguage}
+            />
         </View>
     );
 }

@@ -1,8 +1,8 @@
-import NextButton from "../components/NextButton";
-import TextInputComponent from "../components/TextInputComponent";
+import NextButton from "../../components/NextButton";
+import TextInputComponent from "../../components/TextInputComponent";
 import { useState } from 'react';
 import { Text, View } from "react-native";
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 const LoginForm = () => {
     const [email, setEmail] = useState('');

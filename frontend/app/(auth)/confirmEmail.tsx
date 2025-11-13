@@ -9,7 +9,9 @@ export default function ConfirmEmail() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             // When email is confirmed, Supabase fires an auth state change
             if (session?.user?.email_confirmed_at) {
-                router.replace('/onboarding/username');
+                // OnboardingGuard will handle routing to onboarding after confirmation
+                // Just trigger a navigation to let the guard take over
+                router.replace('/(tabs)');
             }
         });
 

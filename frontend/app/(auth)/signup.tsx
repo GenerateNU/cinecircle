@@ -1,17 +1,15 @@
-import NextButton from "../components/NextButton";
-import TextInputComponent from "../components/TextInputComponent";
+import NextButton from "../../components/NextButton";
+import TextInputComponent from "../../components/TextInputComponent";
 import { router } from "expo-router"
 import { useState } from 'react';
 import { Text, View } from "react-native";
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext'
+import { supabase } from '../../lib/supabase';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const { onboardingComplete } = useAuth();
 
     const handleSignIn = async () => {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -21,7 +19,7 @@ const SignUp = () => {
 
         if (data.user) {
             setMessage('Signed in successfully!');
-            // Navigate to main app
+            // OnboardingGuard will handle navigation
             return { success: true };
         }
 
@@ -64,11 +62,7 @@ const SignUp = () => {
             const signInResult = await handleSignIn();
             
             if (signInResult.success) {
-                if (onboardingComplete) {
-                    router.replace("/movies")
-                } else{
-                    router.replace("onboarding/username")
-                }
+                // OnboardingGuard will redirect based on profile.onboardingCompleted
                 return;
             }
 
@@ -77,12 +71,13 @@ const SignUp = () => {
 
             if (signUpResult.success) {
                 if (signUpResult.confirmation) {
-                    router.replace("/onboarding/username");
+                    // Email confirmed, OnboardingGuard will redirect to onboarding
                     return;
                 }
 
                 if (signUpResult.confirmation === false) {
-                    router.replace("/onboarding/confirmEmail");
+                    // Need email confirmation
+                    router.replace("/(auth)/confirmEmail");
                     return;
                 }
             }

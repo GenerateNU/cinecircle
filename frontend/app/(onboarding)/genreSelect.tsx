@@ -26,7 +26,7 @@ export default function GenreSelect() {
 
     const handleNext = () => {
         updateData({ genres: selectedGenres });
-        go("/onboarding/complete");
+        go("/(onboarding)/complete");
     };
 
     return (

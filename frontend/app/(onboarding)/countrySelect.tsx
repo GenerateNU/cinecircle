@@ -5,42 +5,42 @@ import NextButton from '../../components/NextButton';
 import Tag from '../../components/Tag';
 import { useOnboarding } from './_layout';
 
-const LANGUAGES = [
-    'English', 'Spanish', 'French', 'German', 'Italian', 
-    'Portuguese', 'Chinese', 'Japanese', 'Korean', 'Arabic',
-    'Hindi', 'Russian', 'Turkish', 'Dutch', 'Swedish'
+const COUNTRIES = [
+    'United States', 'Canada', 'United Kingdom', 'France', 'Germany',
+    'Spain', 'Italy', 'Japan', 'South Korea', 'China',
+    'India', 'Brazil', 'Mexico', 'Australia', 'Argentina'
 ];
 
-export default function PrimaryLanguageSelect() {
-    const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+export default function CountrySelect() {
+    const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
     const { updateData } = useOnboarding();
     const go = (to: string) => router.push(to);
 
     const handleNext = () => {
-        if (selectedLanguage) {
-            updateData({ language: selectedLanguage });
-            go("/onboarding/secondaryLanguageSelect");
+        if (selectedCountry) {
+            updateData({ country: selectedCountry });
+            go("/(onboarding)/citySelect");
         }
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>What's your primary language?</Text>
+            <Text style={styles.title}>Where are you from?</Text>
             
             <ScrollView style={styles.tagContainer}>
-                {LANGUAGES.map((lang) => (
+                {COUNTRIES.map((country) => (
                     <Tag
-                        key={lang}
-                        label={lang}
-                        pressed={selectedLanguage === lang}
-                        onPress={() => setSelectedLanguage(lang)}
+                        key={country}
+                        label={country}
+                        pressed={selectedCountry === country}
+                        onPress={() => setSelectedCountry(country)}
                     />
                 ))}
             </ScrollView>
 
             <NextButton 
                 onPress={handleNext}
-                disabled={!selectedLanguage}
+                disabled={!selectedCountry}
             />
         </View>
     );

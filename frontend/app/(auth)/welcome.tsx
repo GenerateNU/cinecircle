@@ -1,8 +1,8 @@
 import { Text, Image, View, useWindowDimensions } from 'react-native'
 import { router } from 'expo-router'
-import logo from '../assets/icon.png'
-import NextButton from '../components/NextButton';
-import { styles } from '../styles/Welcome.styles'
+import logo from '../../assets/icon.png'
+import NextButton from '../../components/NextButton';
+import { styles } from '../../styles/Welcome.styles'
 
 export default function welcome () {
     const { width, height } = useWindowDimensions();
@@ -26,13 +26,13 @@ export default function welcome () {
             <View style={styles.buttonContainer}>
                 <NextButton 
                     title="Log in" 
-                    onPress={() => go("/login")} 
+                    onPress={() => go("/(auth)/login")} 
                     size="large" 
                     variation='variation1'
                 />
                 <NextButton 
                     title="Sign up" 
-                    onPress={() => go("/signup")} 
+                    onPress={() => go("/(auth)/signup")} 
                     size="large"
                 />
             </View>

@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, Dimensions } from 'react-native';
-import SearchBar from '../components/SearchBar';
-import TextPost from '../components/TextPost';
-import PicturePost from '../components/PicturePost';
-import ReviewPost from '../components/ReviewPost';
+import SearchBar from '../../../components/SearchBar';
+import TextPost from '../../../components/TextPost';
+import PicturePost from '../../../components/PicturePost';
+import ReviewPost from '../../../components/ReviewPost';
 
 const { width } = Dimensions.get('window');
 

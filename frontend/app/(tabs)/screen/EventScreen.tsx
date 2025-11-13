@@ -1,7 +1,7 @@
 // app/events.tsx
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
+import BottomNavBar from '../../../components/BottomNavBar';
 
 interface Event {
   id: string;

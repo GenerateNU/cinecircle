@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Slot } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { OnboardingGuard } from '../components/OnboardingGuard';
 import BottomNavBar from '../components/BottomNavBar';
 
 function RootLayoutContent() {
   const { user, loading } = useAuth();
+  const segments = useSegments();
 
   // Splash while checking session
   if (loading) {
@@ -19,11 +21,14 @@ function RootLayoutContent() {
     );
   }
 
-  // Main app (handles both authenticated and routing states)
+  const inTabsGroup = segments[0] === '(tabs)';
+
   return (
     <SafeAreaProvider>
-      <Slot />
-      {user && <BottomNavBar />}
+      <OnboardingGuard>
+        <Stack screenOptions={{ headerShown: false }} />
+        {user && inTabsGroup && <BottomNavBar />}
+      </OnboardingGuard>
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

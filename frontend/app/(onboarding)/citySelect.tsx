@@ -5,26 +5,25 @@ import TextInputComponent from '../../components/TextInputComponent';
 import NextButton from '../../components/NextButton';
 import { useOnboarding } from './_layout';
 
-export default function Username() {
-    const [username, setUsername] = useState('');
+export default function CitySelect() {
+    const [city, setCity] = useState('');
     const { updateData } = useOnboarding();
     const go = (to: string) => router.push(to);
 
     const handleNext = () => {
-        updateData({ username });
-        go("/onboarding/profileSelect");
+        updateData({ city });
+        go("/(onboarding)/genreSelect");
     };
 
     return (
         <View>
             <TextInputComponent
-                title="Set your username"
-                field="Username"
-                placeholder="Choose a username"
-                onChangeText={setUsername}
-                value={username}
+                title="What city?"
+                placeholder="Start typing where you're from!"
+                onChangeText={setCity}
+                value={city}
             />
-            <NextButton onPress={handleNext}/>
+            <NextButton onPress={handleNext} />
         </View>
     );
 }

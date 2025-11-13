@@ -10,7 +10,7 @@ export default function ProfileSelect() {
     const handleNext = () => {
         // Skip profile picture for now
         updateData({ profilePicture: null });
-        go("/onboarding/primaryLanguageSelect");
+        go("/(onboarding)/primaryLanguageSelect");
     };
 
     return (

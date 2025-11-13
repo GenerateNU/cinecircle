@@ -1,22 +1,21 @@
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useOnboarding } from './_layout';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { updateUserProfile } from '../../services/userService';
 
 export default function Complete() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { data, resetData } = useOnboarding();
-    const { user, setOnboardingComplete } = useAuth();
+    const { user, refreshProfile } = useAuth();
 
     useEffect(() => {
-        // Automatically create profile when screen loads
-        createProfile();
+        // Automatically create/update profile when screen loads
+        completeOnboarding();
     }, []);
 
-    const createProfile = async () => {
+    const completeOnboarding = async () => {
         if (!user) {
             setError('No user found');
             return;
@@ -26,36 +25,31 @@ export default function Complete() {
         setError(null);
 
         try {
-            // Create user profile in database
-            const { error: insertError } = await supabase
-                .from('UserProfile')
-                .insert({
-                    userId: user.id,
-                    username: data.username,
-                    primaryLanguage: data.language,
-                    secondaryLanguage: data.secondaryLanguages,
-                    profilePicture: data.profilePicture,
-                    country: data.country,
-                    city: data.city,
-                    favoriteGenres: data.genres,
-                });
+            // Update user profile via backend API
+            await updateUserProfile({
+                username: data.username,
+                primaryLanguage: data.primaryLanguage,
+                secondaryLanguage: data.secondaryLanguages,
+                profilePicture: data.profilePicture,
+                country: data.country,
+                city: data.city,
+                favoriteGenres: data.genres,
+                onboardingCompleted: true,
+            });
 
-            if (insertError) throw insertError;
-
-            // Mark onboarding as complete
-            setOnboardingComplete(true);
+            // Refresh profile in AuthContext to get updated data
+            await refreshProfile();
             
             // Clear onboarding data
             resetData();
 
-            // We can put an animation or an incentive here
+            // Show success message briefly before redirect
             setTimeout(() => {
-                router.replace('/');
-            }, 1000);
+            }, 1500);
 
         } catch (err: any) {
-            console.error('Error creating profile:', err);
-            setError(err.message || 'Failed to create profile');
+            console.error('Error completing onboarding:', err);
+            setError(err.message || 'Failed to complete onboarding');
         } finally {
             setLoading(false);
         }
@@ -75,7 +69,7 @@ export default function Complete() {
             <View style={styles.container}>
                 <Text style={styles.title}>Oops! Something went wrong</Text>
                 <Text style={styles.error}>{error}</Text>
-                <Text style={styles.retry} onPress={createProfile}>
+                <Text style={styles.retry} onPress={completeOnboarding}>
                     Tap to retry
                 </Text>
             </View>
@@ -96,6 +90,7 @@ const styles = StyleSheet.create({
         padding: 24,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#fff',
     },
     title: { 
         fontSize: 28, 
@@ -113,13 +108,15 @@ const styles = StyleSheet.create({
     },
     error: {
         fontSize: 16,
-        color: 'red',
+        color: '#ff3b30',
         textAlign: 'center',
         marginVertical: 20,
+        paddingHorizontal: 20,
     },
     retry: {
         fontSize: 16,
         color: '#007AFF',
         textDecorationLine: 'underline',
+        marginTop: 10,
     },
 });

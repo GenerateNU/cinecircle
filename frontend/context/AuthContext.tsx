@@ -7,21 +7,21 @@ import {
 } from 'react';
 import { supabase } from '../lib/supabase';
 import { setApiToken } from '../services/apiClient';
-import { getUserProfileBasic } from '../services';
+import { getUserProfile } from '../services/userService';
+import type { UserProfile } from '../types/models';
+import type { User, Session } from '@supabase/supabase-js';
 
 type AuthContextType = {
-  user: any;
-  session: any;
+  user: User | null;
+  session: Session | null;
+  profile: UserProfile | null;
   loading: boolean;
+  profileLoading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
-});
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -36,52 +36,82 @@ type AuthProviderProps = {
 };
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
-  const fetchProfile = async (userId: string, token: string) => {
+  const fetchProfile = async () => {
     try {
-      const profileData = await getUserProfile(userId, token);
-      setProfile(profileData);
+      setProfileLoading(true);
+      const response = await getUserProfile();
+      setProfile(response.userProfile);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
       setProfile(null);
+    } finally {
+      setProfileLoading(false);
     }
   };
 
-
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setApiToken(session?.access_token);
-      setLoading(false);
-    });
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        setApiToken(session?.access_token);
+        
+        // Fetch profile if user is authenticated
+        if (session?.user) {
+          await fetchProfile();
+        }
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    initializeAuth();
+
+    // Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setApiToken(session?.access_token);
+      
+      if (session?.user) {
+        await fetchProfile();
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const refreshProfile = async () => {
-    if (user?.id && session?.access_token) {
-      await fetchProfile(user.id, session.access_token);
+    if (user) {
+      await fetchProfile();
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setApiToken(undefined);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setApiToken(undefined);
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    }
   };
 
   return (
@@ -89,8 +119,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       value={{ 
         user, 
         session, 
+        profile,
         loading,
+        profileLoading,
         signOut,
+        refreshProfile,
       }}
     >
       {children}

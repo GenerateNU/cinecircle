@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { getUserProfileBasic } from '../services/userService';
-import { getFollowers, getFollowing } from '../services/followService';
-import { User, Props } from '../types/models';
+import { getUserProfileBasic } from '../../../services/userService';
+import { getFollowers, getFollowing } from '../../../services/followService';
+import { User, Props } from '../../../types/models';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2); // ~1/5 screen

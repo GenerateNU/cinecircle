@@ -2,13 +2,11 @@ import { Stack } from 'expo-router';
 import { createContext, useContext, useState } from 'react';
 
 type OnboardingData = {
-  email?: string;
-  password?: string;
   username?: string;
   profilePicture?: string | null;
   country?: string;
   city?: string;
-  language?: string;
+  primaryLanguage?: string;
   secondaryLanguages?: string[];
   genres?: string[];
 };
@@ -52,4 +50,4 @@ export default function OnboardingLayout() {
       />
     </OnboardingContext.Provider>
   );
-}
+};

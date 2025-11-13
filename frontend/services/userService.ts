@@ -1,7 +1,6 @@
 import { api } from "./apiClient";
 import type {
   ProtectedResponse,
-  GetUserProfileBasicResponse,
   UpdateUserProfileInput,
   UpdateUserProfileResponse,
   DeleteUserProfileResponse,
@@ -14,7 +13,7 @@ export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);
 }
 
-export function getUserProfileBasic() {
+export function getUserProfile() {
   return api.get<GetUserProfileResponse>(`/api/user/profile`);
 }
 
