@@ -1,13 +1,14 @@
 import { api } from "./apiClient";
-import type {
-  ProtectedResponse,
-  GetUserProfileBasicResponse,
-  UpdateUserProfileInput,
-  UpdateUserProfileResponse,
-  DeleteUserProfileResponse,
-  GetUserRatingsResponse,
-  GetUserCommentsResponse,
-} from "../types/apiTypes";
+import type { components } from "../types/api-generated";
+
+// Auto-generated types from backend
+type ProtectedResponse = components["schemas"]["ProtectedResponse"];
+type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
+type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"];
+type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
+type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
+type GetUserRatingsResponse = components["schemas"]["GetUserRatingsResponse"];
+type GetUserCommentsResponse = components["schemas"]["GetUserCommentsResponse"];
 
 export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);

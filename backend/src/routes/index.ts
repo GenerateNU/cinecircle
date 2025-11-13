@@ -20,7 +20,12 @@ const router = Router();
 
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
-router.get("/swagger-output.json", serveSwagger);
+
+// Legacy endpoint
+router.get("/swagger-output.json", serveSwagger);  
+
+//OpenAPI 3.0 spec
+router.get("/openapi.json", serveSwagger);
 
 // everything under here is a private endpoint
 router.use('/api', authenticateUser, ensureUserProfile); 

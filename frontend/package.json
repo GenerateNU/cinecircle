@@ -10,6 +10,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "type-test": "tsd",
+    "types:check": "tsc --noEmit",
     "clean": "rm -rf node_modules package-lock.json .expo && npm cache clean --force"
   },
   "dependencies": {
