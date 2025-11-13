@@ -1,8 +1,4 @@
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-
-import Config from "react-native-config";
-
+/* eslint-disable no-undef */
 /**
  * Usage:
  *   import { api } from "./apiClient";
@@ -20,32 +16,35 @@ export class ApiError extends Error {
   url?: string;
   body?: unknown;
 
-  constructor(message: string, opts?: { status?: number; url?: string; body?: unknown }) {
+  constructor(
+    message: string,
+    opts?: { status?: number; url?: string; body?: unknown }
+  ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = opts?.status;
     this.url = opts?.url;
     this.body = opts?.body;
   }
 }
 
-type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 type ApiClientOptions = {
   baseUrl: string;
   getToken?: () => string | undefined;
-  defaultHeaders?: HeadersInit;
+  defaultHeaders?: Record<string, string>;
   timeoutMs?: number;
 };
 
 function joinUrl(base: string, path: string) {
-  const left = base.replace(/\/+$/, "");
-  const right = path.startsWith("/") ? path : `/${path}`;
+  const left = base.replace(/\/+$/, '');
+  const right = path.startsWith('/') ? path : `/${path}`;
   return `${left}${right}`;
 }
 
 export function toQuery(params?: Record<string, any>): string {
-  if (!params || Object.keys(params).length === 0) return "";
+  if (!params || Object.keys(params).length === 0) return '';
   const q = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v === undefined || v === null) continue;
@@ -53,7 +52,7 @@ export function toQuery(params?: Record<string, any>): string {
     else q.set(k, String(v));
   }
   const s = q.toString();
-  return s ? `?${s}` : "";
+  return s ? `?${s}` : '';
 }
 
 export class ApiClient {
@@ -63,7 +62,7 @@ export class ApiClient {
   private timeoutMs: number;
 
   constructor(opts: ApiClientOptions) {
-    this.baseUrl = opts.baseUrl.replace(/\/+$/, "");
+    this.baseUrl = opts.baseUrl.replace(/\/+$/, '');
     this.getToken = opts.getToken;
     this.defaultHeaders = opts.defaultHeaders ?? {};
     this.timeoutMs = opts.timeoutMs ?? 15000;
@@ -80,12 +79,12 @@ export class ApiClient {
 
     // auth
     const token = this.getToken?.();
-    if (token) h.set("Authorization", `Bearer ${token}`);
+    if (token) h.set('Authorization', `Bearer ${token}`);
 
     // Content-Type for non-FormData bodies
-    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
-    if (!isForm && body !== undefined && !h.has("Content-Type")) {
-      h.set("Content-Type", "application/json");
+    const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
+    if (!isForm && body !== undefined && !h.has('Content-Type')) {
+      h.set('Content-Type', 'application/json');
     }
 
     return h;
@@ -93,7 +92,10 @@ export class ApiClient {
 
   private withTimeout<T>(promise: Promise<T>, ms: number) {
     return new Promise<T>((resolve, reject) => {
-      const id = setTimeout(() => reject(new ApiError(`Request timed out after ${ms}ms`)), ms);
+      const id = setTimeout(
+        () => reject(new ApiError(`Request timed out after ${ms}ms`)),
+        ms
+      );
       promise.then(
         (v) => {
           clearTimeout(id);
@@ -102,7 +104,7 @@ export class ApiClient {
         (e) => {
           clearTimeout(id);
           reject(e);
-        },
+        }
       );
     });
   }
@@ -115,12 +117,13 @@ export class ApiClient {
     const url = joinUrl(this.baseUrl, path);
 
     // Pass FormData through; otherwise JSON.stringify bodies
-    const isForm = typeof FormData !== "undefined" && opts?.body instanceof FormData;
+    const isForm =
+      typeof FormData !== 'undefined' && opts?.body instanceof FormData;
     const bodyInit = isForm
       ? (opts?.body as BodyInit)
       : opts?.body !== undefined
-      ? JSON.stringify(opts.body)
-      : undefined;
+        ? JSON.stringify(opts.body)
+        : undefined;
 
     const init: RequestInit = {
       method,
@@ -134,9 +137,9 @@ export class ApiClient {
     const raw = await res.text();
     const isJson =
       raw &&
-      (res.headers.get("content-type")?.includes("application/json") ||
-        raw.trim().startsWith("{") ||
-        raw.trim().startsWith("["));
+      (res.headers.get('content-type')?.includes('application/json') ||
+        raw.trim().startsWith('{') ||
+        raw.trim().startsWith('['));
 
     let parsed: any = null;
     if (raw) {
@@ -159,32 +162,29 @@ export class ApiClient {
 
   get<T>(path: string, params?: Record<string, any>, headers?: HeadersInit) {
     const qs = toQuery(params);
-    return this.request<T>("GET", `${path}${qs}`, { headers });
+    return this.request<T>('GET', `${path}${qs}`, { headers });
   }
 
   post<T>(path: string, body?: unknown, headers?: HeadersInit) {
-    return this.request<T>("POST", path, { body, headers });
+    return this.request<T>('POST', path, { body, headers });
   }
 
   put<T>(path: string, body?: unknown, headers?: HeadersInit) {
-    return this.request<T>("PUT", path, { body, headers });
+    return this.request<T>('PUT', path, { body, headers });
   }
 
   patch<T>(path: string, body?: unknown, headers?: HeadersInit) {
-    return this.request<T>("PATCH", path, { body, headers });
+    return this.request<T>('PATCH', path, { body, headers });
   }
 
   delete<T>(path: string, headers?: HeadersInit) {
-    return this.request<T>("DELETE", path, { headers });
+    return this.request<T>('DELETE', path, { headers });
   }
 }
 
-const BASE_URL =
-  Config.API_BASE_URL ||
-  "http://localhost:3000"; 
+const BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 
 export const api = new ApiClient({
   baseUrl: BASE_URL,
-  getToken: () =>
-    typeof window !== "undefined" ? localStorage.getItem("token") || undefined : undefined,
+  getToken: () => undefined, // Token handling for backend if needed
 });

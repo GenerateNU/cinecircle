@@ -64,9 +64,49 @@ npx prisma generate      # Regenerate client
 ### Frontend (Expo)
 ```bash
 npm run frontend:start         # Start Expo dev server
+npm run frontend:test          # Run tests
+npm run frontend:lint          # Lint code
+npm run frontend:type-check    # TypeScript type checking
 npm run frontend:android       # Run on Android
 npm run frontend:ios           # Run on iOS
 npm run frontend:clean         # Clean rebuild
+```
+
+### Linting & Type Checking (Run Locally Before Pushing)
+
+To check your code before pushing (same checks that run in CI):
+
+```bash
+# Check everything
+npm run lint              # Run linting for both backend and frontend
+npm run type-check        # Run TypeScript type checking for frontend
+
+# Or check individually
+npm run backend:lint      # Lint backend only
+npm run frontend:lint     # Lint frontend only
+npm run frontend:type-check  # TypeScript check frontend only
+
+# Auto-fix linting issues
+npm run lint:fix          # Fix linting for both backend and frontend
+npm run backend:lint:fix  # Fix backend linting only
+npm run frontend:lint:fix # Fix frontend linting only
+```
+
+**Order for local pre-push checks:**
+```bash
+# 1. Install dependencies
+npm run install:all
+
+# 2. Start backend
+npm run backend:start
+
+# 3. Run linting and type checks
+npm run lint              # Lint both backend and frontend
+npm run type-check        # TypeScript type checking
+
+# 4. Run tests
+npm run backend:test      # Backend tests
+npm run frontend:test     # Frontend tests
 ```
 
 ## Database Usage

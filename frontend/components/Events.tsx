@@ -18,7 +18,7 @@ interface Event {
   attendees?: string;
 }
   
-interface EventCardProps {
+interface _EventCardProps {
   event: Event;
 }
 

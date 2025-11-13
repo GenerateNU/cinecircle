@@ -25,6 +25,7 @@
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "@scalar/express-api-reference": "^0.8.16",
+    "axios": "^1.7.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^4.21.2",
@@ -32,7 +33,8 @@
     "jwks-rsa": "^3.2.0",
     "pg": "^8.16.3",
     "prisma": "^6.15.0",
-    "swagger-autogen": "^2.23.7"
+    "swagger-autogen": "^2.23.7",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -41,6 +43,7 @@
     "@types/node": "^24.3.0",
     "@types/pg": "^8.11.10",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.0",

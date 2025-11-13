@@ -5,10 +5,10 @@ export type Movie = {
   movieId: string;
   title?: string | null;
   description?: string | null;
-  languages?: string[] | null;     // controller sends array for updates
-  imdbRating?: number | null;      // converted to number in controller
+  languages?: string[] | null; // controller sends array for updates
+  imdbRating?: number | null; // converted to number in controller
   localRating?: number | string | null; // schema is String, controller may coerce Number
-  numRatings?: number | string | null;  // same note as above
+  numRatings?: number | string | null; // same note as above
 };
 
 /** Minimal user profile payloads used by your endpoints. */
@@ -48,7 +48,6 @@ export type Comment = {
 };
 
 export type FollowEdge = {
-
   id: string;
   followerId: string;
   followingId: string;

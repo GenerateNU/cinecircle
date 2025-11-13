@@ -1,20 +1,33 @@
 import { PrismaClient } from '@prisma/client';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import type { Response } from 'express';
+import { v4 as uuid } from 'uuid';
 
 const prisma = new PrismaClient();
 
-export const createRating = async (req: AuthenticatedRequest, res: Response) => {
+export const createRating = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const timestamp = new Date().toISOString();
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'User not authenticated', timestamp, endpoint: '/api/ratings' });
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     const stars = parseInt(req.body.stars, 10);
     if (stars < 0 || stars > 5) {
-      return res.status(400).json({ message: 'Stars must be between 0 and 5', timestamp, endpoint: '/api/ratings' });
+      return res.status(400).json({
+        message: 'Stars must be between 0 and 5',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     const newRatingData = {
+      id: uuid(),
       userId: req.user.id,
       movieId: req.body.movieId,
       stars,
@@ -45,7 +58,11 @@ export const getRatings = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'User not authenticated', timestamp, endpoint: '/api/ratings' });
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     const ratings = await prisma.rating.findMany({
       where: { userId: req.user.id },
@@ -68,17 +85,28 @@ export const getRatings = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const getRatingById = async (req: AuthenticatedRequest, res: Response) => {
+export const getRatingById = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const timestamp = new Date().toISOString();
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'User not authenticated', timestamp, endpoint: '/api/ratings' });
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     const rating = await prisma.rating.findUnique({
       where: { id: req.params.id },
     });
     if (!rating || rating.userId !== req.user.id) {
-      return res.status(404).json({ message: 'Rating not found', timestamp, endpoint: '/api/ratings' });
+      return res.status(404).json({
+        message: 'Rating not found',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     return res.status(200).json({
       message: 'Rating retrieved successfully',
@@ -97,19 +125,36 @@ export const getRatingById = async (req: AuthenticatedRequest, res: Response) =>
   }
 };
 
-export const updateRating = async (req: AuthenticatedRequest, res: Response) => {
+export const updateRating = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const timestamp = new Date().toISOString();
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'User not authenticated', timestamp, endpoint: '/api/ratings' });
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
-    const existing = await prisma.rating.findUnique({ where: { id: req.params.id } });
+    const existing = await prisma.rating.findUnique({
+      where: { id: req.params.id },
+    });
     if (!existing || existing.userId !== req.user.id) {
-      return res.status(404).json({ message: 'Rating not found', timestamp, endpoint: '/api/ratings' });
+      return res.status(404).json({
+        message: 'Rating not found',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     const stars = parseInt(req.body.stars, 10);
     if (isNaN(stars) || stars < 0 || stars > 5) {
-      return res.status(400).json({ message: 'Stars must be between 0 and 5', timestamp, endpoint: '/api/ratings' });
+      return res.status(400).json({
+        message: 'Stars must be between 0 and 5',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     const updated = await prisma.rating.update({
       where: { id: req.params.id },
@@ -136,15 +181,28 @@ export const updateRating = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const deleteRating = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteRating = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const timestamp = new Date().toISOString();
   try {
     if (!req.user) {
-      return res.status(401).json({ message: 'User not authenticated', timestamp, endpoint: '/api/ratings' });
+      return res.status(401).json({
+        message: 'User not authenticated',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
-    const existing = await prisma.rating.findUnique({ where: { id: req.params.id } });
+    const existing = await prisma.rating.findUnique({
+      where: { id: req.params.id },
+    });
     if (!existing || existing.userId !== req.user.id) {
-      return res.status(404).json({ message: 'Rating not found', timestamp, endpoint: '/api/ratings' });
+      return res.status(404).json({
+        message: 'Rating not found',
+        timestamp,
+        endpoint: '/api/ratings',
+      });
     }
     await prisma.rating.delete({ where: { id: req.params.id } });
     return res.status(200).json({

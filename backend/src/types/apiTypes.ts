@@ -1,4 +1,4 @@
-import type { ApiEnvelope } from "../services/apiClient";
+import type { ApiEnvelope } from '../services/apiClient';
 import type {
   Movie,
   UserProfile,
@@ -6,7 +6,7 @@ import type {
   Rating,
   Comment,
   FollowEdge,
-} from "./models";
+} from './models';
 
 /** -------- Health -------- */
 export type PingResponse = { message?: string; [k: string]: unknown };
@@ -29,10 +29,12 @@ export type GetUserProfileBasicResponse = {
 };
 
 /** -------- User Profile Update/Delete -------- */
-export type UpdateUserProfileInput = Partial<Pick<
-  UserProfile,
-  "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies"
->>;
+export type UpdateUserProfileInput = Partial<
+  Pick<
+    UserProfile,
+    'username' | 'preferredLanguages' | 'preferredCategories' | 'favoriteMovies'
+  >
+>;
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };
 export type DeleteUserProfileResponse = { message: string };
@@ -50,9 +52,16 @@ export type GetFollowingResponse = { following: FollowEdge[] };
 /** -------- Movies -------- */
 // GET /movies/:tmdbId (TMDB fetch + save) and GET/PUT /movies/cinecircle/:movieId
 export type GetMovieEnvelope = ApiEnvelope<Movie>;
-export type UpdateMovieInput = Partial<Pick<
-  Movie,
-  "title" | "description" | "languages" | "imdbRating" | "localRating" | "numRatings"
->>;
+export type UpdateMovieInput = Partial<
+  Pick<
+    Movie,
+    | 'title'
+    | 'description'
+    | 'languages'
+    | 'imdbRating'
+    | 'localRating'
+    | 'numRatings'
+  >
+>;
 export type UpdateMovieEnvelope = ApiEnvelope<Movie>;
 export type DeleteMovieResponse = { message: string };

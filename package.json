@@ -27,11 +27,17 @@
     "backend:install": "cd backend && npm install",
     "frontend:start": "cd frontend && npm start",
     "frontend:test": "cd frontend && npm test",
+    "frontend:lint": "cd frontend && npm run lint",
+    "frontend:lint:fix": "cd frontend && npm run lint:fix",
+    "frontend:type-check": "cd frontend && npx tsc --noEmit",
     "frontend:android": "cd frontend && npm run android",
     "frontend:ios": "cd frontend && npm run ios",
     "frontend:web": "cd frontend && npm run web",
     "frontend:clean": "cd frontend && npm run clean",
-    "frontend:install": "cd frontend && npm install"
+    "frontend:install": "cd frontend && npm install",
+    "lint": "npm run backend:lint && npm run frontend:lint",
+    "lint:fix": "npm run backend:lint:fix && npm run frontend:lint:fix",
+    "type-check": "npm run frontend:type-check"
   },
   "workspaces": [
     "backend",

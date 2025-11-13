@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-import dotenv from "dotenv";
-import { resolve } from "path";
+import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+import { resolve } from 'path';
 
 /**
  * Test Setup for E2E Testing with Prod Data
@@ -12,11 +12,11 @@ import { resolve } from "path";
 
 // Load the same .env file as the main app (backend/.env)
 // __dirname is backend/src/tests/helpers, so we go up 3 levels to reach backend/
-dotenv.config({ path: resolve(__dirname, "../../../", ".env") });
+dotenv.config({ path: resolve(__dirname, '../../../', '.env') });
 
 // Test configuration
 export const getTestConfig = () => {
-  const requiredEnvVars = ["DATABASE_URL", "DIRECT_URL"];
+  const requiredEnvVars = ['DATABASE_URL', 'DIRECT_URL'];
 
   for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
@@ -68,13 +68,13 @@ export const closeTestPrisma = async (): Promise<void> => {
  * Verify database connectivity
  */
 export const verifyDatabaseConnection = async (
-  prisma: PrismaClient,
+  prisma: PrismaClient
 ): Promise<boolean> => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     return true;
   } catch (error) {
-    console.error("Database connection failed:", error);
+    console.error('Database connection failed:', error);
     return false;
   }
 };

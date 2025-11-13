@@ -1,16 +1,18 @@
 import { Request, Response } from 'express';
 import { prisma } from '../services/db';
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from '@prisma/client';
 import type { AuthenticatedRequest } from '../middleware/auth';
-import { mapUserProfileDbToApi } from "./user";
-import { FollowEdge } from "../types/models";
+import { mapUserProfileDbToApi } from './user';
+import { FollowEdge } from '../types/models';
 
 export const followUser = async (req: AuthenticatedRequest, res: Response) => {
   const followerId = req.user?.id;
   const { followingId } = req.body;
 
   if (!followerId || !followingId) {
-    return res.status(400).json({ message: 'Missing follower or following ID' });
+    return res
+      .status(400)
+      .json({ message: 'Missing follower or following ID' });
   }
 
   try {
@@ -27,12 +29,17 @@ export const followUser = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const unfollowUser = async (req: AuthenticatedRequest, res: Response) => {
+export const unfollowUser = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const followerId = req.user?.id;
   const { followingId } = req.body;
 
   if (!followerId || !followingId) {
-    return res.status(400).json({ message: 'Missing follower or following ID' });
+    return res
+      .status(400)
+      .json({ message: 'Missing follower or following ID' });
   }
 
   try {
@@ -54,9 +61,9 @@ export const getFollowers = async (req: Request, res: Response) => {
   try {
     const followers = await prisma.userFollow.findMany({
       where: { followingId: userId },
-      include: { 
+      include: {
         follower: true,
-        following: true 
+        following: true,
       },
     });
 
@@ -75,9 +82,9 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const following = await prisma.userFollow.findMany({
       where: { followerId: userId },
-      include: { 
+      include: {
         follower: true,
-        following: true 
+        following: true,
       },
     });
 
@@ -104,6 +111,8 @@ export function mapUserFollowDbToApi(row: UserFollowWithProfiles): FollowEdge {
   };
 }
 
-export function mapUserFollowsDbToApi(rows: UserFollowWithProfiles[]): FollowEdge[] {
+export function mapUserFollowsDbToApi(
+  rows: UserFollowWithProfiles[]
+): FollowEdge[] {
   return rows.map(mapUserFollowDbToApi);
 }

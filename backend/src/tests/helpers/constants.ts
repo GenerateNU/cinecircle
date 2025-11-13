@@ -26,9 +26,9 @@ export const HTTP_STATUS = {
 
 // Test database table names
 export const TEST_TABLES = {
-  MOVIE: "movie",
-  RATING: "Rating",
-  USERS: "users",
+  MOVIE: 'movie',
+  RATING: 'Rating',
+  USERS: 'users',
 } as const;
 
 // Test query limits

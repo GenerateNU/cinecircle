@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import { prisma } from "../../services/db.js";
+import { prisma } from '../../services/db.js';
 import {
   followUser,
   unfollowUser,
   getFollowers,
   getFollowing,
-  mapUserFollowDbToApi,
-  mapUserFollowsDbToApi,
 } from '../../controllers/userFollows';
-import { AuthenticatedRequest } from "../../middleware/auth";
+import { AuthenticatedRequest } from '../../middleware/auth';
 
 // Mock dependencies - paths should match the actual imports
 jest.mock('../../services/db.js', () => ({
@@ -39,7 +37,7 @@ describe('Follow Controller', () => {
   beforeEach(() => {
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
-    
+
     mockRes = {
       json: jsonMock,
       status: statusMock,

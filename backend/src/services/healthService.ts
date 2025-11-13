@@ -1,5 +1,5 @@
 // src/services/healthService.ts
-import { api } from "./apiClient";
+import { api } from './apiClient';
 
 export function ping() {
   return api.get<{ message?: string; [k: string]: unknown }>(`/api/ping`);

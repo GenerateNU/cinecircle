@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from "../../services/db.js";
+import { prisma } from '../../services/db.js';
 import {
   followUser,
   unfollowUser,
@@ -8,7 +8,7 @@ import {
   mapUserFollowDbToApi,
   mapUserFollowsDbToApi,
 } from '../../controllers/userFollows';
-import { AuthenticatedRequest } from "../../middleware/auth";
+import { AuthenticatedRequest } from '../../middleware/auth';
 
 // Mock dependencies - paths should match the actual imports
 jest.mock('../../services/db.js', () => ({
@@ -39,7 +39,7 @@ describe('Follow Controller', () => {
   beforeEach(() => {
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
-    
+
     mockRes = {
       json: jsonMock,
       status: statusMock,
@@ -150,7 +150,9 @@ describe('Follow Controller', () => {
         },
       ];
 
-      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(mockFollowers);
+      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(
+        mockFollowers
+      );
 
       await getFollowers(mockReq as Request, mockRes as Response);
 
@@ -227,7 +229,9 @@ describe('Follow Controller', () => {
         },
       ];
 
-      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(mockFollowing);
+      (prisma.userFollow.findMany as jest.Mock).mockResolvedValue(
+        mockFollowing
+      );
 
       await getFollowing(mockReq as Request, mockRes as Response);
 
