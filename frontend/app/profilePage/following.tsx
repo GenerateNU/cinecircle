@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -13,7 +14,7 @@ import tw from 'twrnc';
 import SectionHeader from '../../components/SectionHeader';
 import UserBar from '../../components/UserBar';
 import { getUserProfileBasic } from '../../services/userService';
-import { getFollowing } from '../../services/followService';
+import { getFollowing, unfollowUser } from '../../services/followService';
 import type { FollowEdge, UserProfileBasic } from '../../types/models';
 
 const NAV_HEIGHT = 64;
@@ -24,6 +25,7 @@ const Following = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingUnfollows, setPendingUnfollows] = useState<Record<string, boolean>>({});
 
   const fetchFollowingData = useCallback(
     async (options: { silent?: boolean } = {}) => {
@@ -71,6 +73,23 @@ const Following = () => {
 
   const handleRetry = () => {
     fetchFollowingData();
+  };
+
+  const handleUnfollow = async (followingId: string) => {
+    setPendingUnfollows((prev) => ({ ...prev, [followingId]: true }));
+    try {
+      await unfollowUser(followingId);
+      setFollowing((prev) => prev.filter((edge) => edge.followingId !== followingId));
+    } catch (err: any) {
+      console.error('Failed to unfollow user:', err);
+      Alert.alert('Unable to unfollow', err?.message || 'Please try again.');
+    } finally {
+      setPendingUnfollows((prev) => {
+        const next = { ...prev };
+        delete next[followingId];
+        return next;
+      });
+    }
   };
 
   const getDisplayName = (edge: FollowEdge) => {
@@ -169,13 +188,28 @@ const Following = () => {
               key={edge.id}
               style={tw`px-5 py-4 border-b border-gray-100`}
             >
-              <UserBar
-                name={getDisplayName(edge)}
-                avatarUri={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  getDisplayName(edge)
-                )}&background=667eea&color=fff`}
-                avatarSize={48}
-              />
+              <View style={tw`flex-row items-center justify-between`}>
+                <UserBar
+                  name={getDisplayName(edge)}
+                  avatarUri={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    getDisplayName(edge)
+                  )}&background=667eea&color=fff`}
+                  avatarSize={48}
+                />
+                <TouchableOpacity
+                  disabled={pendingUnfollows[edge.followingId]}
+                  onPress={() => handleUnfollow(edge.followingId)}
+                  style={tw`ml-4 px-4 py-2 border border-gray-400 rounded-full`}
+                >
+                  {pendingUnfollows[edge.followingId] ? (
+                    <ActivityIndicator size="small" color="#000" />
+                  ) : (
+                    <Text style={tw`text-sm font-semibold text-black`}>
+                      Unfollow
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
               <Text style={tw`mt-2 text-gray-500`}>
                 {getCategoriesPreview(edge)}
               </Text>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
 import { User, TabKey } from './types';
 import { formatCount } from './utils';
@@ -19,7 +19,7 @@ import BadgesGrid from './components/BadgesGrid';
 import Avatar from '../../components/Avatar';
 import SectionHeader from '../../components/SectionHeader';
 import { getUserProfileBasic } from '../../services/userService';
-import { followUser } from '../../services/followService';
+import { followUser, unfollowUser } from '../../services/followService';
 import { getFollowers, getFollowing } from '../../services/followService';
 import type { UserProfileBasic } from '../../types/models';
 
@@ -43,11 +43,7 @@ const ProfilePage = ({ user: userProp }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
-
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -76,7 +72,13 @@ const ProfilePage = ({ user: userProp }: Props) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfileData();
+    }, [fetchProfileData])
+  );
 
   const seedFollow = async () => {
     try {
@@ -85,6 +87,15 @@ const ProfilePage = ({ user: userProp }: Props) => {
       await fetchProfileData();
     } catch (err) {
       console.error('Failed to seed follow', err);
+    }
+  };
+
+  const seedUnfollow = async () => {
+    try {
+      await unfollowUser('550e8400-e29b-41d4-a716-446655440003');
+      await fetchProfileData();
+    } catch (err) {
+      console.error('Failed to seed unfollow', err);
     }
   };
 
@@ -188,10 +199,17 @@ const ProfilePage = ({ user: userProp }: Props) => {
 
           {/* Stats row */}
           <View style={tw`mt-[14px] flex-row items-center`}>
-            <Text style={tw`flex-1`}>
-              {formatCount(u.followers)}{' '}
-              <Text style={tw`font-semibold`}>Followers</Text>
-            </Text>
+            <TouchableOpacity
+              style={tw`flex-1`}
+              accessibilityRole="button"
+              accessibilityLabel="View people who follow you"
+              onPress={() => router.push('/profilePage/followers')}
+            >
+              <Text>
+                {formatCount(u.followers)}{' '}
+                <Text style={tw`font-semibold`}>Followers</Text>
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={tw`flex-1`}
               accessibilityRole="button"
@@ -231,6 +249,12 @@ const ProfilePage = ({ user: userProp }: Props) => {
             onPress={seedFollow}
           >
             <Text style={tw`text-white`}>Follow demo user</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={tw`mt-3 self-center px-4 py-2 bg-gray-800 rounded`}
+            onPress={seedUnfollow}
+          >
+            <Text style={tw`text-white`}>Unfollow demo user</Text>
           </TouchableOpacity>
         </View>
 
