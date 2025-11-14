@@ -10,7 +10,7 @@ on:
 
 jobs:
   backend:
-    name: Backend Tests & Linting
+    name: Backend Tests #& Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -58,7 +58,7 @@ jobs:
         run: docker compose -f docker-compose.ci.yml down -v
 
   frontend:
-    name: Frontend Tests & Linting
+    name: Frontend Tests #& Linting
     runs-on: ubuntu-latest
 
     steps:
