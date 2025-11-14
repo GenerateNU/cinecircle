@@ -397,21 +397,24 @@ model auth_users {
 }
 
 model Comment {
-  id          String      @id
-  userId      String      @db.Uuid
-  ratingId    String?
-  postId      String?
-  content     String
-  createdAt   DateTime    @default(now())
-  Post        Post?       @relation(fields: [postId], references: [id])
-  Rating      Rating?     @relation(fields: [ratingId], references: [id])
-  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+  id              String      @id @default(uuid())
+  userId          String      @db.Uuid
+  ratingId        String?
+  postId          String?
+  content         String
+  createdAt       DateTime    @default(now())
+  parentId        String?
+  parent_comment  Comment?    @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
+  child_comment   Comment[]   @relation("CommentToComment")
+  Post            Post?       @relation(fields: [postId], references: [id])
+  Rating          Rating?     @relation(fields: [ratingId], references: [id])
+  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
 
   @@schema("public")
 }
 
 model Post {
-  id          String      @id
+  id          String      @id @default(uuid())
   userId      String      @db.Uuid
   content     String
   type        PostType
@@ -424,7 +427,7 @@ model Post {
 }
 
 model Rating {
-  id          String      @id
+  id          String      @id @default(uuid())
   userId      String      @db.Uuid
   movieId     String
   stars       Int
@@ -456,7 +459,7 @@ model UserProfile {
   preferredCategories                            String[]     @default([])
   favoriteMovies                                 String[]     @default([])
   createdAt                                      DateTime     @default(now())
-  updatedAt                                      DateTime
+  updatedAt                                      DateTime     @default(now()) @updatedAt
   Comment                                        Comment[]
   Post                                           Post[]
   Rating                                         Rating[]
@@ -476,7 +479,7 @@ model bootcamp {
 }
 
 model local_event {
-  id          String    @id(map: "local_events_pkey") @db.Uuid
+  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
   title       String
   time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
   description String
