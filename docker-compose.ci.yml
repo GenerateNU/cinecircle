@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.development
+    environment:
+      - NODE_ENV=test
+      - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+      - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+      - SYNC_FROM_PRODUCTION=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ci_network
+    command: tail -f /dev/null
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: devdb
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+    networks:
+      - ci_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U devuser -d devdb']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ci_network:
+    driver: bridge
