@@ -1,6 +1,5 @@
 // Export all types for convenient imports
-export * from './apiTypes';
-export * from './endpoints';
+// Note: API types are auto-generated from OpenAPI spec
+export * from './api-generated';
 export * from './models';
-export * from './schemas';
 

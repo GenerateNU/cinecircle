@@ -53,6 +53,21 @@ jobs:
       - name: Run backend tests
         run: docker compose -f docker-compose.ci.yml exec -T backend npm run test
 
+      - name: Generate frontend types
+        run: docker compose -f docker-compose.ci.yml exec -T backend npm run types:all
+
+      - name: Copy generated types from container
+        run: |
+          mkdir -p frontend-types-artifact
+          docker compose -f docker-compose.ci.yml cp backend:/app/src/docs/api-types.ts frontend-types-artifact/api-generated.ts
+
+      - name: Upload generated types
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-types
+          path: frontend-types-artifact/api-generated.ts
+          retention-days: 1
+
       - name: Cleanup
         if: always()
         run: docker compose -f docker-compose.ci.yml down -v
@@ -60,6 +75,7 @@ jobs:
   frontend:
     name: Frontend Tests #& Linting
     runs-on: ubuntu-latest
+    needs: backend
 
     steps:
       - name: Checkout code
@@ -69,6 +85,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Download generated types
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-types
+          path: frontend/types/
 
       - name: Install dependencies
         run: |
