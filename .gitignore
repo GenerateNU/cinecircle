@@ -28,6 +28,9 @@ backend/src/docs/openapi.json
 backend/src/docs/api-types.ts
 # Note: frontend/types/api-generated.ts IS checked in
 
+# Migrations
+backend/prisma/migrations/
+
 # Docker volumes
 postgres_dev_data/
 

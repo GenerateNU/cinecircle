@@ -36,6 +36,7 @@ services:
       - ./backend/src:/app/src
       - ./backend/scripts:/app/scripts
       - ./backend/prisma:/app/prisma
+      - ./backend/scripts:/app/scripts
       - ./backend/package.json:/app/package.json
       - ./backend/tsconfig.json:/app/tsconfig.json
       - ./backend/nodemon.json:/app/nodemon.json
