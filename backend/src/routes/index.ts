@@ -15,6 +15,7 @@ import { getComment, createComment, updateComment, deleteComment} from "../contr
 import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
+import { getHomeFeed } from "../controllers/feed";
 
 const router = Router();
 
@@ -47,6 +48,8 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+router.get("/api/feed", getHomeFeed);
 
 // Comment routes
 router.post("/api/comment", createComment);
