@@ -16,11 +16,10 @@ import MoviesGrid from './components/MoviesGrid';
 import PostsList from './components/PostsList';
 import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
-import BottomNavBar from '../../components/BottomNavBar';
 import Avatar from '../../components/Avatar';
-import ActionButtons from '../../components/ActionButtons';
 import SectionHeader from '../../components/SectionHeader';
 import { getUserProfileBasic } from '../../services/userService';
+import { followUser } from '../../services/followService';
 import { getFollowers, getFollowing } from '../../services/followService';
 import type { UserProfileBasic } from '../../types/models';
 
@@ -76,6 +75,16 @@ const ProfilePage = ({ user: userProp }: Props) => {
       setError(err.message || 'Failed to load profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const seedFollow = async () => {
+    try {
+      // TODO: replace with a real target ID or UI selection.
+      await followUser('550e8400-e29b-41d4-a716-446655440003');
+      await fetchProfileData();
+    } catch (err) {
+      console.error('Failed to seed follow', err);
     }
   };
 
@@ -183,18 +192,20 @@ const ProfilePage = ({ user: userProp }: Props) => {
               {formatCount(u.followers)}{' '}
               <Text style={tw`font-semibold`}>Followers</Text>
             </Text>
-            <Text style={tw`flex-1 text-center`}>
-              {formatCount(u.following)}{' '}
-              <Text style={tw`font-semibold`}>Following</Text>
-            </Text>
+            <TouchableOpacity
+              style={tw`flex-1`}
+              accessibilityRole="button"
+              accessibilityLabel="View people you follow"
+              onPress={() => router.push('/profilePage/following')}
+            >
+              <Text style={tw`text-center`}>
+                {formatCount(u.following)}{' '}
+                <Text style={tw`font-semibold`}>Following</Text>
+              </Text>
+            </TouchableOpacity>
             <View style={tw`flex-1 items-end`}>
               <Text style={tw`font-semibold`}>WhatsApp</Text>
             </View>
-          </View>
-
-          {/* Quick actions from shared components */}
-          <View style={tw`mt-4`}>
-            <ActionButtons />
           </View>
 
           {/* Buttons */}
@@ -214,6 +225,13 @@ const ProfilePage = ({ user: userProp }: Props) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity
+            style={tw`mt-3 self-center px-4 py-2 bg-black rounded`}
+            onPress={seedFollow}
+          >
+            <Text style={tw`text-white`}>Follow demo user</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Activity header */}
@@ -321,12 +339,6 @@ const ProfilePage = ({ user: userProp }: Props) => {
         )}
       </ScrollView>
 
-      {/* Persistent bottom navigation */}
-      <View
-        style={tw`absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white`}
-      >
-        <BottomNavBar />
-      </View>
     </View>
   );
 };
