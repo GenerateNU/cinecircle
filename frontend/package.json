@@ -36,7 +36,8 @@
     "react-navigation": "^5.0.0",
     "tslib": "^2.8.1",
     "twrnc": "^4.10.1",
-    "lucide-react-native": "^0.548.0"
+    "lucide-react-native": "^0.548.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
