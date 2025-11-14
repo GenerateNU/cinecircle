@@ -83,7 +83,7 @@ const ProfilePage = ({ user: userProp }: Props) => {
   const seedFollow = async () => {
     try {
       // TODO: replace with a real target ID or UI selection.
-      await followUser('550e8400-e29b-41d4-a716-446655440003');
+      await followUser('11111111-1111-1111-1111-111111111111');
       await fetchProfileData();
     } catch (err) {
       console.error('Failed to seed follow', err);
@@ -92,7 +92,7 @@ const ProfilePage = ({ user: userProp }: Props) => {
 
   const seedUnfollow = async () => {
     try {
-      await unfollowUser('550e8400-e29b-41d4-a716-446655440003');
+      await unfollowUser('11111111-1111-1111-1111-111111111111');
       await fetchProfileData();
     } catch (err) {
       console.error('Failed to seed unfollow', err);

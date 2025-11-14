@@ -1,6 +1,11 @@
 # CineCircle
+> A user-friendly, community-oriented app for South Indian movie fans to stay updated with, discuss, and review / rate Tollywood (Telugu), Kollywood (Tamil), Mollywood (Malayalam), and Sandalwood (Kollywood) cinema.
 
-A user-friendly, community-oriented app for South Indian movie fans to stay updated with, discuss, and review / rate Tollywood (Telugu), Kollywood (Tamil), Mollywood (Malayalam), and Sandalwood (Kollywood) cinema.
+---
+
+![Alt](https://repobeats.axiom.co/api/embed/508709c912968d6660269a0143f37b4666a43b2c.svg "Repobeats analytics image")
+
+---
 
 ## Quick Start
 
