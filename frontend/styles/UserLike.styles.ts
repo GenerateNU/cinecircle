@@ -2,30 +2,17 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  button: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
-  // darker unliked heart
   icon: {
-    fontSize: 28,
-    color: "#555",
+    fontSize: 24,
+    color: "#000",
   },
-  likedIcon: {
-    fontSize: 28,
-    color: "#e63946",
-  },
-  emailText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#222",
-  },
-  loadingText: {
-    fontSize: 14,
-    color: "#888",
+  text: {
+    fontSize: 18,
+    fontWeight: "400",
+    color: "#000",
   },
 });
