@@ -220,7 +220,7 @@ backend/
 frontend/
   types/
     api-generated.ts     <- Auto-generated (copied from backend)
-    models.ts            <- UI-specific types + bridge types (temp)
+    models.ts            <- UI-specific types only
   services/
     moviesService.ts     <- Uses generated types
     userService.ts       <- Uses generated types
