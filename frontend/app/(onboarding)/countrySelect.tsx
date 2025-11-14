@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import NextButton from '../../components/NextButton';
 import Tag from '../../components/Tag';
+import DropdownSelect from './components/dropdownSelect';
 import { useOnboarding } from './_layout';
 
 const COUNTRIES = [
@@ -26,17 +27,12 @@ export default function CountrySelect() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Where are you from?</Text>
-            
-            <ScrollView style={styles.tagContainer}>
-                {COUNTRIES.map((country) => (
-                    <Tag
-                        key={country}
-                        label={country}
-                        pressed={selectedCountry === country}
-                        onPress={() => setSelectedCountry(country)}
-                    />
-                ))}
-            </ScrollView>
+                <DropdownSelect 
+                    items={COUNTRIES} 
+                    onSelect={setSelectedCountry}
+                    selectedValue={selectedCountry || undefined }
+                    placeholder="Select Your Primary Language"
+                />
 
             <NextButton 
                 onPress={handleNext}

@@ -3,12 +3,12 @@ import { createContext, useContext, useState } from 'react';
 
 type OnboardingData = {
   username?: string;
+  primaryLanguage?: string;
+  secondaryLanguage?: string[];
   profilePicture?: string | null;
   country?: string;
   city?: string;
-  primaryLanguage?: string;
-  secondaryLanguages?: string[];
-  genres?: string[];
+  favoriteGenres?: string[];
 };
 
 type OnboardingContextType = {

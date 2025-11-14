@@ -19,32 +19,19 @@ export const styles = StyleSheet.create({
     borderColor: "#C45AA2",
     backgroundColor: "#C45AA233",
   },
-  variation1: {
-    borderColor: "#5C013F",
-    backgroundColor: "#9A0169",
-  },
-  variation2: {
-    borderColor: "#C45AA2",
-    backgroundColor: "#C45AA233",
-  },
   xs: {
-    width: width * 0.25, 
     width: width * 0.25, 
   },
   small: {
     width: width * 0.45, 
-    width: width * 0.45, 
   },
   medium: {
-    width: width * 0.65,  
-    width: width * 0.65,  
+    width: width * 0.65,   
   },
   large: {
     width: width * 0.85,
-    width: width * 0.85,
   },
   text: {
-    fontWeight: "400",
     fontWeight: "400",
     fontSize: width * 0.045
   },

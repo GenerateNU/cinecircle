@@ -25,7 +25,7 @@ export default function GenreSelect() {
     };
 
     const handleNext = () => {
-        updateData({ genres: selectedGenres });
+        updateData({ favoriteGenres: selectedGenres });
         go("/(onboarding)/complete");
     };
 

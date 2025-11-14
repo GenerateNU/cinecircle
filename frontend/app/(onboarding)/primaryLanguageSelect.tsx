@@ -1,14 +1,14 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import NextButton from '../../components/NextButton';
-import Tag from '../../components/Tag';
 import { useOnboarding } from './_layout';
+import { MaterialIcons } from "@expo/vector-icons";
+import DropdownSelect from './components/dropdownSelect';
 
 const LANGUAGES = [
-    'English', 'Spanish', 'French', 'German', 'Italian', 
-    'Portuguese', 'Chinese', 'Japanese', 'Korean', 'Arabic',
-    'Hindi', 'Russian', 'Turkish', 'Dutch', 'Swedish'
+    'English', 'Tamil', 'Hindi', 
+    'Urdu', 'Malayalam', 'Telegu'
 ];
 
 export default function PrimaryLanguageSelect() {
@@ -18,25 +18,31 @@ export default function PrimaryLanguageSelect() {
 
     const handleNext = () => {
         if (selectedLanguage) {
-            updateData({ language: selectedLanguage });
+            updateData({ primaryLanguage: selectedLanguage });
             go("/(onboarding)/secondaryLanguageSelect");
         }
     };
 
+    const handleBack = () => {
+        if (selectedLanguage) {
+            updateData({ primaryLanguage: selectedLanguage });
+        }
+        router.back();
+    };
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>What's your primary language?</Text>
-            
-            <ScrollView style={styles.tagContainer}>
-                {LANGUAGES.map((lang) => (
-                    <Tag
-                        key={lang}
-                        label={lang}
-                        pressed={selectedLanguage === lang}
-                        onPress={() => setSelectedLanguage(lang)}
-                    />
-                ))}
-            </ScrollView>
+            <TouchableOpacity onPress={handleBack}>
+                <MaterialIcons name="arrow-left" size={24} />
+            </TouchableOpacity>
+
+            <Text style={styles.title}>Select Your Primary Language</Text>
+            <DropdownSelect 
+                items={LANGUAGES} 
+                onSelect={setSelectedLanguage}
+                selectedValue={selectedLanguage || undefined}
+                placeholder="Select Your Primary Language"
+            />
 
             <NextButton 
                 onPress={handleNext}

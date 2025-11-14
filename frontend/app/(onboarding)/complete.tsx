@@ -29,11 +29,11 @@ export default function Complete() {
             await updateUserProfile({
                 username: data.username,
                 primaryLanguage: data.primaryLanguage,
-                secondaryLanguage: data.secondaryLanguages,
+                secondaryLanguage: data.secondaryLanguage,
                 profilePicture: data.profilePicture,
                 country: data.country,
                 city: data.city,
-                favoriteGenres: data.genres,
+                favoriteGenres: data.favoriteGenres,
                 onboardingCompleted: true,
             });
 
