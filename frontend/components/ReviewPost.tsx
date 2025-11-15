@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import UserBar from './UserBar';
+import StarRating from './StarRating';
 
 const { width } = Dimensions.get('window');
 
@@ -12,19 +13,19 @@ type ReviewPostProps = {
     reviewerName: string;
     reviewerAvatarUri?: string;
     movieTitle: string;
-    rating?: number; // For future star component
+    rating?: number;
 };
 
 export default function ReviewPost({
-                                       userName,
-                                       username,
-                                       date,
-                                       avatarUri,
-                                       reviewerName,
-                                       reviewerAvatarUri,
-                                       movieTitle,
-                                       rating = 5,
-                                   }: ReviewPostProps) {
+    userName,
+    username,
+    date,
+    avatarUri,
+    reviewerName,
+    reviewerAvatarUri,
+    movieTitle,
+    rating = 5,
+}: ReviewPostProps) {
     return (
         <View style={styles.container}>
             <UserBar
@@ -42,13 +43,11 @@ export default function ReviewPost({
                 />
                 <Text style={styles.movieTitle}>{movieTitle}</Text>
 
-                {/* Star rating component will go here */}
-                <View style={styles.starPlaceholder}>
-                    <Text style={styles.placeholderText}>★ ★ ★ ★ ★</Text>
-                </View>
+                <StarRating 
+                    maxStars={5}
+                    rating={rating}
+                />
             </View>
-
-            {/* PostActions component will go here */}
         </View>
     );
 }
@@ -75,14 +74,5 @@ const styles = StyleSheet.create({
         marginTop: width * 0.02,
         marginBottom: width * 0.02,
         flexShrink: 1,
-    },
-    starPlaceholder: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-    },
-    placeholderText: {
-        fontSize: width * 0.045,
-        color: '#FFD700',
     },
 });

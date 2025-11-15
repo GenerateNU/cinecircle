@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import UserBar from './UserBar';
+import MyCarousel from './Carousel';
 
 const { width } = Dimensions.get('window');
 
@@ -10,17 +11,26 @@ type PicturePostProps = {
     date: string;
     avatarUri?: string;
     content: string;
-    imageUris?: string[]; // For future image carousel
+    imageUrl?: string; 
 };
 
 export default function PicturePost({
-                                        userName,
-                                        username,
-                                        date,
-                                        avatarUri,
-                                        content,
-                                        imageUris,
-                                    }: PicturePostProps) {
+    userName,
+    username,
+    date,
+    avatarUri,
+    content,
+    imageUrl,
+}: PicturePostProps) {
+    // Convert single imageUrl to carousel components
+    const imageComponents = imageUrl ? [
+        <Image 
+            source={{ uri: imageUrl }} 
+            style={styles.image}
+            resizeMode="cover"
+        />
+    ] : [];
+
     return (
         <View style={styles.container}>
             <UserBar
@@ -31,12 +41,17 @@ export default function PicturePost({
             />
             <Text style={styles.content}>{content}</Text>
 
-            {/* Image carousel component will go here */}
-            <View style={styles.imagePlaceholder}>
-                <Text style={styles.placeholderText}>Image Carousel</Text>
-            </View>
-
-            {/* PostActions component will go here */}
+            {imageUrl ? (
+                <MyCarousel 
+                    components={imageComponents}
+                    width={100}
+                    height={40}
+                />
+            ) : (
+                <View style={styles.imagePlaceholder}>
+                    <Text style={styles.placeholderText}>No Image</Text>
+                </View>
+            )}
         </View>
     );
 }
@@ -56,6 +71,11 @@ const styles = StyleSheet.create({
         marginTop: width * 0.03,
         marginBottom: width * 0.03,
         flexShrink: 1,
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        borderRadius: width * 0.02,
     },
     imagePlaceholder: {
         width: '100%',
