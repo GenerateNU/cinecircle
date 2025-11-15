@@ -464,7 +464,6 @@ model UserProfile {
   favoriteGenres                                 String[]     @default([])
   favoriteMovies                                 String[]     @default([])
   createdAt                                      DateTime     @default(now())
-  updatedAt                                      DateTime     @updatedAt
   updatedAt                                      DateTime     @default(now()) @updatedAt
   Comment                                        Comment[]
   Post                                           Post[]

@@ -4,7 +4,7 @@ import SearchBar from '../../../components/SearchBar';
 import TextPost from '../../../components/TextPost';
 import PicturePost from '../../../components/PicturePost';
 import ReviewPost from '../../../components/ReviewPost';
-import InteractionBar from '../../components/InteractionBar';
+import InteractionBar from '../../../components/InteractionBar';
 
 const { width } = Dimensions.get('window');
 
