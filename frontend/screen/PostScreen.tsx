@@ -1,60 +1,61 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
-  View,
   SafeAreaView,
   ScrollView,
+  View,
   KeyboardAvoidingView,
-  StyleSheet,
-} from 'react-native';
-import PostTypeSelector from '../components/PostTypeSelector';
-import CreatePostBar from '../components/CreatePostBar';
-import PostForm from '../components/PostForm';
+  Platform,
+} from "react-native";
+import CreatePostBar from "../components/CreatePostBar";
+import PostTypeSelector from "../components/PostTypeSelector";
+import PostForm, { PostFormRef } from "../components/PostForm";
 
 export default function PostScreen() {
-  const [postType, setPostType] = useState<'long' | 'short' | 'rating' | null>(
-    null
-  );
+  const [postType, setPostType] = useState<"long" | "short" | "rating" | null>(null);
+  const [showStars, setShowStars] = useState(false);
 
-  const handleSubmit = (data: {
-    title: string;
-    content: string;
-    rating: number;
-  }) => {
-    console.log('Post submitted:', data);
+  const formRef = useRef<PostFormRef>(null);
+
+  const handleSubmit = (data: { content: string; rating?: number }) => {
+    console.log("Post submitted:", data);
     setPostType(null);
+    setShowStars(false);
   };
 
-  const renderPostContent = () => {
-    switch (postType) {
-      case 'short':
-        return <PostForm showTextBox onSubmit={handleSubmit} />;
-      case 'long':
-        return <PostForm showTitle showTextBox onSubmit={handleSubmit} />;
-      case 'rating':
-        return (
-          <PostForm showTitle showTextBox showStars onSubmit={handleSubmit} />
-        );
-      default:
-        return null;
-    }
+  const handleToolbarAction = (action: string) => {
+    if (action === "rating") showStars ? setShowStars(false) : setShowStars(true);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={{ flex: 1 }}>
       {postType === null ? (
-        <View style={styles.selectorContainer}>
+        <View style={{ flex: 1, justifyContent: "flex-end" }}>
           <PostTypeSelector value={postType} onChange={setPostType} />
         </View>
       ) : (
         <>
-          <CreatePostBar onBack={() => setPostType(null)} />
-          <KeyboardAvoidingView style={{ flex: 1 }}>
-            <ScrollView
-              contentContainerStyle={{
-                padding: 16,
-              }}
-            >
-              {renderPostContent()}
+          <CreatePostBar
+            title={postType === "short" ? "Create Short" : "Create Post"}
+            onBack={() => {
+              setPostType(null);
+              setShowStars(false);
+            }}
+            onSubmit={() => formRef.current?.submit()}
+          />
+
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={80}
+          >
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <PostForm
+                ref={formRef}
+                showTextBox
+                showStars={showStars}
+                onSubmit={handleSubmit}
+                onToolbarAction={handleToolbarAction}
+              />
             </ScrollView>
           </KeyboardAvoidingView>
         </>
@@ -62,16 +63,3 @@ export default function PostScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  selectorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-});
