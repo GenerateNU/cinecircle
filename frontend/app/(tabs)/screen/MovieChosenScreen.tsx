@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
-import SearchBar from '../../../components/SearchBar';
+import SearchBar from '../../../components/SearchBar'
 import RatingRow from '../../../components/RatingRow';
 import TagList from '../../../components/TagList';
 import ActionButtons from '../../../components/ActionButtons';
