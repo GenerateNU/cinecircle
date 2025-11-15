@@ -31,6 +31,7 @@ type Props = {
   onFollow?: () => Promise<void> | void;
   onUnfollow?: () => Promise<void> | void;
   isFollowing?: boolean;
+  profileUserId?: string;
 };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -51,6 +52,7 @@ const ProfilePage = ({
   onFollow,
   onUnfollow,
   isFollowing = false,
+  profileUserId,
 }: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -58,6 +60,7 @@ const ProfilePage = ({
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(isMe);
   const [error, setError] = useState<string | null>(null);
+  const targetUserId = isMe ? profile?.userId : profileUserId;
 
   const fetchProfileData = useCallback(async () => {
     try {
@@ -261,8 +264,22 @@ const ProfilePage = ({
             <TouchableOpacity
               style={tw`flex-1`}
               accessibilityRole="button"
-              accessibilityLabel="View people who follow you"
-              onPress={() => router.push('/profilePage/followers')}
+              accessibilityLabel="View followers"
+              onPress={() => {
+                if (isMe) {
+                  router.push('/profilePage/followers');
+                } else if (targetUserId) {
+                  router.push({
+                    pathname: '/profilePage/user/[userId]/followers',
+                    params: {
+                      userId: targetUserId,
+                      username: displayUser.username,
+                      name: displayUser.name,
+                    },
+                  });
+                }
+              }}
+              disabled={!isMe && !targetUserId}
             >
               <Text>
                 {formatCount(u.followers)}{' '}
@@ -273,7 +290,21 @@ const ProfilePage = ({
               style={tw`flex-1`}
               accessibilityRole="button"
               accessibilityLabel="View people you follow"
-              onPress={() => router.push('/profilePage/following')}
+              onPress={() => {
+                if (isMe) {
+                  router.push('/profilePage/following');
+                } else if (targetUserId) {
+                  router.push({
+                    pathname: '/profilePage/user/[userId]/following',
+                    params: {
+                      userId: targetUserId,
+                      username: displayUser.username,
+                      name: displayUser.name,
+                    },
+                  });
+                }
+              }}
+              disabled={!isMe && !targetUserId}
             >
               <Text style={tw`text-center`}>
                 {formatCount(u.following)}{' '}
