@@ -414,15 +414,32 @@ model Comment {
 }
 
 model Post {
-  id          String      @id @default(uuid())
-  userId      String      @db.Uuid
-  content     String
-  type        PostType
-  votes       Int         @default(0)
-  createdAt   DateTime    @default(now())
-  Comment     Comment[]
+  id              String      @id @default(uuid())
+  userId          String      @db.Uuid
+  content         String
+  type            PostType
+  votes           Int         @default(0)
+  createdAt       DateTime    @default(now())
+  imageUrl        String?
+  parentPostId    String?     // For threading/replies
+  Comment         Comment[]
+  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
+  PostLike        PostLike[]  // Track individual likes
+  ParentPost      Post?       @relation("PostReplies", fields: [parentPostId], references: [id], onDelete: SetNull)
+  Replies         Post[]      @relation("PostReplies")
+
+  @@schema("public")
+}
+
+model PostLike {
+  id        String      @id @default(uuid())
+  postId    String
+  userId    String      @db.Uuid
+  createdAt DateTime    @default(now())
+  Post      Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
 
+  @@unique([postId, userId])
   @@schema("public")
 }
 
@@ -467,6 +484,7 @@ model UserProfile {
   updatedAt                                      DateTime     @updatedAt
   Comment                                        Comment[]
   Post                                           Post[]
+  PostLike                                       PostLike[]
   Rating                                         Rating[]
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[] @relation("UserFollow_followerIdToUserProfile")
   UserFollow_UserFollow_followingIdToUserProfile UserFollow[] @relation("UserFollow_followingIdToUserProfile")
