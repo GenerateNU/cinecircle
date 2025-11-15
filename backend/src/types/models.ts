@@ -18,13 +18,6 @@ export type UserProfileBasic = {
   role: string;
 };
 
-/** Basic auth user info returned from /api/user/profile GET endpoint */
-export type UserProfileBasic = {
-  id: string;
-  email: string;
-  role: string;
-};
-
 /** Full user profile payloads used by your endpoints. */
 export type UserProfile = {
   userId: string;

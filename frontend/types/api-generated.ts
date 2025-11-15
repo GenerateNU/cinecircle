@@ -2543,6 +2543,7 @@ export interface components {
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
             username?: string | null;
+            profilePicture?: string | null; 
             onboardingCompleted?: boolean;
             primaryLanguage?: string;
             secondaryLanguage?: string[];

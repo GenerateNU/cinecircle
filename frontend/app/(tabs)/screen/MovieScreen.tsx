@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import MovieChosenScreen from './MovieChosenScreen';
 import RecByFriendsScreen from './RecByFriendsScreen';
-import SearchBar from '../components/SearchBar';
+import SearchBar from '../../../components/SearchBar';
 
 interface Movie {
   id: number;
