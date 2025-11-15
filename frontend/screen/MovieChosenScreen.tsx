@@ -147,9 +147,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
         {summary && !summaryLoading && !summaryError && (
           <>
-            <Text style={styles.summaryOverall}>{summary.overall}</Text>
+            <Text style={styles.summaryOverall}>{summary.movieId}</Text>
 
-            <View style={styles.summaryRow}>
+            {/*<View style={styles.summaryRow}>
               {summary.pros?.length > 0 && (
                 <View style={styles.summaryColumn}>
                   <Text style={styles.summarySubheader}>
@@ -175,8 +175,8 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                   ))}
                 </View>
               )}
-            </View>
-
+            </View>*/}
+            {/*
             {summary.stats && (
               <View style={styles.statsRow}>
                 <Text style={styles.statsText}>
@@ -205,6 +205,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                 <Text style={styles.quoteText}>"{summary.quotes[0]}"</Text>
               </View>
             )}
+            */}
           </>
         )}
       </View>
@@ -216,7 +217,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         />
         <Text style={styles.ratingCount}>
           {t(UiTextKey.BasedOnReviews).replace(
-            "{count}",
+            '{count}',
             String(ratings.length)
           )}
         </Text>
@@ -228,26 +229,26 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
       <View style={styles.tabContainer}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === "reviews" && styles.activeTab]}
-          onPress={() => setActiveTab("reviews")}
+          style={[styles.tab, activeTab === 'reviews' && styles.activeTab]}
+          onPress={() => setActiveTab('reviews')}
         >
           <Text
             style={[
               styles.tabText,
-              activeTab === "reviews" && styles.activeTabText,
+              activeTab === 'reviews' && styles.activeTabText,
             ]}
           >
             {t(UiTextKey.Reviews)} ({ratings.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === "comments" && styles.activeTab]}
-          onPress={() => setActiveTab("comments")}
+          style={[styles.tab, activeTab === 'comments' && styles.activeTab]}
+          onPress={() => setActiveTab('comments')}
         >
           <Text
             style={[
               styles.tabText,
-              activeTab === "comments" && styles.activeTabText,
+              activeTab === 'comments' && styles.activeTabText,
             ]}
           >
             {t(UiTextKey.Comments)} ({comments.length})
@@ -263,9 +264,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           </View>
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
-        ) : activeTab === "reviews" ? (
+        ) : activeTab === 'reviews' ? (
           ratings.length > 0 ? (
-            ratings.map((rating) => (
+            ratings.map(rating => (
               <ReviewCard key={rating.id} /* rating={rating} */ />
             ))
           ) : (
@@ -274,11 +275,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
             </Text>
           )
         ) : comments.length > 0 ? (
-          comments.map((comment) => (
+          comments.map(comment => (
             <View key={comment.id} style={styles.commentCard}>
-              <Text style={styles.commentText}>{comment.text}</Text>
+              <Text style={styles.commentText}>{comment.content}</Text>
               <Text style={styles.commentMeta}>
-                {new Date(comment.date).toLocaleDateString()}
+                {new Date(comment.createdAt).toLocaleDateString()}
               </Text>
             </View>
           ))
