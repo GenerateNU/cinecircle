@@ -28,10 +28,18 @@ export type GetUserProfileBasicResponse = {
   endpoint?: string;
 };
 
+/** -------- User Profile (GET /api/user/profile) -------- */
+export type GetUserProfileResponse = {
+  message?: string;
+  userProfile: UserProfile;
+  timestamp?: string;
+  endpoint?: string;
+};
+
 /** -------- User Profile Update/Delete -------- */
 export type UpdateUserProfileInput = Partial<Pick<
   UserProfile,
-  "username" | "preferredLanguages" | "preferredCategories" | "favoriteMovies"
+  "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "country" | "city" | "favoriteGenres" | "favoriteMovies"
 >>;
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };

@@ -13,8 +13,8 @@ export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);
 }
 
-export function getUserProfileBasic() {
-  return api.get<GetUserProfileBasicResponse>(`/api/user/profile`);
+export function getUserProfile() {
+  return api.get<GetUserProfileResponse>(`/api/user/profile`);
 }
 
 export function updateUserProfile(payload: UpdateUserProfileInput) {

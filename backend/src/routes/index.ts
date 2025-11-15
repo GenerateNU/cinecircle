@@ -15,12 +15,18 @@ import { getComment, createComment, updateComment, deleteComment} from "../contr
 import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
+import { getHomeFeed } from "../controllers/feed";
 
 const router = Router();
 
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
-router.get("/swagger-output.json", serveSwagger);
+
+// Legacy endpoint
+router.get("/swagger-output.json", serveSwagger);  
+
+//OpenAPI 3.0 spec
+router.get("/openapi.json", serveSwagger);
 
 // everything under here is a private endpoint
 router.use('/api', authenticateUser, ensureUserProfile); 
@@ -28,7 +34,7 @@ router.use('/api', authenticateUser, ensureUserProfile);
 // test protected endpoints
 router.get('/api/protected', protect);
   
-// get current user info
+// User Profile Routes
 router.get('/api/user/profile', getUserProfile);
 router.put("/api/user/profile", updateUserProfile);
 router.delete("/api/user/profile", deleteUserProfile);
@@ -47,6 +53,8 @@ router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
 router.delete("/movies/:movieId", deleteMovie);
+
+router.get("/api/feed", getHomeFeed);
 
 // Comment routes
 router.post("/api/comment", createComment);

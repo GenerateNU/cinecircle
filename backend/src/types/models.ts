@@ -11,15 +11,27 @@ export type Movie = {
   numRatings?: number | string | null;  // same note as above
 };
 
+/** Basic auth user info returned from /api/user/profile GET endpoint */
+export type UserProfileBasic = {
+  id: string;
+  email: string;
+  role: string;
+};
+
 /** Minimal user profile payloads used by your endpoints. */
 export type UserProfile = {
   userId: string;
   username?: string | null;
-  preferredLanguages: string[];
-  preferredCategories: string[];
+  onboardingCompleted: boolean;
+  primaryLanguage: string;
+  secondaryLanguage: string[];
+  profilePicture: string | null;
+  country: string | null;
+  city: string | null;
+  favoriteGenres: string[];
   favoriteMovies: string[];
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 /** Ratings & comments (shapes are flexible because you include relations). */
