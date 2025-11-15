@@ -78,7 +78,12 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
       await prisma.userProfile.create({
         data: {
           userId: req.user.id,
+          username: req.user.username || null,
           onboardingCompleted: false,
+          favoriteMovies: [],
+          favoriteGenres: [],
+          secondaryLanguage: [],
+          updatedAt: new Date(),
         },
       });
     }
@@ -142,11 +147,20 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
       updatedAt: userProfile.updatedAt,
     });
     
+    const basicUser = req.user
+      ? {
+          id: req.user.id,
+          email: req.user.email ?? '',
+          role: req.user.role ?? 'USER',
+        }
+      : undefined;
+
     console.log(`[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`);
     
     res.json({ 
       message: 'User profile retrieved successfully',
       userProfile: mappedUserProfile,
+      user: basicUser,
       timestamp,
       endpoint: '/api/user/profile'
     });
