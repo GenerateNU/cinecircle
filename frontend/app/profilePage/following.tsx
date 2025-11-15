@@ -103,7 +103,7 @@ const Following = () => {
   };
 
   const getCategoriesPreview = (edge: FollowEdge) => {
-    const categories = edge.following?.preferredCategories || [];
+    const categories = edge.following?.favoriteGenres || [];
     if (!categories.length) {
       return 'No favorite categories shared yet.';
     }
