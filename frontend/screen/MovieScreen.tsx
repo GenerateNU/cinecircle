@@ -278,7 +278,7 @@ export default function MoviesScreen() {
         onSubmitEditing={handleSearchSubmit}
       />
 
-      <View className="tabsContainer" style={styles.tabsContainer}>
+      <View style={styles.tabsContainer}>
         <TouchableOpacity
           style={styles.tab}
           onPress={() => setActiveTab('forYou')}
