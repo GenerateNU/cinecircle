@@ -45,7 +45,12 @@ export default function PostScreen() {
           >
             <ScrollView keyboardShouldPersistTaps="handled">
               {postType === 'long' && (
-                <LongPostForm ref={longFormRef} />
+                <LongPostForm ref={longFormRef} 
+                showTextBox
+                showStars={showStars}
+                onSubmit={handleSubmit}
+                onToolbarAction={handleToolbarAction}
+                />
               )}
 
               {postType === 'short' && (
