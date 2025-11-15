@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import tw from 'twrnc';
 
 import SearchBar from '../components/SearchBar';
-import BottomNavBar from '../components/BottomNavBar';
 
 export type HomeScreenProps = {
   user?: any;
@@ -90,8 +89,6 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
         )}
       </ScrollView>
 
-      {/* Bottom nav */}
-      <BottomNavBar />
     </SafeAreaView>
   );
 }
