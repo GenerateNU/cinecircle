@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { styles } from "../styles/StarRating.styles"
+import { styles } from "../styles/StarRating.styles";
 
 interface StarRatingProps {
   maxStars?: number;
@@ -10,17 +10,24 @@ interface StarRatingProps {
   onRatingChange?: (rating: number) => void;
 }
 
-export default function StarRating({ maxStars = 5, initialRating = 0, rating: controlledRating, onRatingChange }: StarRatingProps) {
+export default function StarRating({
+  maxStars = 5,
+  initialRating = 0,
+  rating: controlledRating,
+  onRatingChange,
+}: StarRatingProps) {
   const [internalRating, setInternalRating] = useState(initialRating);
-  
+
   const rating = controlledRating !== undefined ? controlledRating : internalRating;
   const isInteractive = onRatingChange !== undefined;
 
   const handleStarPress = (selectedRating: number) => {
     if (!isInteractive) return;
-    
-    setInternalRating(selectedRating);
-    onRatingChange(selectedRating);
+
+    const newRating = selectedRating === rating ? 0 : selectedRating;
+
+    setInternalRating(newRating);
+    onRatingChange(newRating);
   };
 
   const isFilled = (starNumber: number) => starNumber <= rating;
@@ -30,7 +37,7 @@ export default function StarRating({ maxStars = 5, initialRating = 0, rating: co
       {[...Array(maxStars)].map((_, index) => {
         const starNumber = index + 1;
         const StarContainer = isInteractive ? TouchableOpacity : View;
-        
+
         return (
           <StarContainer
             key={index}
@@ -39,8 +46,8 @@ export default function StarRating({ maxStars = 5, initialRating = 0, rating: co
             style={isFilled(starNumber) ? styles.filledStarContainer : styles.emptyStarContainer}
           >
             <MaterialIcons
-              name="star"
-              style={styles.star}
+              name={isFilled(starNumber) ? "star" : "star-border"}
+              style={isFilled(starNumber) ? styles.starFilled : styles.starEmpty}
             />
           </StarContainer>
         );
