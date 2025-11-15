@@ -83,6 +83,10 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           favoriteMovies: [],
           favoriteGenres: [],
           secondaryLanguage: [],
+          profilePicture: null,
+          country: null,
+          city: null,
+          primaryLanguage: 'English',
           updatedAt: new Date(),
         },
       });

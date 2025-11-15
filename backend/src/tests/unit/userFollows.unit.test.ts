@@ -18,6 +18,22 @@ jest.mock('../../services/db.js', () => ({
       delete: jest.fn(),
       findMany: jest.fn(),
     },
+    userProfile: {
+      findUnique: jest.fn().mockResolvedValue({
+        userId: 'following-id',
+        username: 'following-user',
+        onboardingCompleted: false,
+        primaryLanguage: 'English',
+        secondaryLanguage: [],
+        profilePicture: null,
+        country: null,
+        city: null,
+        favoriteGenres: [],
+        favoriteMovies: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    },
   },
 }));
 
@@ -65,11 +81,14 @@ describe('Follow Controller', () => {
 
       await followUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
+      expect(prisma.userProfile.findUnique).toHaveBeenCalledWith({
+        where: { userId: 'following-id' },
+      });
       expect(prisma.userFollow.create).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           followerId: 'follower-id',
           followingId: 'following-id',
-        },
+        }),
       });
       expect(statusMock).toHaveBeenCalledWith(201);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -95,6 +114,9 @@ describe('Follow Controller', () => {
 
       await unfollowUser(mockReq as AuthenticatedRequest, mockRes as Response);
 
+      expect(prisma.userProfile.findUnique).toHaveBeenCalledWith({
+        where: { userId: 'following-id' },
+      });
       expect(prisma.userFollow.delete).toHaveBeenCalledWith({
         where: {
           followerId_followingId: {
@@ -122,12 +144,12 @@ describe('Follow Controller', () => {
           id: 'follow-1',
           followerId: 'follower-1',
           followingId: 'user-id',
-          follower: {
+          UserProfile_UserFollow_followerIdToUserProfile: {
             userId: 'follower-1',
             username: 'follower1',
             email: 'follower1@test.com',
           },
-          following: {
+          UserProfile_UserFollow_followingIdToUserProfile: {
             userId: 'user-id',
             username: 'user',
             email: 'user@test.com',
@@ -137,12 +159,12 @@ describe('Follow Controller', () => {
           id: 'follow-2',
           followerId: 'follower-2',
           followingId: 'user-id',
-          follower: {
+          UserProfile_UserFollow_followerIdToUserProfile: {
             userId: 'follower-2',
             username: 'follower2',
             email: 'follower2@test.com',
           },
-          following: {
+          UserProfile_UserFollow_followingIdToUserProfile: {
             userId: 'user-id',
             username: 'user',
             email: 'user@test.com',
@@ -157,8 +179,8 @@ describe('Follow Controller', () => {
       expect(prisma.userFollow.findMany).toHaveBeenCalledWith({
         where: { followingId: 'user-id' },
         include: {
-          follower: true,
-          following: true,
+          UserProfile_UserFollow_followerIdToUserProfile: true,
+          UserProfile_UserFollow_followingIdToUserProfile: true,
         },
       });
       expect(jsonMock).toHaveBeenCalledWith({
@@ -199,12 +221,12 @@ describe('Follow Controller', () => {
           id: 'follow-1',
           followerId: 'user-id',
           followingId: 'following-1',
-          follower: {
+          UserProfile_UserFollow_followerIdToUserProfile: {
             userId: 'user-id',
             username: 'user',
             email: 'user@test.com',
           },
-          following: {
+          UserProfile_UserFollow_followingIdToUserProfile: {
             userId: 'following-1',
             username: 'following1',
             email: 'following1@test.com',
@@ -214,12 +236,12 @@ describe('Follow Controller', () => {
           id: 'follow-2',
           followerId: 'user-id',
           followingId: 'following-2',
-          follower: {
+          UserProfile_UserFollow_followerIdToUserProfile: {
             userId: 'user-id',
             username: 'user',
             email: 'user@test.com',
           },
-          following: {
+          UserProfile_UserFollow_followingIdToUserProfile: {
             userId: 'following-2',
             username: 'following2',
             email: 'following2@test.com',
@@ -234,8 +256,8 @@ describe('Follow Controller', () => {
       expect(prisma.userFollow.findMany).toHaveBeenCalledWith({
         where: { followerId: 'user-id' },
         include: {
-          follower: true,
-          following: true,
+          UserProfile_UserFollow_followerIdToUserProfile: true,
+          UserProfile_UserFollow_followingIdToUserProfile: true,
         },
       });
       expect(jsonMock).toHaveBeenCalledWith({
@@ -269,12 +291,12 @@ describe('Follow Controller', () => {
         id: 'follow-id',
         followerId: 'follower-id',
         followingId: 'following-id',
-        follower: {
+        UserProfile_UserFollow_followerIdToUserProfile: {
           userId: 'follower-id',
           username: 'follower',
           email: 'follower@test.com',
         },
-        following: {
+        UserProfile_UserFollow_followingIdToUserProfile: {
           userId: 'following-id',
           username: 'following',
           email: 'following@test.com',
@@ -305,8 +327,8 @@ describe('Follow Controller', () => {
         id: 'follow-id',
         followerId: 'follower-id',
         followingId: 'following-id',
-        follower: null,
-        following: {
+        UserProfile_UserFollow_followerIdToUserProfile: null,
+        UserProfile_UserFollow_followingIdToUserProfile: {
           userId: 'following-id',
           username: 'following',
           email: 'following@test.com',
@@ -324,12 +346,12 @@ describe('Follow Controller', () => {
         id: 'follow-id',
         followerId: 'follower-id',
         followingId: 'following-id',
-        follower: {
+        UserProfile_UserFollow_followerIdToUserProfile: {
           userId: 'follower-id',
           username: 'follower',
           email: 'follower@test.com',
         },
-        following: null,
+        UserProfile_UserFollow_followingIdToUserProfile: null,
       } as any;
 
       const result = mapUserFollowDbToApi(dbFollow);
@@ -346,12 +368,12 @@ describe('Follow Controller', () => {
           id: 'follow-1',
           followerId: 'follower-1',
           followingId: 'following-1',
-          follower: {
+          UserProfile_UserFollow_followerIdToUserProfile: {
             userId: 'follower-1',
             username: 'follower1',
             email: 'follower1@test.com',
           },
-          following: {
+          UserProfile_UserFollow_followingIdToUserProfile: {
             userId: 'following-1',
             username: 'following1',
             email: 'following1@test.com',
@@ -361,12 +383,12 @@ describe('Follow Controller', () => {
           id: 'follow-2',
           followerId: 'follower-2',
           followingId: 'following-2',
-          follower: {
+          UserProfile_UserFollow_followerIdToUserProfile: {
             userId: 'follower-2',
             username: 'follower2',
             email: 'follower2@test.com',
           },
-          following: {
+          UserProfile_UserFollow_followingIdToUserProfile: {
             userId: 'following-2',
             username: 'following2',
             email: 'following2@test.com',
