@@ -72,38 +72,53 @@ const MoviesGrid = () => {
   return (
     <View>
       <View
-        style={tw`flex-row justify-around border-b border-[#ddd] mb-2`}
+        style={[
+          tw`flex-row items-center mb-4`,
+          {
+            backgroundColor: '#FBEAE6',
+            borderRadius: 12,
+            padding: 4,
+          },
+        ]}
       >
         <TouchableOpacity
           style={[
-            tw`flex-1 items-center pb-2 border-b-2`,
-            activeSubTab === 'toWatch'
-              ? tw`border-black`
-              : tw`border-transparent`,
+            tw`flex-1 items-center justify-center`,
+            {
+              paddingVertical: 8,
+              borderRadius: 8,
+              marginHorizontal: 2,
+              backgroundColor: activeSubTab === 'toWatch' ? '#D62E05' : 'transparent',
+            },
           ]}
           onPress={() => setActiveSubTab('toWatch')}
         >
           <Text
-            style={tw`text-sm font-semibold ${
-              activeSubTab === 'toWatch' ? 'text-black' : 'text-gray-500'
-            }`}
+            style={[
+              tw`text-sm font-semibold`,
+              { color: activeSubTab === 'toWatch' ? '#FBEAE6' : '#D62E05' },
+            ]}
           >
             To Be Watched
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
-            tw`flex-1 items-center pb-2 border-b-2`,
-            activeSubTab === 'completed'
-              ? tw`border-black`
-              : tw`border-transparent`,
+            tw`flex-1 items-center justify-center`,
+            {
+              paddingVertical: 8,
+              borderRadius: 8,
+              marginHorizontal: 2,
+              backgroundColor: activeSubTab === 'completed' ? '#D62E05' : 'transparent',
+            },
           ]}
           onPress={() => setActiveSubTab('completed')}
         >
           <Text
-            style={tw`text-sm font-semibold ${
-              activeSubTab === 'completed' ? 'text-black' : 'text-gray-500'
-            }`}
+            style={[
+              tw`text-sm font-semibold`,
+              { color: activeSubTab === 'completed' ? '#FBEAE6' : '#D62E05' },
+            ]}
           >
             Completed
           </Text>

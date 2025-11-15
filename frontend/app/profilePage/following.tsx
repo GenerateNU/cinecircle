@@ -7,12 +7,11 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import tw from 'twrnc';
-import SectionHeader from '../../components/SectionHeader';
-import UserBar from '../../components/UserBar';
 import { getUserProfileBasic } from '../../services/userService';
 import { getFollowing, unfollowUser } from '../../services/followService';
 import type { components } from '../../types/api-generated';
@@ -97,9 +96,10 @@ const Following = () => {
 
   const getDisplayName = (edge: FollowEdge) => {
     if (edge.following?.username && edge.following.username.trim().length > 0) {
-      return edge.following.username;
+      const name = edge.following.username.trim();
+      return name.startsWith('@') ? name : `@${name}`;
     }
-    return `User ${edge.followingId.slice(0, 6)}`;
+    return `@user${edge.followingId.slice(0, 4)}`;
   };
 
   const getCategoriesPreview = (edge: FollowEdge) => {
@@ -160,20 +160,6 @@ const Following = () => {
           <View style={{ width: 24 }} />
         </View>
 
-        <View style={tw`px-5 py-4`}>
-          <Text style={tw`text-[22px] font-bold text-black`}>
-            {profileHandle}
-          </Text>
-          <Text style={tw`mt-1 text-gray-500`}>
-            Following {followingCount}{' '}
-            {followingCount === 1 ? 'person' : 'people'}
-          </Text>
-        </View>
-
-        <View style={tw`px-5 mt-2`}>
-          <SectionHeader title="People you follow" size="small" />
-        </View>
-
         <View style={tw`mt-2`}>
           {followingCount === 0 && (
             <View style={tw`px-5 py-10 items-center`}>
@@ -187,35 +173,51 @@ const Following = () => {
             </View>
           )}
           {following.map((edge) => (
-            <View
-              key={edge.id}
-              style={tw`px-5 py-4 border-b border-gray-100`}
-            >
+            <View key={edge.id} style={tw`px-5 py-4 border-b border-gray-100`}>
               <View style={tw`flex-row items-center justify-between`}>
-                <UserBar
-                  name={getDisplayName(edge)}
-                  avatarUri={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    getDisplayName(edge)
-                  )}&background=667eea&color=fff`}
-                  avatarSize={48}
-                />
+                <View style={tw`flex-row items-center`}>
+                  <Image
+                    source={{
+                      uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        getDisplayName(edge).replace('@', '')
+                      )}&background=667eea&color=fff`,
+                    }}
+                    style={tw`w-12 h-12 rounded-full mr-3`}
+                  />
+                  <View>
+                    <Text style={tw`text-base font-semibold`}>
+                      {getDisplayName(edge)}
+                    </Text>
+                    <Text style={tw`text-xs text-gray-500`}>
+                      {getCategoriesPreview(edge)}
+                    </Text>
+                  </View>
+                </View>
                 <TouchableOpacity
                   disabled={pendingUnfollows[edge.followingId]}
                   onPress={() => handleUnfollow(edge.followingId)}
-                  style={tw`ml-4 px-4 py-2 border border-gray-400 rounded-full`}
+                  style={[
+                    tw`ml-4 px-4 py-2 border rounded-lg`,
+                    {
+                      backgroundColor: '#D62E05',
+                      borderColor: '#801C03',
+                    },
+                  ]}
                 >
                   {pendingUnfollows[edge.followingId] ? (
                     <ActivityIndicator size="small" color="#000" />
                   ) : (
-                    <Text style={tw`text-sm font-semibold text-black`}>
+                    <Text
+                      style={[
+                        tw`text-sm font-semibold`,
+                        { color: '#F7D5CD' },
+                      ]}
+                    >
                       Unfollow
                     </Text>
                   )}
                 </TouchableOpacity>
               </View>
-              <Text style={tw`mt-2 text-gray-500`}>
-                {getCategoriesPreview(edge)}
-              </Text>
             </View>
           ))}
         </View>

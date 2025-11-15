@@ -36,6 +36,10 @@ const AVATAR_RADIUS = AVATAR_SIZE / 2;
 // BottomNavBar height buffer
 const NAV_HEIGHT = 64;
 
+const ACCENT_COLOR = '#D62E05';
+const BUTTON_COLOR = '#F7D5CD';
+const EDIT_BUTTON_ACCENT = '#DE5837';
+
 const ProfilePage = ({ user: userProp }: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -81,39 +85,27 @@ const ProfilePage = ({ user: userProp }: Props) => {
     }, [fetchProfileData])
   );
 
-  const seedFollow = async () => {
-    try {
-      // TODO: replace with a real target ID or UI selection.
-      await followUser('11111111-1111-1111-1111-111111111111');
-      await fetchProfileData();
-    } catch (err) {
-      console.error('Failed to seed follow', err);
-    }
-  };
+  const resolvedUsername =
+    profile?.username && profile.username.trim().length > 0
+      ? profile.username
+      : 'user';
 
-  const seedUnfollow = async () => {
-    try {
-      await unfollowUser('11111111-1111-1111-1111-111111111111');
-      await fetchProfileData();
-    } catch (err) {
-      console.error('Failed to seed unfollow', err);
-    }
-  };
+  // Use the stored username when available
+  const derivedBio =
+    profile?.favoriteMovies?.[0]?.trim() || 'No Bio';
 
-  // Build display user from real data + placeholders for missing fields
   const displayUser: User = profile
     ? {
-        // Use username from backend profile
-        name: profile.username || 'User',
-        username: profile.username || 'user',
-        bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field
+        name: resolvedUsername || 'User',
+        username: resolvedUsername || 'user',
+        bio: derivedBio,
         followers: followersCount,
         following: followingCount,
         profilePic:
           profile.profilePicture ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            profile.username || 'User'
-          )}&size=200&background=667eea&color=fff`, // Use backend pic or generated avatar
+            resolvedUsername || 'User'
+          )}&size=200&background=667eea&color=fff`,
       }
     : userProp || {
         name: 'User',
@@ -169,7 +161,22 @@ const ProfilePage = ({ user: userProp }: Props) => {
               accessibilityRole="button"
               accessibilityLabel="Open settings"
             >
-              <Ionicons name="settings-outline" size={24} color="#000" />
+              <View
+                style={[
+                  tw`w-10 h-10 items-center justify-center rounded-xl`,
+                  {
+                    backgroundColor: BUTTON_COLOR,
+                    borderColor: ACCENT_COLOR,
+                    borderWidth: 1,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="settings-outline"
+                  size={22}
+                  color={ACCENT_COLOR}
+                />
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -230,35 +237,29 @@ const ProfilePage = ({ user: userProp }: Props) => {
           </View>
 
           {/* Buttons */}
-          <View style={tw`mt-3 self-center w-[88%] flex-row gap-3`}>
+          <View style={tw`mt-3 self-center w-[88%]`}>
             <TouchableOpacity
-              style={tw`flex-1 items-center justify-center border border-black bg-transparent px-[18px] py-[10px] rounded-none`}
+              style={[
+                tw`items-center justify-center px-[18px] py-[10px]`,
+                {
+                  borderColor: EDIT_BUTTON_ACCENT,
+                  borderWidth: 1,
+                  backgroundColor: BUTTON_COLOR,
+                  borderRadius: 8,
+                },
+              ]}
             >
-              <Text style={tw`text-black font-semibold text-center`}>
+              <Text
+                style={[
+                  tw`font-semibold text-center`,
+                  { color: EDIT_BUTTON_ACCENT },
+                ]}
+              >
                 Edit Profile
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={tw`flex-1 items-center justify-center border border-black bg-transparent px-[18px] py-[10px] rounded-none`}
-            >
-              <Text style={tw`text-black font-semibold text-center`}>
-                Share
               </Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={tw`mt-3 self-center px-4 py-2 bg-black rounded`}
-            onPress={seedFollow}
-          >
-            <Text style={tw`text-white`}>Follow demo user</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={tw`mt-3 self-center px-4 py-2 bg-gray-800 rounded`}
-            onPress={seedUnfollow}
-          >
-            <Text style={tw`text-white`}>Unfollow demo user</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Activity header */}
@@ -267,23 +268,25 @@ const ProfilePage = ({ user: userProp }: Props) => {
         </View>
 
         {/* Tabs row */}
-        <View
-          style={tw`mt-[18px] flex-row justify-around border-y border-[#ddd] py-[10px]`}
-        >
+          <View
+            style={tw`mt-[18px] flex-row justify-around border-y border-[#ddd] py-[10px]`}
+          >
           <TouchableOpacity
             style={[
               tw`items-center pb-1.5 border-b-2`,
               activeTab === 'movies'
-                ? tw`border-black`
-                : tw`border-transparent`,
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('movies')}
           >
-            <MaterialIcons name="movie" size={20} />
+            <MaterialIcons name="movie" size={20} color={ACCENT_COLOR} />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'movies' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'movies' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Movies
             </Text>
@@ -292,15 +295,19 @@ const ProfilePage = ({ user: userProp }: Props) => {
           <TouchableOpacity
             style={[
               tw`items-center pb-1.5 border-b-2`,
-              activeTab === 'posts' ? tw`border-black` : tw`border-transparent`,
+              activeTab === 'posts'
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('posts')}
           >
-            <FontAwesome5 name="th-large" size={18} />
+            <FontAwesome5 name="th-large" size={18} color={ACCENT_COLOR} />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'posts' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'posts' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Posts
             </Text>
@@ -310,16 +317,22 @@ const ProfilePage = ({ user: userProp }: Props) => {
             style={[
               tw`items-center pb-1.5 border-b-2`,
               activeTab === 'events'
-                ? tw`border-black`
-                : tw`border-transparent`,
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('events')}
           >
-            <Ionicons name="calendar-outline" size={20} />
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color={ACCENT_COLOR}
+            />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'events' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'events' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Events
             </Text>
@@ -329,16 +342,22 @@ const ProfilePage = ({ user: userProp }: Props) => {
             style={[
               tw`items-center pb-1.5 border-b-2`,
               activeTab === 'badges'
-                ? tw`border-black`
-                : tw`border-transparent`,
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('badges')}
           >
-            <MaterialIcons name="emoji-events" size={20} />
+            <MaterialIcons
+              name="emoji-events"
+              size={20}
+              color={ACCENT_COLOR}
+            />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'badges' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'badges' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Badges
             </Text>
