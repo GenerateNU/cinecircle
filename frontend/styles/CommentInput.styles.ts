@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: width * 0.03,
-    height: height * 0.15,
+    height: height * 0.05,
   },
   avatar: {
     borderRadius: width * 0.05,

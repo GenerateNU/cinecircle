@@ -13,12 +13,16 @@ export const styles = StyleSheet.create({
   },
   address: {
     color: '#666',
-    marginBottom: height * 0.08,
+    marginBottom: height * 0.01,
   },
   mapContainer: {
     width: '100%',
     borderRadius: width * 0.03,
     overflow: 'hidden',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
   mapPlaceholder: {
     width: '100%',

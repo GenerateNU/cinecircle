@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: width * 0.05,
         borderColor: '#9A0169CC',
-        paddingVertical: height * 0.006,
+        paddingVertical: height * 0.004,
         paddingHorizontal: width * 0.04,
     },
     text: {

@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     height: '100%',
   },
   medium: {
-    height: height * 0.25,
+    height: height * 0.2,
   },
   mediumImage: {
     height: '100%',

@@ -10,17 +10,17 @@ export const styles = StyleSheet.create({
   },
   small: {
     width: width * 0.3,
-    height: height * 0.4,
+    height: height * 0.2,
     marginRight: width * 0.001,
   },
   medium: {
     width: width * 0.4,
-    height: height * 0.5,
+    height: height * 0.3,
     marginRight: width * 0.002,
   },
   large: {
     width: width * 0.5,
-    height: height * 0.6,
+    height: height * 0.4,
     marginRight: width * 0.003,
   },
   image: {
@@ -42,15 +42,15 @@ export const styles = StyleSheet.create({
     paddingBottom: width * 0.0125,
   },
   smallTitle: {
-    fontSize: width * 0.015,
+    fontSize: width * 0.025,
     padding: width * 0.015,
     paddingBottom: width * 0.01,
   },
   mediumTitle: {
-    fontSize: width * 0.025,
+    fontSize: width * 0.035,
   },
   largeTitle: {
-    fontSize: width * 0.03,
+    fontSize: width * 0.045,
   },
   details: {
     paddingHorizontal: width * 0.0375,
@@ -58,20 +58,20 @@ export const styles = StyleSheet.create({
   },
   location: {
     color: '#666',
-    marginBottom: height * 0.00625,
+    marginBottom: height * 0.00725,
   },
   dateTime: {
     color: '#666',
   },
   smallText: {
-    fontSize: width * 0.0075,
+    fontSize: width * 0.01,
     paddingHorizontal: width * 0.015,
     paddingBottom: width * 0.015,
   },
   mediumText: {
-    fontSize: width * 0.015,
+    fontSize: width * 0.025,
   },
   largeText: {
-    fontSize: width * 0.02,
+    fontSize: width * 0.03,
   },
 });

@@ -1,13 +1,14 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { styles } from '../styles/EventTags.styles';
 
 interface EventTagsProps {
   tags: string[];
   size?: 'small' | 'medium' | 'large';
+  onTagPress?: (tag: string, index: number) => void;
 }
 
-export default function EventTagList({ tags, size = 'medium' }: EventTagsProps) {
+export default function EventTagList({ tags, size = 'medium', onTagPress }: EventTagsProps) {
   return (
     <ScrollView
       horizontal
@@ -15,9 +16,11 @@ export default function EventTagList({ tags, size = 'medium' }: EventTagsProps) 
       contentContainerStyle={styles.container}
     >
       {tags.map((tag, index) => (
-        <View key={index} style={[styles.tagPill, styles[size]]}>
+        <TouchableOpacity key={index} 
+        style={[styles.tagPill, styles[size]]}
+        onPress={() => onTagPress?.(tag, index)}>
           <Text style={[styles.tagText, styles[`${size}Text`]]}>{tag}</Text>
-        </View>
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );

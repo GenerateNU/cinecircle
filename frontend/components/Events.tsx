@@ -7,6 +7,8 @@ import SectionHeader from './SectionHeader';
 import { styles } from '../styles/Events.styles'
 import EventTagList from './EventTags';
 import EventDetails from './EventDetails';
+import SearchBar from './SearchBar';
+import FilterModal, { FilterOption } from './FilterModal';
 
 interface Event {
   id: string;
@@ -17,6 +19,13 @@ interface Event {
   imageUrl?: string;
   attendees?: string;
 }
+
+interface FilterState {
+  price: string[];
+  distance: string[];
+  dates: string[];
+  eventType: string[];
+}
   
 interface EventCardProps {
   event: Event;
@@ -24,6 +33,52 @@ interface EventCardProps {
 
 const Events: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterState>({
+    price: [],
+    distance: [],
+    dates: [],
+    eventType: [],
+  });
+
+  const filterConfigs: Record<string, { title: string; options: FilterOption[] }> = {
+    Price: {
+      title: 'Price',
+      options: [
+        { id: 'free', label: 'Free', value: 0 },
+        { id: '1-25', label: '$1 - $25', value: '1-25' },
+        { id: '26-50', label: '$26 - $50', value: '26-50' },
+        { id: '50+', label: '$50 +', value: '50+' },
+      ],
+    },
+    'Near Me': {
+      title: 'Near Me',
+      options: [
+        { id: '5', label: '5 Miles', value: 5 },
+        { id: '10', label: '10 Miles', value: 10 },
+        { id: '15', label: '15 Miles', value: 15 },
+        { id: '20+', label: '20 Miles +', value: 20 },
+      ],
+    },
+    Dates: {
+      title: 'Dates',
+      options: [
+        { id: 'today', label: 'Today', value: 'today' },
+        { id: 'week', label: 'This Week', value: 'week' },
+        { id: 'month', label: 'This Month', value: 'month' },
+        { id: 'later', label: 'Later', value: 'later' },
+      ],
+    },
+    'Event Type': {
+      title: 'Event Type',
+      options: [
+        { id: 'screening', label: 'Screening', value: 'screening' },
+        { id: 'meetup', label: 'Meet & Greet', value: 'meetup' },
+        { id: 'premiere', label: 'Premiere', value: 'premiere' },
+        { id: 'festival', label: 'Festival', value: 'festival' },
+      ],
+    },
+  };
 
   // Sample data
   const trendingEvents: Event[] = [
@@ -74,14 +129,7 @@ const Events: React.FC = () => {
     },
   ];
 
-  const categories: string[] = [
-    'Label',
-    'Label',
-    'Label',
-    'Label',
-    'Label',
-    'Label',
-  ];
+  const categories: string[] = ['Price', 'Near Me', 'Dates', 'Event Type'];
 
   const recommendedEvents: Event[] = [
     {
@@ -118,6 +166,21 @@ const Events: React.FC = () => {
     setSelectedEventId(eventId);
   };
 
+  const handleCategoryPress = (category: string) => {
+    setActiveModal(category);
+  };
+
+  const handleFilterApply = (category: string, selectedValues: string[]) => {
+    const filterKey = category.toLowerCase().replace(' ', '') as keyof FilterState;
+    setFilters((prev) => ({
+      ...prev,
+      [filterKey]: selectedValues,
+    }));
+
+    // TODO: Call backend API with filters
+    console.log('Applied filters:', { ...filters, [filterKey]: selectedValues });
+  };
+
   if (selectedEventId) {
     return (
       <EventDetails 
@@ -131,10 +194,10 @@ return (
   <View style={styles.container}>
     <ScrollView showsVerticalScrollIndicator={false}>
       <Text style={styles.header}>Events</Text>
+      <SearchBar/>
 
       <SectionHeader 
         title="Trending in your area" 
-        showSearchIcon 
         onSearchPress={handleSearch}
       />
 
@@ -165,7 +228,7 @@ return (
       
       <Text style={styles.sectionTitle}>Find by categories</Text>
       <View style={styles.categoriesContainer}>
-        <EventTagList tags={categories} />
+        <EventTagList tags={categories} onTagPress={handleCategoryPress}/>
       </View>
 
       <Text style={styles.sectionTitle}>Recommended for you</Text>
@@ -173,6 +236,23 @@ return (
         <RecommendedEventCard key={event.id} event={event} />
       ))}
     </ScrollView>
+
+    {categories.map((category) => {
+        const config = filterConfigs[category];
+        const filterKey = category.toLowerCase().replace(' ', '') as keyof FilterState;
+
+        return (
+          <FilterModal
+            key={category}
+            visible={activeModal === category}
+            onClose={() => setActiveModal(null)}
+            title={config.title}
+            options={config.options}
+            selectedValues={filters[filterKey] || []}
+            onApply={(values) => handleFilterApply(category, values)}
+          />
+        );
+      })}
   </View>
 );
 };

@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
   },
   searchIcon: {},
   small: {
-    marginBottom: height * 0.01,
+    marginBottom: height * 0.007,
   },
   smallTitle: {
     fontSize: width * 0.02,
@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
     fontSize: width * 0.01,
   },
   medium: {
-    marginBottom: height * 0.02,
+    marginBottom: height * 0.01,
   },
   mediumTitle: {
     fontSize: width * 0.03,
@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
     fontSize: width * 0.03,
   },
   large: {
-    marginBottom: height * 0.03,
+    marginBottom: height * 0.02,
   },
   largeTitle: {
     fontSize: width * 0.04,
