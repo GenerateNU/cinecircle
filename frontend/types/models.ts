@@ -33,10 +33,14 @@ export type Rating = {
   id: string;
   userId: string;
   movieId: string;
-  rating: number;
-  review?: string;
-  createdAt: string;
+  stars: number;
+  comment?: string | null;
+  tags: string[];
+  date: string;
+  votes: number;
+  threadedComments?: unknown[];
 };
+
 
 export type Comment = {
   id: string;
