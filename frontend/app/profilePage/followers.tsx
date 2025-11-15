@@ -20,7 +20,10 @@ import {
   getFollowing,
   unfollowUser,
 } from '../../services/followService';
-import type { FollowEdge, UserProfileBasic } from '../../types/models';
+import type { components } from '../../types/api-generated';
+
+type UserProfileBasic = components['schemas']['UserProfileBasic'];
+type FollowEdge = components['schemas']['FollowEdge'];
 
 const NAV_HEIGHT = 64;
 

@@ -19,9 +19,10 @@ import BadgesGrid from './components/BadgesGrid';
 import Avatar from '../../components/Avatar';
 import SectionHeader from '../../components/SectionHeader';
 import { getUserProfileBasic } from '../../services/userService';
-import { followUser, unfollowUser } from '../../services/followService';
-import { getFollowers, getFollowing } from '../../services/followService';
-import type { UserProfileBasic } from '../../types/models';
+import { followUser, unfollowUser, getFollowers, getFollowing } from '../../services/followService';
+import type { components } from '../../types/api-generated';
+
+type UserProfileBasic = components['schemas']['UserProfileBasic'];
 
 type Props = {
   user?: User;
