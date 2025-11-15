@@ -4,8 +4,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import tw from 'twrnc';
 
 const BadgesGrid = () => {
-  const ACCENT = '#D62E05';
-  const ACCENT_LIGHT = '#F7D5CD';
   const badges = [
     { id: 'b1', label: 'Critic', icon: 'rate-review' },
     { id: 'b2', label: 'Marathoner', icon: 'timer' },
@@ -19,30 +17,10 @@ const BadgesGrid = () => {
       {badges.map((b) => (
         <View
           key={b.id}
-          style={[
-            tw`items-center justify-center`,
-            {
-              width: '30%',
-              aspectRatio: 1,
-              borderRadius: 12,
-              borderColor: ACCENT,
-              backgroundColor: ACCENT_LIGHT,
-              borderWidth: 1,
-            },
-          ]}
+          style={tw`items-center justify-center w-[30%] aspect-square rounded-xl border border-[#D62E05] bg-[#F7D5CD]`}
         >
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: ACCENT,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 6,
-            }}
-          >
-            <MaterialIcons name={b.icon as any} size={22} color={ACCENT_LIGHT} />
+          <View style={tw`w-12 h-12 rounded-full bg-[#D62E05] items-center justify-center mb-1.5`}>
+            <MaterialIcons name={b.icon as any} size={22} color="#F7D5CD" />
           </View>
           <Text style={tw`text-[12px] font-semibold text-center text-[#5c250e]`}>
             {b.label}

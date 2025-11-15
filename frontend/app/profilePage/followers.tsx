@@ -190,7 +190,7 @@ const Followers = () => {
             <Ionicons name="chevron-back" size={24} color="#111" />
           </TouchableOpacity>
           <Text style={tw`text-lg font-semibold text-black`}>Followers</Text>
-          <View style={{ width: 24 }} />
+          <View style={tw`w-6`} />
         </View>
 
         <View style={tw`mt-2`}>

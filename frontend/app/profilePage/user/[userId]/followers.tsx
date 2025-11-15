@@ -94,7 +94,7 @@ export default function OtherUserFollowersPage() {
           <Ionicons name="chevron-back" size={24} color="#111" />
         </TouchableOpacity>
         <Text style={tw`text-lg font-semibold text-black`}>Followers</Text>
-        <View style={{ width: 24 }} />
+        <View style={tw`w-6`} />
       </View>
 
       <Text style={tw`mt-4 text-center text-xl font-bold text-black`}>
