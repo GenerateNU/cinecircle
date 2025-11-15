@@ -3,6 +3,7 @@ import type { components } from "../types/api-generated";
 
 type ProtectedResponse = components["schemas"]["ProtectedResponse"];
 type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"];
+type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
 type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"];
 type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
 type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
@@ -15,6 +16,30 @@ export function getProtected() {
 
 export function getUserProfile() {
   return api.get<GetUserProfileResponse>(`/api/user/profile`);
+}
+
+export async function getUserProfileBasic() {
+  const res = await getUserProfile();
+
+  const fallbackEmail =
+    res.userProfile.username && res.userProfile.username.length > 0
+      ? `${res.userProfile.username}@cinecircle.app`
+      : `${res.userProfile.userId}@cinecircle.app`;
+
+  const basicUser = res.user ?? {
+    id: res.userProfile.userId,
+    email: fallbackEmail,
+    role: 'USER',
+  };
+
+  const payload: GetUserProfileBasicResponse = {
+    message: res.message,
+    user: basicUser,
+    timestamp: res.timestamp,
+    endpoint: res.endpoint,
+  };
+
+  return payload;
 }
 
 export function updateUserProfile(payload: UpdateUserProfileInput) {

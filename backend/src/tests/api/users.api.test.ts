@@ -417,3 +417,191 @@ describe("User Profile API Tests", () => {
   });
 
 });
+jest.mock('../../services/db', () => {
+  const userProfiles = new Map<string, any>();
+  const ratings = new Map<string, any>();
+  const comments = new Map<string, any>();
+  const posts = new Map<string, any>();
+
+  const clone = (record: any) => (record ? structuredClone(record) : record);
+  const matchesWhere = (record: any, where: Record<string, any> = {}) =>
+    Object.entries(where).every(([key, value]) => {
+      if (value && typeof value === 'object' && 'in' in value) {
+        return value.in.includes(record[key]);
+      }
+      return record[key] === value;
+    });
+
+  const userProfileModel = {
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [userId, profile] of Array.from(userProfiles.entries())) {
+        if (!where || matchesWhere(profile, where)) {
+          userProfiles.delete(userId);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+    create: jest.fn(async ({ data }: any) => {
+      userProfiles.set(data.userId, { ...data });
+      return clone(userProfiles.get(data.userId));
+    }),
+    findUnique: jest.fn(async ({ where: { userId } }: any) =>
+      clone(userProfiles.get(userId) ?? null),
+    ),
+    update: jest.fn(async ({ where: { userId }, data }: any) => {
+      const existing = userProfiles.get(userId);
+      if (!existing) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      const updated = { ...existing, ...data };
+      userProfiles.set(userId, updated);
+      return clone(updated);
+    }),
+    delete: jest.fn(async ({ where: { userId } }: any) => {
+      const existing = userProfiles.get(userId);
+      if (!existing) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      userProfiles.delete(userId);
+      return clone(existing);
+    }),
+    upsert: jest.fn(async ({ where: { userId }, create, update }: any) => {
+      const existing = userProfiles.get(userId);
+      if (existing) {
+        const updated = { ...existing, ...update };
+        userProfiles.set(userId, updated);
+        return clone(updated);
+      }
+      userProfiles.set(userId, { ...create });
+      return clone(userProfiles.get(userId));
+    }),
+  };
+
+  const ratingModel = {
+    createMany: jest.fn(async ({ data }: any) => {
+      data.forEach((item: any) => {
+        const id = item.id ?? `rating-${crypto.randomUUID()}`;
+        ratings.set(id, { ...item, id });
+      });
+      return { count: data.length };
+    }),
+    create: jest.fn(async ({ data }: any) => {
+      const id = data.id ?? `rating-${crypto.randomUUID()}`;
+      ratings.set(id, { ...data, id });
+      return clone(ratings.get(id));
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(ratings.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          ratings.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+    findMany: jest.fn(async ({ where, orderBy, include }: any = {}) => {
+      let results = Array.from(ratings.values());
+      if (where) {
+        results = results.filter((record) => matchesWhere(record, where));
+      }
+      if (orderBy?.date === 'desc') {
+        results.sort(
+          (a, b) =>
+            new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
+        );
+      }
+      return results.map((record) => {
+        const base = { ...record };
+        if (include?.Comment) {
+          base.Comment = Array.from(comments.values())
+            .filter((comment) => comment.ratingId === record.id)
+            .map(clone);
+        }
+        return base;
+      });
+    }),
+  };
+
+  const commentModel = {
+    createMany: jest.fn(async ({ data }: any) => {
+      data.forEach((item: any) => {
+        const id = item.id ?? `comment-${crypto.randomUUID()}`;
+        comments.set(id, { ...item, id });
+      });
+      return { count: data.length };
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(comments.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          comments.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+    findMany: jest.fn(async ({ where, orderBy, include }: any = {}) => {
+      let results = Array.from(comments.values());
+      if (where) {
+        results = results.filter((record) => matchesWhere(record, where));
+      }
+      if (orderBy?.createdAt === 'desc') {
+        results.sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() -
+            new Date(a.createdAt ?? 0).getTime(),
+        );
+      }
+      return results.map((record) => {
+        const base = { ...record };
+        if (include?.Rating) {
+          base.Rating = clone(ratings.get(record.ratingId) ?? null);
+        }
+        if (include?.Post) {
+          base.Post = clone(posts.get(record.postId) ?? null);
+        }
+        return base;
+      });
+    }),
+  };
+
+  const postModel = {
+    create: jest.fn(async ({ data }: any) => {
+      const id = data.id ?? `post-${crypto.randomUUID()}`;
+      posts.set(id, { ...data, id });
+      return clone(posts.get(id));
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(posts.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          posts.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+  };
+
+  return {
+    prisma: {
+      userProfile: userProfileModel,
+      rating: ratingModel,
+      comment: commentModel,
+      post: postModel,
+      $disconnect: jest.fn(async () => {
+        userProfiles.clear();
+        ratings.clear();
+        comments.clear();
+        posts.clear();
+      }),
+    },
+  };
+});

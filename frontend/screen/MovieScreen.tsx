@@ -12,6 +12,7 @@ import {
 import MovieChosenScreen from './MovieChosenScreen';
 import RecByFriendsScreen from './RecByFriendsScreen';
 import SearchBar from '../components/SearchBar';
+import { router } from 'expo-router';
 
 interface Movie {
   id: number;
@@ -35,6 +36,20 @@ export default function MoviesScreen() {
   const [activeTab, setActiveTab] = useState<'forYou' | 'recommended'>('forYou');
   const [searchText, setSearchText] = useState<string>('');
   const [showMovieDetail, setShowMovieDetail] = useState<boolean>(false);
+  const handleSearchSubmit = (text: string): void => {
+    const query = (text || '').trim();
+    if (!query) {
+      return;
+    }
+    router.push({
+      pathname: '/profilePage/user/[userId]',
+      params: {
+        userId: query,
+        username: query,
+        name: query,
+      },
+    });
+  };
 
   const handleMoviePress = (movieId: number): void => {
     setShowMovieDetail(true);
@@ -82,6 +97,7 @@ export default function MoviesScreen() {
         placeholder="Enter search text"
         value={searchText}
         onChangeText={setSearchText}
+        onSubmitEditing={handleSearchSubmit}
       />
 
       {/* Tabs */}

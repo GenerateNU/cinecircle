@@ -1,54 +1,47 @@
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import tw from 'twrnc';
 
+/**
+ * Tailwind-only search bar. `onSubmitEditing` fires on enter key
+ * and when the arrow icon is tapped, so caller logic stays centralized.
+ */
 type SearchBarProps = {
     placeholder?: string;
     onChangeText?: (text: string) => void;
+    onSubmitEditing?: (text: string) => void;
     value?: string;
 };
 
 export default function SearchBar({ 
     placeholder = "Search", 
     onChangeText,
+    onSubmitEditing,
     value 
 }: SearchBarProps) {
     return (
-        <View style={styles.container}>
-            <View style={styles.searchBox}>
-                <Feather name="search" size={20} color="#999" style={styles.searchIcon} />
+        <View style={tw`px-4 py-4 bg-white`}>
+            <View style={tw`flex-row items-center bg-white border-2 border-[#8B7FD6] rounded-lg px-3 h-12`}>
+                <Feather name="search" size={20} color="#999" style={tw`mr-2`} />
                 <TextInput
-                    style={styles.searchInput}
+                    style={tw`flex-1 text-base text-black`}
                     placeholder={placeholder}
                     placeholderTextColor="#999"
                     onChangeText={onChangeText}
                     value={value}
+                    returnKeyType="search"
+                    onSubmitEditing={(e) =>
+                        onSubmitEditing?.(e?.nativeEvent?.text ?? value ?? '')
+                    }
+                />
+                <Feather
+                    name="arrow-right-circle"
+                    size={22}
+                    color="#999"
+                    style={tw`ml-2`}
+                    onPress={() => onSubmitEditing?.(value ?? '')}
                 />
             </View>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        padding: 16,
-        backgroundColor: '#FFF',
-    },
-    searchBox: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFF',
-        borderWidth: 2,
-        borderColor: '#8B7FD6',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        height: 48,
-    },
-    searchIcon: {
-        marginRight: 8,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#000',
-    },
-});
