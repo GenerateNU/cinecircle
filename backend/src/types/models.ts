@@ -60,10 +60,37 @@ export type Comment = {
 };
 
 export type FollowEdge = {
-
   id: string;
   followerId: string;
   followingId: string;
   follower?: UserProfile;
   following?: UserProfile;
+};
+
+/**
+ * Local event
+ */
+export type LocalEvent = {
+  id: string;
+  title: string;
+  location: string;
+  date: string;
+  time: string;
+  genre: string;
+  cost: number | null;
+  occasion: string | null;
+  description: string;
+  languages: string[];
+  lat: number | null;
+  lon: number | null;
+};
+
+export type GetLocalEventsResponse = {
+  message: string;
+  data: LocalEvent[];
+};
+
+export type GetLocalEventResponse = {
+  message: string;
+  data: LocalEvent;
 };
