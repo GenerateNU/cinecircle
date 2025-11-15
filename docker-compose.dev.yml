@@ -34,6 +34,7 @@ services:
       - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
     volumes:
       - ./backend/src:/app/src
+      - ./backend/scripts:/app/scripts
       - ./backend/prisma:/app/prisma
       - ./backend/scripts:/app/scripts
       - ./backend/package.json:/app/package.json

@@ -16,11 +16,11 @@ export function createApp() {
     });
   });
 
-  // Scalar API Docs
+  // Scalar API Docs (OpenAPI 3.0)
   app.use(
     "/docs",
     apiReference({
-      url: "/swagger-output.json",
+      url: "/openapi.json",
       theme: "laserwave",
       pageTitle: "Absolute CineCircle",
     }),
