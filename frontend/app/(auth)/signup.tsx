@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Text, View, StyleSheet, Dimensions } from "react-native";
 import { supabase } from '../../lib/supabase';
 
-const { height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-around',
         alignItems: 'center',
-        paddingHorizontal: 20,
+        paddingHorizontal: width * 0.05,
     },
     inputWrapper: {
         width: '100%',

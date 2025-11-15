@@ -7,6 +7,12 @@ export const styles = StyleSheet.create({
     width: "100%",
     position: "relative",
   },
+  title: {
+      fontSize: width * 0.06,
+      fontWeight: "500",
+      marginBottom: height * 0.03,
+      color: '#D62E05'
+  },
   button: {
     width: "100%",
     borderRadius: 4,
@@ -14,7 +20,7 @@ export const styles = StyleSheet.create({
     borderColor: "#16737C",
     backgroundColor: "#E0F7FA",
     justifyContent: "space-between",
-    paddingVertical: height * 0.01,
+    paddingVertical: height * 0.011,
     paddingHorizontal: width * 0.015,
     flexDirection: "row",
     alignItems: "center",

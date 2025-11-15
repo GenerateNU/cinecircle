@@ -6,24 +6,23 @@ export const styles = StyleSheet.create({
     container: {
         alignSelf: "flex-start",
         alignItems: "center",
-        backgroundColor: "#F4E5F0",
+        backgroundColor: "#FFFFFF",
         borderWidth: 2,
         borderRadius: width * 0.05,
-        borderColor: '#9A0169CC',
+        borderColor: '#16737C',
         paddingVertical: height * 0.006,
         paddingHorizontal: width * 0.04,
     },
     text: {
-        color: "#9A0169",
+        color: "#333",
         fontWeight: "400",
         fontSize: width * 0.04
     },
     pressed: {
-        color: "#FFFFFF",
-        backgroundColor: "#9A0169",
-        borderColor: "#5C013F",
+        backgroundColor: "#E0F7FA",
+        borderColor: "#16737C",
     },
     pressedText: {
-        color: "#FFFFFF"
+        color: "#16737C",
     }
 })

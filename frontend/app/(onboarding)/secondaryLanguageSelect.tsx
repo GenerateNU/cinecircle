@@ -1,10 +1,12 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import NextButton from '../../components/NextButton';
 import Tag from '../../components/Tag';
 import { useOnboarding } from './_layout';
 import { MaterialIcons } from "@expo/vector-icons";
+
+const { width, height } = Dimensions.get('window');
 
 const LANGUAGES = [
     'English', 'Spanish', 'French', 'German', 'Italian', 
@@ -15,7 +17,6 @@ const LANGUAGES = [
 export default function SecondaryLanguageSelect() {
     const [selectedLanguage, setSelectedLanguage] = useState<string[]>([]);
     const { updateData, data } = useOnboarding();
-    const go = (to: string) => router.push(to);
 
     const toggleLanguage = (lang: string) => {
         setSelectedLanguage(prev => 
@@ -27,14 +28,7 @@ export default function SecondaryLanguageSelect() {
 
     const handleNext = () => {
         updateData({ secondaryLanguage: selectedLanguage });
-        go("/(onboarding)/countrySelect");
-    };
-
-    const handleBack = () => {
-        if (selectedLanguage) {
-            updateData({ secondaryLanguage: selectedLanguage });
-        }
-        router.back();
+        router.push("/(onboarding)/countrySelect");
     };
 
     // Filter out primary language
@@ -42,29 +36,61 @@ export default function SecondaryLanguageSelect() {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => handleBack()}>
-                <MaterialIcons name="arrow-left" />
-            </TouchableOpacity>
-            <Text style={styles.title}>Any other languages? (Optional)</Text>
-            
-            <ScrollView style={styles.tagContainer}>
-                {availableLanguages.map((lang) => (
-                    <Tag
-                        key={lang}
-                        label={lang}
-                        pressed={selectedLanguage.includes(lang)}
-                        onPress={() => toggleLanguage(lang)}
-                    />
-                ))}
-            </ScrollView>
+            <View style={styles.inputWrapper}>
+                <Text style={styles.title}>Any other languages? (Optional)</Text>
+                
+                <ScrollView style={styles.tagContainer}>
+                    <View style={styles.tagWrapper}>
+                        {availableLanguages.map((lang) => (
+                            <Tag
+                                key={lang}
+                                label={lang}
+                                pressed={selectedLanguage.includes(lang)}
+                                onPress={() => toggleLanguage(lang)}
+                            />
+                        ))}
+                    </View>
+                </ScrollView>
+            </View>
 
-            <NextButton onPress={handleNext} />
+            <View style={styles.buttonContainer}>
+                <NextButton onPress={handleNext} />
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 24 },
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-    tagContainer: { flex: 1, marginBottom: 20 },
+    container: {
+        flex: 1,
+        paddingHorizontal: width * 0.05,
+        paddingTop: height * 0.2,
+        paddingBottom: height * 0.1,
+    },
+    inputWrapper: {
+        width: '100%',
+        flex: 1,
+    },
+    buttonContainer: {
+        width: '100%',
+        marginTop: 'auto',
+        alignItems: 'center',
+    },
+    backButton: {
+        marginBottom: height * 0.02,
+    },
+    title: {
+        fontSize: width * 0.06,
+        fontWeight: '500',
+        marginBottom: height * 0.02,
+        color: '#D62E05',
+    },
+    tagContainer: {
+        flex: 1,
+    },
+    tagWrapper: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: width * 0.02,
+    },
 });

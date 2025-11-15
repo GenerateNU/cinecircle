@@ -1,9 +1,11 @@
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import NextButton from '../../components/NextButton';
 import Tag from '../../components/Tag';
 import { useOnboarding } from './_layout';
+
+const { width, height } = Dimensions.get('window');
 
 const GENRES = [
     'Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi',
@@ -14,7 +16,6 @@ const GENRES = [
 export default function GenreSelect() {
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
     const { updateData } = useOnboarding();
-    const go = (to: string) => router.push(to);
 
     const toggleGenre = (genre: string) => {
         setSelectedGenres(prev => 
@@ -26,36 +27,72 @@ export default function GenreSelect() {
 
     const handleNext = () => {
         updateData({ favoriteGenres: selectedGenres });
-        go("/(onboarding)/complete");
+        router.push("/(onboarding)/complete");
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>What genres do you like?</Text>
-            <Text style={styles.subtitle}>Select at least one</Text>
-            
-            <ScrollView style={styles.tagContainer}>
-                {GENRES.map((genre) => (
-                    <Tag
-                        key={genre}
-                        label={genre}
-                        pressed={selectedGenres.includes(genre)}
-                        onPress={() => toggleGenre(genre)}
-                    />
-                ))}
-            </ScrollView>
+            <View style={styles.inputWrapper}>
+                <Text style={styles.title}>What genres do you like?</Text>
+                <Text style={styles.subtitle}>Select at least one</Text>
+                
+                <ScrollView style={styles.tagContainer}>
+                    <View style={styles.tagWrapper}>
+                        {GENRES.map((genre) => (
+                            <Tag
+                                key={genre}
+                                label={genre}
+                                pressed={selectedGenres.includes(genre)}
+                                onPress={() => toggleGenre(genre)}
+                            />
+                        ))}
+                    </View>
+                </ScrollView>
+            </View>
 
-            <NextButton 
-                onPress={handleNext}
-                disabled={selectedGenres.length === 0}
-            />
+            <View style={styles.buttonContainer}>
+                <NextButton 
+                    onPress={handleNext}
+                    disabled={selectedGenres.length === 0}
+                />
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 24 },
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
-    subtitle: { fontSize: 16, color: '#666', marginBottom: 20 },
-    tagContainer: { flex: 1, marginBottom: 20 },
+    container: {
+        flex: 1,
+        paddingHorizontal: width * 0.05,
+        paddingTop: height * 0.2,
+        paddingBottom: height * 0.1,
+    },
+    inputWrapper: {
+        width: '100%',
+        flex: 1,
+    },
+    buttonContainer: {
+        width: '100%',
+        marginTop: 'auto',
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: width * 0.06,
+        fontWeight: '500',
+        marginBottom: height * 0.01,
+        color: '#D62E05',
+    },
+    subtitle: {
+        fontSize: width * 0.04,
+        color: '#888888',
+        marginBottom: height * 0.02,
+    },
+    tagContainer: {
+        flex: 1,
+    },
+    tagWrapper: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: width * 0.02,
+    },
 });

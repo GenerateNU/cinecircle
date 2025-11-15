@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { TouchableOpacity, Text, View } from "react-native";
+import { TouchableOpacity, Text, View, Dimensions } from "react-native";
 import { styles } from "../styles/DropdownSelect.styles";
+import { MaterialIcons } from "@expo/vector-icons";
+
+const { width } = Dimensions.get('window')
 
 interface DropdownSelectProps {
+  title?: string;
   items: string[];
   placeholder?: string;
   onSelect: (item: string) => void;
@@ -10,6 +14,7 @@ interface DropdownSelectProps {
 }
 
 export default function DropdownSelect({
+  title = "Select an option",
   items,
   placeholder = "Select an option",
   onSelect,
@@ -24,6 +29,8 @@ export default function DropdownSelect({
 
   return (
     <View style={styles.container}>
+      {title && <Text style={styles.title}>{title}</Text>}
+      
       <TouchableOpacity
         style={styles.button}
         onPress={() => setIsOpen(!isOpen)}
@@ -32,7 +39,13 @@ export default function DropdownSelect({
         <Text style={[styles.text, !selectedValue && styles.placeholderText]}>
           {selectedValue || placeholder}
         </Text>
-        <Text style={styles.arrow}>▼</Text>
+        <MaterialIcons 
+          name="arrow-forward-ios" 
+          style={{ 
+            transform: [{ rotate: isOpen ? '90deg' : '270deg' }],
+            fontSize: width * 0.04 
+          }}
+        />
       </TouchableOpacity>
 
       {isOpen && (

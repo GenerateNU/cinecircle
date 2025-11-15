@@ -1,11 +1,13 @@
-import { View } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import TextInputComponent from '../../components/TextInputComponent';
 import NextButton from '../../components/NextButton';
 import { useOnboarding } from './_layout';
 
-export default function Username() {
+const { width, height } = Dimensions.get('window')
+
+const Username = () => {
     const [username, setUsername] = useState('');
     const { updateData } = useOnboarding();
     const go = (to: string) => router.push(to);
@@ -16,15 +18,46 @@ export default function Username() {
     };
 
     return (
-        <View>
-            <TextInputComponent
+        <View style={styles.container}>
+            <View style={styles.inputWrapper}>
+                <TextInputComponent
                 title="Set your username"
+                subtitle="This is how others on the app will recognize you"
                 field="Username"
                 placeholder="Choose a username"
                 onChangeText={setUsername}
                 value={username}
-            />
-            <NextButton onPress={handleNext}/>
+                />
+            </View>
+            <View style={styles.buttonContainer}>
+                <NextButton onPress={handleNext}/>
+            </View>
+
         </View>
     );
-}
+};
+
+export default Username;
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: width * 0.05,
+        paddingTop: height * 0.2,
+        paddingBottom: height * 0.1,
+    },
+    inputWrapper: {
+        width: '100%',
+        flex: 1,
+    },
+    buttonContainer: {
+        width: '100%',
+        marginTop: 'auto',
+        alignItems: 'center',
+    },
+    message: {
+        marginTop: 10,
+        color: '#666',
+        textAlign: 'center',
+    }
+});
