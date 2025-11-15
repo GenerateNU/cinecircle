@@ -1,20 +1,19 @@
 import { api } from "./apiClient";
-import type {
-  ProtectedResponse,
-  GetUserProfileBasicResponse,
-  UpdateUserProfileInput,
-  UpdateUserProfileResponse,
-  DeleteUserProfileResponse,
-  GetUserRatingsResponse,
-  GetUserCommentsResponse,
-  GetUserProfileResponse
-} from "../types/apiTypes";
+import type { components } from "../types/api-generated";
+
+type ProtectedResponse = components["schemas"]["ProtectedResponse"];
+type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"];
+type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"];
+type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
+type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
+type GetUserRatingsResponse = components["schemas"]["GetUserRatingsResponse"];
+type GetUserCommentsResponse = components["schemas"]["GetUserCommentsResponse"];
 
 export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);
 }
 
-export function getUserProfileBasic() {
+export function getUserProfile() {
   return api.get<GetUserProfileResponse>(`/api/user/profile`);
 }
 
