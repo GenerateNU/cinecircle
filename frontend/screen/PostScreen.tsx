@@ -1,25 +1,23 @@
-import React, { useRef, useState } from "react";
-import {
-  SafeAreaView,
-  ScrollView,
-  View,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import CreatePostBar from "../components/CreatePostBar";
-import PostTypeSelector from "../components/PostTypeSelector";
-import PostForm, { PostFormRef } from "../components/PostForm";
+import React, { useState, useRef } from 'react';
+import { SafeAreaView, ScrollView, View, KeyboardAvoidingView, Platform } from 'react-native';
+import CreatePostBar from '../components/CreatePostBar';
+import PostTypeSelector from '../components/PostTypeSelector';
+import ShortPostForm from '../components/ShortPostForm';
+import LongPostForm from '../components/LongPostForm';
 
 export default function PostScreen() {
-  const [postType, setPostType] = useState<"long" | "short" | "rating" | null>(null);
+  const [postType, setPostType] = useState<'long' | 'short' | 'rating' | null>(null);
   const [showStars, setShowStars] = useState(false);
 
-  const formRef = useRef<PostFormRef>(null);
+  const longFormRef = useRef<any>(null);
+  const shortFormRef = useRef<any>(null);
 
-  const handleSubmit = (data: { content: string; rating?: number }) => {
-    console.log("Post submitted:", data);
-    setPostType(null);
-    setShowStars(false);
+  const handleSubmit = () => {
+    if (postType === 'long') {
+      longFormRef.current?.submit();
+    } else if (postType === 'short') {
+      shortFormRef.current?.submit();
+    }
   };
 
   const handleToolbarAction = (action: string) => {
@@ -29,33 +27,36 @@ export default function PostScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {postType === null ? (
-        <View style={{ flex: 1, justifyContent: "flex-end" }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <PostTypeSelector value={postType} onChange={setPostType} />
         </View>
       ) : (
         <>
           <CreatePostBar
-            title={postType === "short" ? "Create Short" : "Create Post"}
-            onBack={() => {
-              setPostType(null);
-              setShowStars(false);
-            }}
-            onSubmit={() => formRef.current?.submit()}
+            title={postType === 'long' ? 'Create Long' : 'Create Short'}
+            onBack={() => setPostType(null)}
+            onSubmit={handleSubmit}
           />
 
           <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={80}
           >
             <ScrollView keyboardShouldPersistTaps="handled">
-              <PostForm
-                ref={formRef}
+              {postType === 'long' && (
+                <LongPostForm ref={longFormRef} />
+              )}
+
+              {postType === 'short' && (
+                <ShortPostForm
+                ref={shortFormRef}
                 showTextBox
                 showStars={showStars}
                 onSubmit={handleSubmit}
                 onToolbarAction={handleToolbarAction}
-              />
+                />
+              )}
             </ScrollView>
           </KeyboardAvoidingView>
         </>
