@@ -20,9 +20,6 @@ export default function PostScreen() {
     }
   };
 
-  const handleToolbarAction = (action: string) => {
-    if (action === "rating") showStars ? setShowStars(false) : setShowStars(true);
-  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -49,7 +46,6 @@ export default function PostScreen() {
                 showTextBox
                 showStars={showStars}
                 onSubmit={handleSubmit}
-                onToolbarAction={handleToolbarAction}
                 />
               )}
 
@@ -59,7 +55,6 @@ export default function PostScreen() {
                 showTextBox
                 showStars={showStars}
                 onSubmit={handleSubmit}
-                onToolbarAction={handleToolbarAction}
                 />
               )}
             </ScrollView>
