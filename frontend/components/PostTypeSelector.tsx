@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ChevronDown } from 'lucide-react-native'; // Optional icon library
 
 interface Props {
   value: 'long' | 'short' | 'rating' | null;
@@ -11,7 +10,6 @@ const PostTypeSelector: React.FC<Props> = ({ value, onChange }) => {
   const options = [
     { key: 'short', label: 'Short Post', desc: 'Quick thoughts or updates' },
     { key: 'long', label: 'Long Post', desc: 'Share a detailed story' },
-    { key: 'rating', label: 'Rating', desc: 'Give feedback with a score' },
   ];
 
   return (
@@ -27,7 +25,7 @@ const PostTypeSelector: React.FC<Props> = ({ value, onChange }) => {
               value === opt.key && styles.optionSelected,
             ]}
             activeOpacity={0.8}
-            onPress={() => onChange(opt.key as 'long' | 'short' | 'rating')}
+            onPress={() => onChange(opt.key as 'long' | 'short')}
           >
             <Text style={styles.optionLabel}>{opt.label}</Text>
             <Text style={styles.optionDesc}>{opt.desc}</Text>
