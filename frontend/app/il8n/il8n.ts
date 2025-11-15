@@ -3,7 +3,7 @@ import { UiTextKey } from "./keys";
 
 export type LanguageCode = "en" | "hi";
 
-type TranslationTable = Record<UiTextKey, string>;
+type TranslationTable = Partial<Record<UiTextKey, string>>;
 
 const en: TranslationTable = {
   [UiTextKey.Genre]: "Genre",
