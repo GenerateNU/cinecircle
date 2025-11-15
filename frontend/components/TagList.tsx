@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
+
 type TagListProps = {
     tags: string[];
 };
+
 export default function TagList({ tags }: TagListProps) {
     return (
         <View style={styles.container}>
@@ -13,6 +15,7 @@ export default function TagList({ tags }: TagListProps) {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',

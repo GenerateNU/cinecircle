@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,32 +8,16 @@ import {
   StyleSheet,
   Dimensions,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { getUserProfile } from '../services/userService';
+import { getFollowers, getFollowing } from '../services/followService';
+import { User, Props } from '../types/models';
+import type { components } from '../types/api-generated';
 
-type User = {
-  name: string;
-  username: string;
-  bio?: string;
-  followers?: number;
-  following?: number;
-  profilePic?: string;
-};
-
-type Props = {
-  user?: User;
-};
-
-const fallbackUser: User = {
-  name: 'Kaamil Thobani',
-  username: 'kaamil_t',
-  bio: 'South Asian cinema enthusiast 🎬 | SRK forever ❤️',
-  followers: 1520,
-  following: 24,
-  profilePic: 'https://i.pravatar.cc/150?img=3',
-};
+type UserProfile = components["schemas"]["UserProfile"];
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2); // ~1/5 screen
@@ -42,10 +26,66 @@ const AVATAR_RADIUS = AVATAR_SIZE / 2;
 
 type TabKey = 'movies' | 'posts' | 'events' | 'badges';
 
-const ProfilePage = ({ user }: Props) => {
-  const u = { ...fallbackUser, ...(user || {}) };
-
+const ProfilePage = ({ user, userId }: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
+  const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [userId]);
+
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch current user's profile (returns id, email, role)
+      const profileRes = await getUserProfile();
+      if (profileRes.userProfile?.userId) {
+        setProfile(profileRes.userProfile);
+
+        // Use the userId prop if provided, otherwise use current user's id
+        const targetUserId = userId || profileRes.userProfile.userId;
+
+        // Fetch followers and following counts
+        const [followersRes, followingRes] = await Promise.all([
+          getFollowers(targetUserId),
+          getFollowing(targetUserId),
+        ]);
+
+        setFollowersCount(followersRes?.followers?.length || 0);
+        setFollowingCount(followingRes?.following?.length || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch profile data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Build display user from real data + placeholders for missing fields for now
+  const u: User = profile
+    ? {
+        name: profile.username || 'User',
+        username: profile.username || 'user',
+        bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field for now
+        followers: followersCount,
+        following: followingCount,
+        profilePic: profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          profile.username || 'User'
+        )}&size=200&background=667eea&color=fff`,
+      }
+    : user || {
+        name: 'User',
+        username: 'user',
+        bio: 'Movie enthusiast',
+        followers: 0,
+        following: 0,
+        profilePic:
+          'https://ui-avatars.com/api/?name=User&size=200&background=667eea&color=fff',
+      };
 
   return (
     <View style={styles.screen}>
@@ -187,11 +227,6 @@ const ProfilePage = ({ user }: Props) => {
           </TouchableOpacity>
         )}
       </ScrollView>
-
-      {/* Fixed bottom nav */}
-      <View style={styles.bottomBar}>
-        <BottomNavBar />
-      </View>
     </View>
   );
 };

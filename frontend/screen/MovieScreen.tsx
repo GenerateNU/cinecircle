@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
@@ -10,8 +9,10 @@ import {
   Image,
   Modal,
 } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 import MovieChosenScreen from './MovieChosenScreen';
+import RecByFriendsScreen from './RecByFriendsScreen';
+import SearchBar from '../components/SearchBar';
+
 interface Movie {
   id: number;
   title: string;
@@ -29,13 +30,16 @@ const MOCK_MOVIES: Movie[] = [
   { id: 8, title: 'The Godfather', image: 'https://via.placeholder.com/150x220/30cfd0/ffffff?text=Movie+8' },
   { id: 9, title: 'Goodfellas', image: 'https://via.placeholder.com/150x220/a8edea/ffffff?text=Movie+9' },
 ];
+
 export default function MoviesScreen() {
   const [activeTab, setActiveTab] = useState<'forYou' | 'recommended'>('forYou');
   const [searchText, setSearchText] = useState<string>('');
   const [showMovieDetail, setShowMovieDetail] = useState<boolean>(false);
+
   const handleMoviePress = (movieId: number): void => {
     setShowMovieDetail(true);
   };
+
   const renderMovieCard = (movie: Movie): React.ReactElement => {
     return (
       <TouchableOpacity
@@ -55,6 +59,7 @@ export default function MoviesScreen() {
       </TouchableOpacity>
     );
   };
+
   const renderSection = (title: string, movies: Movie[]): React.ReactElement => {
     return (
       <View style={styles.section}>
@@ -69,21 +74,16 @@ export default function MoviesScreen() {
       </View>
     );
   };
+
   return (
     <SafeAreaView style={styles.screen}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Enter search text"
-          placeholderTextColor="#999"
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        <TouchableOpacity style={styles.searchButton}>
-          <Text style={styles.searchIcon}>:mag:</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Search Bar Component */}
+      <SearchBar 
+        placeholder="Enter search text"
+        value={searchText}
+        onChangeText={setSearchText}
+      />
+
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
@@ -111,18 +111,22 @@ export default function MoviesScreen() {
           {activeTab === 'recommended' && <View style={styles.tabIndicator} />}
         </TouchableOpacity>
       </View>
-      {/* Content */}
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={{ paddingBottom: 80 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {renderSection('New Releases', MOCK_MOVIES.slice(0, 4))}
-        {renderSection('Genre', MOCK_MOVIES.slice(4, 7))}
-        {renderSection('Genre', MOCK_MOVIES.slice(6, 9))}
-      </ScrollView>
-      {/* Bottom Navigation */}
-      <BottomNavBar />
+
+      {/* Content - Toggle between For You and Recommended */}
+      {activeTab === 'forYou' ? (
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={{ paddingBottom: 80 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {renderSection('New Releases', MOCK_MOVIES.slice(0, 4))}
+          {renderSection('Genre', MOCK_MOVIES.slice(4, 7))}
+          {renderSection('Genre', MOCK_MOVIES.slice(6, 9))}
+        </ScrollView>
+      ) : (
+        <RecByFriendsScreen />
+      )}
+
       {/* Movie Detail Modal */}
       <Modal
         visible={showMovieDetail}
@@ -145,35 +149,11 @@ export default function MoviesScreen() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  searchInput: {
-    flex: 1,
-    height: 48,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    color: '#000',
-  },
-  searchButton: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchIcon: {
-    fontSize: 24,
   },
   tabsContainer: {
     flexDirection: 'row',

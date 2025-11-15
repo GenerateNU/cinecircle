@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
+
 type RatingRowProps = {
     label: string;
     rating: number; // 0-5
 };
+
 export default function RatingRow({ label, rating }: RatingRowProps) {
     return (
         <View style={styles.container}>
@@ -17,6 +19,7 @@ export default function RatingRow({ label, rating }: RatingRowProps) {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
@@ -37,12 +40,3 @@ const styles = StyleSheet.create({
         marginHorizontal: 2,
     },
 });
-
-
-
-
-
-
-
-
-

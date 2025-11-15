@@ -1,22 +1,22 @@
 version: '3.8'
 
 services:
-  test:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.development
-    env_file:
-      - ./backend/.env
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
-      - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
-      - SYNC_FROM_PRODUCTION=true
-    network_mode: host
-    command: npm run test
-    depends_on:
-      postgres:
-        condition: service_healthy
+  # test:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile.development
+  #   env_file:
+  #     - ./backend/.env
+  #   environment:
+  #     - NODE_ENV=test
+  #     - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+  #     - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
+  #     - SYNC_FROM_PRODUCTION=true
+  #   network_mode: host
+  #   command: npm run test
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
   backend:
     build:
       context: ./backend
@@ -34,7 +34,9 @@ services:
       - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
     volumes:
       - ./backend/src:/app/src
+      - ./backend/scripts:/app/scripts
       - ./backend/prisma:/app/prisma
+      - ./backend/scripts:/app/scripts
       - ./backend/package.json:/app/package.json
       - ./backend/tsconfig.json:/app/tsconfig.json
       - ./backend/nodemon.json:/app/nodemon.json

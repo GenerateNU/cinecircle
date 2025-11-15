@@ -1,6 +1,11 @@
 # CineCircle
+> A user-friendly, community-oriented app for South Indian movie fans to stay updated with, discuss, and review / rate Tollywood (Telugu), Kollywood (Tamil), Mollywood (Malayalam), and Sandalwood (Kollywood) cinema.
 
-A user-friendly, community-oriented app for South Indian movie fans to stay updated with, discuss, and review / rate Tollywood (Telugu), Kollywood (Tamil), Mollywood (Malayalam), and Sandalwood (Kollywood) cinema.
+---
+
+![Alt](https://repobeats.axiom.co/api/embed/508709c912968d6660269a0143f37b4666a43b2c.svg "Repobeats analytics image")
+
+---
 
 ## Quick Start
 
@@ -32,6 +37,21 @@ npm run frontend:start  # Start frontend (Expo) - in separate terminal
 npm run backend:stop
 ```
 
+## Type Generation System
+
+CineCircle uses **auto-generated types** from backend to frontend.
+
+```bash
+npm run backend:types          # Generate frontend types from backend
+```
+
+**When to regenerate:**
+- After adding/modifying API types in `backend/src/types/`
+- After adding new endpoints
+- When frontend shows type errors
+
+📖 **See [TYPES.md](./TYPES.md) for complete documentation**
+
 ## Available Commands
 
 Run `npm run` from root to see all commands. Key ones:
@@ -43,6 +63,7 @@ npm run backend:stop           # Stop containers
 npm run backend:logs           # View logs
 npm run backend:shell          # Shell into container
 npm run backend:test           # Run tests
+npm run backend:types          # Generate frontend types
 npm run backend:lint           # Lint code
 npm run backend:clean          # Full cleanup
 ```

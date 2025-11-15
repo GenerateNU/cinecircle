@@ -52,14 +52,21 @@ describe("User Profile API Tests", () => {
   });
 
   describe("GET /api/user/profile", () => {
+    const test_profile = {
+            userId: TEST_USER_ID,
+            username: "initialuser",
+            primaryLanguage: "English",
+            secondaryLanguage: ["Hindi", "Spanish"],
+            country: "USA",
+            city: "Boston",
+            favoriteGenres: ["Action", "Comedy"],
+            updatedAt: new Date(),
+          };
 
       it("should return user profile for authenticated user", async () => {
         // Ensure user profile exists
         await prisma.userProfile.create({
-          data: {
-            userId: TEST_USER_ID,
-            username: "initialuser",
-          },
+          data: test_profile
         });
   
         const res = await request(app)
@@ -67,24 +74,173 @@ describe("User Profile API Tests", () => {
           .set(authHeader())
           .expect(HTTP_STATUS.OK)
           .expect("Content-Type", /json/);
-  
-        expect(res.body).toHaveProperty("message");
-        expect(res.body).toHaveProperty("user");
-        expect(res.body.user).toEqual({
-          id: TEST_USER_ID,
-          email: TEST_USER_EMAIL,
-          role: TEST_USER_ROLE,
-        });
+
+        // Check profile fields
+        expect(res.body.userProfile).toHaveProperty("username");
+        expect(res.body.userProfile).toHaveProperty("primaryLanguage");
+        expect(res.body.userProfile).toHaveProperty("secondaryLanguage");
+        expect(res.body.userProfile).toHaveProperty("country");
+        expect(res.body.userProfile).toHaveProperty("city");
+        expect(res.body.userProfile).toHaveProperty("favoriteGenres");
+
+        // Check field contents
+        expect(res.body.userProfile).toMatchObject({
+            userId: TEST_USER_ID,
+            username: "initialuser",
+            primaryLanguage: "English",
+            secondaryLanguage: ["Hindi", "Spanish"],
+            country: "USA",
+            city: "Boston",
+            favoriteGenres: ["Action", "Comedy"],
+        })
       });
+  });
+
+  describe("ensureUserProfile Middleware", () => {
+    beforeEach(async () => {
+      // Clean up before each test
+      await prisma.userProfile.deleteMany({ where: { userId: TEST_USER_ID } });
+    });
+
+    afterEach(async () => {
+      // Clean up after each test
+      await prisma.userProfile.deleteMany({ where: { userId: TEST_USER_ID } });
+    });
+
+    it("should create a minimal profile if one does not exist", async () => {
+      // Verify no profile exists
+      const beforeProfile = await prisma.userProfile.findUnique({
+        where: { userId: TEST_USER_ID },
+      });
+      expect(beforeProfile).toBeNull();
+
+      // Make any authenticated request to trigger ensureUserProfile
+      await request(app)
+        .get("/api/user/profile")
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      // Verify profile was created
+      const afterProfile = await prisma.userProfile.findUnique({
+        where: { userId: TEST_USER_ID },
+      });
+
+      expect(afterProfile).not.toBeNull();
+      expect(afterProfile?.userId).toBe(TEST_USER_ID);
+      expect(afterProfile?.onboardingCompleted).toBe(false);
+      expect(afterProfile?.username).toBeNull();
+      expect(afterProfile?.country).toBeNull();
+      expect(afterProfile?.city).toBeNull();
+      expect(afterProfile?.profilePicture).toBeNull();
+    });
+
+    it("should not create a profile if one already exists", async () => {
+      // Create an existing profile
+      const existingProfile = await prisma.userProfile.create({
+        data: {
+          userId: TEST_USER_ID,
+          username: "existinguser",
+          onboardingCompleted: true,
+          country: "Canada",
+          city: "Toronto",
+        },
+      });
+
+      // Make an authenticated request
+      await request(app)
+        .get("/api/user/profile")
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      // Verify profile was not modified
+      const afterProfile = await prisma.userProfile.findUnique({
+        where: { userId: TEST_USER_ID },
+      });
+
+      expect(afterProfile?.username).toBe("existinguser");
+      expect(afterProfile?.onboardingCompleted).toBe(true);
+      expect(afterProfile?.country).toBe("Canada");
+      expect(afterProfile?.city).toBe("Toronto");
+      expect(afterProfile?.createdAt).toEqual(existingProfile.createdAt);
+    });
+
+    it("should return 401 if user is not authenticated", async () => {
+      const res = await request(app)
+        .get("/api/user/profile")
+        // No auth header
+        .expect(HTTP_STATUS.UNAUTHORIZED);
+
+      expect(res.body).toHaveProperty("message", "User not authenticated");
+
+      // Verify no profile was created
+      const profile = await prisma.userProfile.findUnique({
+        where: { userId: TEST_USER_ID },
+      });
+      expect(profile).toBeNull();
+    });
+
+    it("should allow subsequent requests to access the minimal profile", async () => {
+      // First request creates minimal profile
+      await request(app)
+        .get("/api/user/profile")
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      // Second request should work with existing profile
+      const res = await request(app)
+        .get("/api/user/profile")
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.userProfile).toMatchObject({
+        userId: TEST_USER_ID,
+        onboardingCompleted: false,
+        username: null,
+      });
+    });
+
+    it("should create profile before allowing profile updates", async () => {
+      // Verify no profile exists
+      const beforeProfile = await prisma.userProfile.findUnique({
+        where: { userId: TEST_USER_ID },
+      });
+      expect(beforeProfile).toBeNull();
+
+      // Try to update profile (should trigger ensureUserProfile first)
+      const res = await request(app)
+        .put("/api/user/profile")
+        .set(authHeader())
+        .send({
+          username: "newuser",
+          country: "USA",
+          onboardingCompleted: true,
+        })
+        .expect(HTTP_STATUS.OK);
+
+      // Verify profile was created and updated
+      expect(res.body.data).toMatchObject({
+        username: "newuser",
+        country: "USA",
+        onboardingCompleted: true,
+      });
+
+      // Verify in database
+      const afterProfile = await prisma.userProfile.findUnique({
+        where: { userId: TEST_USER_ID },
+      });
+      expect(afterProfile?.username).toBe("newuser");
+      expect(afterProfile?.onboardingCompleted).toBe(true);
+    });
   });
 
   describe("PUT /api/user/profile", () => {
 
     it("should update user profile fields", async () => {
       const payload = {
+        userId: TEST_USER_ID,
         username: "updateduser",
-        preferredLanguages: ["en", "fr"],
-        preferredCategories: ["sci-fi", "comedy"],
+        secondaryLanguage: ["en", "fr"],
+        favoriteGenres: ["sci-fi", "comedy"],
         favoriteMovies: ["Inception", "The Matrix"],
       };
 
@@ -124,6 +280,7 @@ describe("User Profile API Tests", () => {
           data: {
             userId: TEST_USER_ID,
             username: "testuser",
+            updatedAt: new Date(), // Add updatedAt
           },
         });
       
@@ -183,6 +340,7 @@ describe("User Profile API Tests", () => {
             create: {
               userId: TEST_USER_ID,
               username: "testuser",
+              updatedAt: new Date(), // Add updatedAt
             },
           });
       
