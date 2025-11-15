@@ -22,6 +22,12 @@ src/generated/prisma/
 src/swagger-output.json
 expo-env.d.ts
 
+# Auto-generated type files (intermediate - backend only)
+backend/src/docs/schemas.json
+backend/src/docs/openapi.json
+backend/src/docs/api-types.ts
+# Note: frontend/types/api-generated.ts IS checked in
+
 # Migrations
 backend/prisma/migrations/
 

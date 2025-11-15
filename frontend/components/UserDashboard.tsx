@@ -4,8 +4,10 @@ import { supabase } from '../lib/supabase';
 import { useNavigation } from '@react-navigation/native';
 import { getProtected, getUserProfileBasic } from '../services/userService';
 import { api } from '../services/apiClient';
-import type { DbTestResponse } from '../types/apiTypes';
+import type { components } from '../types/api-generated';
 import Events from './Events';
+
+type DbTestResponse = components['schemas']['DbTestResponse'];
 
 type Props = {
   user: any;

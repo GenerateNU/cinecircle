@@ -20,7 +20,9 @@ import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
 import { getUserProfileBasic } from '../../services/userService';
 import { getFollowers, getFollowing } from '../../services/followService';
-import type { UserProfileBasic } from '../../types/models';
+import type { components } from '../../types/api-generated';
+
+type UserProfileBasic = components["schemas"]["UserProfileBasic"];
 
 type Props = {
   user?: User;
