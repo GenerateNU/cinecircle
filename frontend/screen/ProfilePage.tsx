@@ -15,6 +15,9 @@ import { router } from 'expo-router';
 import { getUserProfile } from '../services/userService';
 import { getFollowers, getFollowing } from '../services/followService';
 import { User, Props } from '../types/models';
+import type { components } from '../types/api-generated';
+
+type UserProfile = components["schemas"]["UserProfile"];
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2); // ~1/5 screen
@@ -26,7 +29,7 @@ type TabKey = 'movies' | 'posts' | 'events' | 'badges';
 const ProfilePage = ({ user, userId }: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
 
@@ -65,13 +68,13 @@ const ProfilePage = ({ user, userId }: Props) => {
   // Build display user from real data + placeholders for missing fields for now
   const u: User = profile
     ? {
-        name: profile.email?.split('@')[0] || 'User',
-        username: profile.email?.split('@')[0] || 'user',
+        name: profile.username || 'User',
+        username: profile.username || 'user',
         bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field for now
         followers: followersCount,
         following: followingCount,
-        profilePic: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          profile.email || 'User'
+        profilePic: profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          profile.username || 'User'
         )}&size=200&background=667eea&color=fff`,
       }
     : user || {
