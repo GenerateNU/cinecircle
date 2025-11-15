@@ -18,7 +18,7 @@ export type UserProfileBasic = {
   role: string;
 };
 
-/** Minimal user profile payloads used by your endpoints. */
+/** Full user profile payloads used by your endpoints. */
 export type UserProfile = {
   userId: string;
   username?: string | null;

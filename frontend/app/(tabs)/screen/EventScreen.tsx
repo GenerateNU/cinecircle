@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
+import BottomNavBar from '../../../components/BottomNavBar';
 import { getLocalEvents, LocalEvent } from '../services/eventsService';
 
 interface EventCardProps {

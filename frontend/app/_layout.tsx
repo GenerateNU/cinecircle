@@ -1,15 +1,14 @@
-// app/_layout.tsx
-import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Stack } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AuthForm from '../components/AuthForm';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { OnboardingGuard } from '../components/OnboardingGuard';
 import BottomNavBar from '../components/BottomNavBar';
 
 function RootLayoutContent() {
   const { user, loading } = useAuth();
+  const segments = useSegments();
 
   // Splash while checking session
   if (loading) {
@@ -22,31 +21,14 @@ function RootLayoutContent() {
     );
   }
 
-  // Not logged in -> show Auth form
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>CineCircle Frontend</Text>
-        <AuthForm onAuthSuccess={() => {}} />
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
+  const inTabsGroup = segments[0] === '(tabs)';
 
-  // Logged in -> mount Router navigator
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-          name="profilePage/index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="profilePage/settings"
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-      </Stack>
-      <BottomNavBar />
+      <OnboardingGuard>
+        <Stack screenOptions={{ headerShown: false }} />
+        {user && inTabsGroup && <BottomNavBar />}
+      </OnboardingGuard>
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { getUserProfile } from '../services/userService';
-import { getFollowers, getFollowing } from '../services/followService';
-import { User, Props } from '../types/models';
-import type { components } from '../types/api-generated';
+import { getUserProfile } from '../../../services/userService';
+import { getFollowers, getFollowing } from '../../../services/followService';
+import { User, Props } from '../../../types/models';
+import type { components } from '../../../types/api-generated';
 
 type UserProfile = components["schemas"]["UserProfile"];
 

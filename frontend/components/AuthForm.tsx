@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
 

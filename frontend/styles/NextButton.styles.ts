@@ -4,20 +4,19 @@ const {width, height} = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   button: {
-    borderRadius: width * 0.025,
+    borderRadius: 8,
     borderWidth: width * 0.005,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: height * 0.012,
-    alignSelf: "flex-start",
+    paddingVertical: height * 0.009,
   },
   variation1: {
-    borderColor: "#5C013F",
-    backgroundColor: "#9A0169",
+    borderColor: "#DE5837",
+    backgroundColor: "#F7D5CD",
   },
   variation2: {
-    borderColor: "#C45AA2",
-    backgroundColor: "#C45AA233",
+    borderColor: "#561202",
+    backgroundColor: "#AB2504",
   },
   xs: {
     width: width * 0.25, 
@@ -26,19 +25,26 @@ export const styles = StyleSheet.create({
     width: width * 0.45, 
   },
   medium: {
-    width: width * 0.65,  
+    width: width * 0.75,   
   },
   large: {
     width: width * 0.85,
   },
   text: {
     fontWeight: "400",
-    fontSize: width * 0.045
+    fontSize: width * 0.035
   },
   textVariation1: {
-    color: "#FFFFFF",
+    color: "#D62E05",
   },
   textVariation2: {
-    color: "#C45AA2CC",
+    color: "#FFFFFF",
   },
+  disabled: {
+    opacity: 0.5,
+    backgroundColor: '#ccc',
+    },
+    disabledText: {
+    color: '#666',
+    },
 });
