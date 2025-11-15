@@ -15,6 +15,7 @@ import { getComment, createComment, updateComment, deleteComment} from "../contr
 import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
 
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
+import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
 
 const router = Router();
@@ -90,5 +91,11 @@ router.delete("/post/:postId", deletePost);
 router.post("/post/:postId/like", toggleLikePost);
 router.get("/post/:postId/likes", getPostLikes);
 router.get("/:postId/replies", getPostReplies);
+
+// Search routes
+router.get("/api/search/movies", searchMovies)
+router.get("/api/search/users", searchUsers)
+router.get("/api/search/reviews", searchReviews)
+router.get("/api/search/posts", searchPosts)
 
 export default router;
