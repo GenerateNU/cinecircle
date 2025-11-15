@@ -26,6 +26,7 @@ export type Movie = {
   title: string;
   description: string;
   numRatings: number | null;
+  imageUrl: string | null;
 };
 
 export type Rating = {

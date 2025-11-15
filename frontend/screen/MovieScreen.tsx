@@ -82,6 +82,7 @@ const MOCK_MOVIES: MovieCard[] = [
     image: 'https://via.placeholder.com/150x220/a8edea/ffffff?text=Movie+9',
   },
 ];
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export default function MoviesScreen() {
   const [activeTab, setActiveTab] = useState<'forYou' | 'recommended'>(
@@ -134,8 +135,17 @@ export default function MoviesScreen() {
             const movieId = m.movieId ?? String(index);
             const badge: MovieCard['badge'] | undefined =
               index < 3 ? 'New!' : undefined;
-            const imageText = encodeURIComponent(title);
-            const image = `https://via.placeholder.com/150x220/667eea/ffffff?text=${imageText}`;
+
+            const imagePath = m.imageUrl ?? ''; // e.g. "/ii8QGacT3MXESqBckQlyrATY0lT.jpg"
+
+            const image =
+              imagePath && imagePath.trim().length > 0
+                ? `${TMDB_IMAGE_BASE_URL}${
+                    imagePath.startsWith('/') ? '' : '/'
+                  }${imagePath}`
+                : `https://via.placeholder.com/150x220/667eea/ffffff?text=${encodeURIComponent(
+                    title
+                  )}`;
 
             return { id: movieId, title, badge, image };
           });

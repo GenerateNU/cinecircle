@@ -509,6 +509,7 @@ model movie {
   title       String?
   description String?
   numRatings  String?
+  imageUrl    String?
 
   @@schema("public")
 }

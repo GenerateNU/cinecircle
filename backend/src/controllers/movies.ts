@@ -28,6 +28,7 @@ function mapPrismaMovie(m: any): Movie {
     title: m.title,
     description: m.description,
     numRatings: m.numRatings, // or Number(m.numRatings)
+    imageUrl: m.imageUrl || null,
   };
 }
 
