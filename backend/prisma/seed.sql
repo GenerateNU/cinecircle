@@ -28,7 +28,8 @@ INSERT INTO "auth"."users" (
   ('77777777-7777-7777-7777-777777777777', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'george@cinecircle.com', '$2a$10$test', NOW(), NOW(), NOW(), false),
   ('88888888-8888-8888-8888-888888888888', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'hannah@cinecircle.com', '$2a$10$test', NOW(), NOW(), NOW(), false),
   ('99999999-9999-9999-9999-999999999999', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'isaac@cinecircle.com', '$2a$10$test', NOW(), NOW(), NOW(), false),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'julia@cinecircle.com', '$2a$10$test', NOW(), NOW(), NOW(), false)
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'julia@cinecircle.com', '$2a$10$test', NOW(), NOW(), NOW(), false),
+  ('3ab26dd8-5ad4-4a0b-ae5b-07bde5be2720', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'erickitagawas@gmail.com', '$2a$10$test', NOW(), NOW(), NOW(), false)
 ON CONFLICT ("id") DO NOTHING;
 
 -- Insert UserProfiles
@@ -50,7 +51,8 @@ INSERT INTO "public"."UserProfile" (
   ('77777777-7777-7777-7777-777777777777', 'george_genre_fan', ARRAY['English'], ARRAY['Western', 'Crime'], ARRAY['tt0076759', 'tt0050083'], NOW(), NOW()),
   ('88888888-8888-8888-8888-888888888888', 'hannah_hollywood', ARRAY['English', 'Korean'], ARRAY['Drama', 'Thriller'], ARRAY['tt6751668', 'tt0167260'], NOW(), NOW()),
   ('99999999-9999-9999-9999-999999999999', 'isaac_indie', ARRAY['English'], ARRAY['Independent', 'Documentary'], ARRAY['tt0114369', 'tt0120737'], NOW(), NOW()),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'julia_junkie', ARRAY['English', 'Portuguese'], ARRAY['Drama', 'Romance'], ARRAY['tt0133093', 'tt0088763'], NOW(), NOW())
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'julia_junkie', ARRAY['English', 'Portuguese'], ARRAY['Drama', 'Romance'], ARRAY['tt0133093', 'tt0088763'], NOW(), NOW()),
+  ('3ab26dd8-5ad4-4a0b-ae5b-07bde5be2720', 'eric_rec_tester', ARRAY['English'], ARRAY['Drama', 'Thriller'], ARRAY['tt0468569'], NOW(), NOW())
 ON CONFLICT ("userId") DO NOTHING;
 
 -- ============================================
@@ -209,7 +211,9 @@ INSERT INTO "public"."UserFollow" (
   ('fcccccc-cccc-cccc-cccc-cccccccccccc', '99999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   ('fdddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111'),
   ('feeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', '88888888-8888-8888-8888-888888888888'),
-  ('fffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+  ('fffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  ('frec-user-0000-0000-000000000001', '3ab26dd8-5ad4-4a0b-ae5b-07bde5be2720', '11111111-1111-1111-1111-111111111111'),
+  ('frec-user-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', '3ab26dd8-5ad4-4a0b-ae5b-07bde5be2720')
 ON CONFLICT ("id") DO NOTHING;
 
 -- ============================================
@@ -254,4 +258,3 @@ ON CONFLICT ("id") DO NOTHING;
 -- Success Message
 -- ============================================
 SELECT 'Seed data inserted successfully!' as message;
-

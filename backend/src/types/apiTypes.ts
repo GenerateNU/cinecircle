@@ -6,6 +6,7 @@ import type {
   Rating,
   Comment,
   FollowEdge,
+  MutualRecommendation,
 } from "./models";
 
 /** -------- Health -------- */
@@ -56,3 +57,9 @@ export type UpdateMovieInput = Partial<Pick<
 >>;
 export type UpdateMovieEnvelope = ApiEnvelope<Movie>;
 export type DeleteMovieResponse = { message: string };
+
+/** -------- Recommendations -------- */
+export type GetMutualRecommendationsResponse = {
+  message: string;
+  data: MutualRecommendation[];
+};
