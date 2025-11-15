@@ -1,5 +1,11 @@
 import { api } from "./apiClient";
-import type { GetMovieEnvelope, UpdateMovieInput, UpdateMovieEnvelope, DeleteMovieResponse } from "../types/apiTypes";
+import type { components } from "../types/api-generated";
+
+// Auto-generated types from backend
+type GetMovieEnvelope = components["schemas"]["GetMovieEnvelope"];
+type UpdateMovieInput = components["schemas"]["UpdateMovieInput"];
+type UpdateMovieEnvelope = components["schemas"]["UpdateMovieEnvelope"];
+type DeleteMovieResponse = components["schemas"]["DeleteMovieResponse"];
 
 export function fetchAndSaveByTmdbId(tmdbId: string) {
   return api.get<GetMovieEnvelope>(`/movies/${tmdbId}`);

@@ -7,31 +7,39 @@ import ActionButtons from '../../../components/ActionButtons';
 import ReviewCard from '../../../components/ReviewCard';
 export default function MovieChosenScreen() {
     const [activeTab, setActiveTab] = useState<'reviews' | 'comments'>('reviews');
+
     return (
         <ScrollView style={styles.container}>
             {/* Search Bar */}
             <SearchBar />
+
             {/* Movie Title */}
             <Text style={styles.title}>Movie Title</Text>
+
             {/* Metadata */}
             <View style={styles.metaContainer}>
                 <Text style={styles.metaText}>2025 • Directed by: Emily Chooi</Text>
                 <Text style={styles.genreText}>Genre • Genre • Genre • Genre • Genre</Text>
             </View>
+
             {/* Description */}
             <Text style={styles.description} numberOfLines={3}>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
             </Text>
+
             {/* Tags */}
             <TagList tags={['Tag 1', 'Tag 1', 'Tag 1', 'Tag 1', 'Tag 1']} />
+
             {/* Ratings */}
             <View style={styles.ratingsContainer}>
                 <RatingRow label="Overall" rating={0} />
                 <RatingRow label="Rotten Tomatoes" rating={0} />
                 <RatingRow label="IBM" rating={0} />
             </View>
+
             {/* Action Buttons */}
             <ActionButtons />
+
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableOpacity
@@ -51,6 +59,10 @@ export default function MovieChosenScreen() {
                     </Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Filter Bar*/}
+            <FilterBar />
+
             {/* Content */}
             <View style={styles.contentContainer}>
                 {activeTab === 'reviews' ? (
@@ -65,6 +77,7 @@ export default function MovieChosenScreen() {
         </ScrollView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

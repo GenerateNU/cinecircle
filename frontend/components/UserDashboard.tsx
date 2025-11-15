@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useNavigation } from '@react-navigation/native';
-import { getProtected, getUserProfileBasic } from '../services/userService';
+import { getProtected, getUserProfile } from '../services/userService';
 import { api } from '../services/apiClient';
-import type { DbTestResponse } from '../types/apiTypes';
+import type { components } from '../types/api-generated';
 import Events from './Events';
+
+type DbTestResponse = components['schemas']['DbTestResponse'];
 
 type Props = {
   user: any;
@@ -28,10 +30,10 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     }
   };
 
-  const getUserProfile = async () => {
+  const fetchUserProfile = async () => {
     try {
-      const res = await getUserProfileBasic();
-      setBackendMessage(`Profile: ${JSON.stringify(res.user || res)}`);
+      const res = await getUserProfile();
+      setBackendMessage(`Profile: ${JSON.stringify(res.userProfile || res)}`);
     } catch (err: any) {
       setBackendMessage(`Failed: ${err.message || 'Connection error'}`);
     }
@@ -69,7 +71,7 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
           onPress={() => navigation.navigate('MovieChosen' as never)}
         />
         <Button title="Call Protected Backend" onPress={callProtectedBackend} />
-        <Button title="Get User Profile" onPress={getUserProfile} />
+        <Button title="Get User Profile" onPress={fetchUserProfile} />
         <Button title="Test DB" onPress={testDatabase} />
         <Button title="Events Page" onPress={() => setShowEventsPage(true)} />
       </View>

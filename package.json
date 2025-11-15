@@ -22,6 +22,7 @@
     "backend:format:check": "docker exec cinecircle-backend-1 npm run format:check",
     "backend:build": "docker exec cinecircle-backend-1 npm run build",
     "backend:docs": "docker exec cinecircle-backend-1 npm run docs",
+    "backend:types": "docker exec cinecircle-backend-1 npm run types:all",
     "backend:db:studio": "docker exec -it cinecircle-backend-1 npm run db:studio",
     "backend:db:sync": "docker exec -it cinecircle-backend-1 npm run db:sync",
     "backend:install": "cd backend && npm install",

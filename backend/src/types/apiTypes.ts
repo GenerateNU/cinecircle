@@ -31,7 +31,7 @@ export type GetUserProfileBasicResponse = {
 /** -------- User Profile (GET /api/user/profile) -------- */
 export type GetUserProfileResponse = {
   message?: string;
-  user: UserProfile;
+  userProfile: UserProfile;
   timestamp?: string;
   endpoint?: string;
 };

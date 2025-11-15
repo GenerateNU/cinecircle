@@ -25,12 +25,12 @@ export const dbTest = async (_req: Request, res: Response) => {
 };
 
 export const serveSwagger = (_req: Request, res: Response) => {
-  const swaggerPath = path.join(process.cwd(), "src/docs/swagger-output.json");
-  if (fs.existsSync(swaggerPath)) {
-    res.sendFile(swaggerPath);
+  const openapiPath = path.join(process.cwd(), "src/docs/openapi.json");
+  if (fs.existsSync(openapiPath)) {
+    res.sendFile(openapiPath);
   } else {
     res.status(404).json({
-      message: "Swagger documentation not found. Run npm run docs first.",
+      message: "OpenAPI documentation not found. Run npm run backend:types first.",
     });
   }
 };
