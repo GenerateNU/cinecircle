@@ -10,11 +10,12 @@ export interface LongPostFormRef {
 interface LongPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
-  onSubmit: (data: { content: string; rating?: number }) => void;
+  onToolbarAction: (action: string) => void; // <-- Added here
+  onSubmit: (data: { content: string; rating?: number; title?: string; subtitle?: string; tags?: string[] }) => void;
 }
 
 const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
-  ({ showTextBox, showStars, onSubmit }, ref) => {
+  ({ showTextBox, showStars, onToolbarAction, onSubmit }, ref) => {
     const [content, setContent] = useState('');
     const [rating, setRating] = useState<number>(0);
     const [title, setTitle] = useState('');
@@ -28,11 +29,13 @@ const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
         onSubmit({
           content,
           rating: rating || undefined,
+          title,
+          subtitle,
+          tags
         });
-      },
+      }
     }));
 
-    // Add tag and clear input
     const addTag = () => {
       const cleaned = tagInput.trim();
       if (cleaned && !tags.includes(cleaned)) {
@@ -52,12 +55,14 @@ const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
           onChangeText={setTitle}
         />
 
-        <View style={styles.starContainer}>
-          <StarRating
-            rating={rating}
-            onRatingChange={setRating}
-          />
-        </View>
+        {showStars && (
+          <View style={styles.starContainer}>
+            <StarRating
+              rating={rating}
+              onRatingChange={setRating}
+            />
+          </View>
+        )}
 
         <TextInput
           style={styles.subtitle}
@@ -67,14 +72,16 @@ const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
           onChangeText={setSubtitle}
         />
 
-        <TextInput
-          style={styles.body}
-          multiline
-          placeholder="Start sharing your thoughts..."
-          placeholderTextColor="#C4C4C4"
-          value={content}
-          onChangeText={setContent}
-        />
+        {showTextBox && (
+          <TextInput
+            style={styles.body}
+            multiline
+            placeholder="Start sharing your thoughts..."
+            placeholderTextColor="#C4C4C4"
+            value={content}
+            onChangeText={setContent}
+          />
+        )}
 
         <ScrollView
           horizontal
@@ -108,11 +115,13 @@ const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
           />
         )}
 
-        <CreatePostToolBar />
+        {/* Pass the handler from props, not a local function */}
+        <CreatePostToolBar onToolbarAction={onToolbarAction}/>
       </View>
     );
   }
 );
+
 
 export default LongPostForm;
 
@@ -133,6 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 200,
     textAlignVertical: 'top',
+    marginBottom: 8,
   },
   starContainer: {
     alignItems: 'flex-start',

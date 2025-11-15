@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-export default function CreatePostToolBar() {
+interface CreatePostToolBarProps {
+  onToolbarAction: (action: string) => void;
+}
 
-const [showStars, setShowStars] = useState(false);
-  const onToolbarAction = (action: string) => {
-    if (action === "rating") showStars ? setShowStars(false) : setShowStars(true);
-  };
+export default function CreatePostToolBar({ onToolbarAction }: CreatePostToolBarProps) {
   return (
     <View style={styles.toolbar}>
       <TouchableOpacity

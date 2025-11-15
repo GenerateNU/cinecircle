@@ -12,7 +12,15 @@ export default function PostScreen() {
   const longFormRef = useRef<any>(null);
   const shortFormRef = useRef<any>(null);
 
-  const handleSubmit = () => {
+  // Handles creating post (fetch/axios logic goes here)
+  const handleFormSubmit = () => {
+    // implement your fetch call here
+    // fetch('/post', {body: JSON.stringify(formData), ... })
+    //console.log("Form submitted data:", formData);
+  };
+
+  // Handles submit button click
+  const handleSubmitButton = () => {
     if (postType === 'long') {
       longFormRef.current?.submit();
     } else if (postType === 'short') {
@@ -20,6 +28,11 @@ export default function PostScreen() {
     }
   };
 
+  // Handles toolbar actions
+  const handleToolbarAction = (action: string) => {
+    if (action === 'rating') setShowStars(prev => !prev);
+    // add other toolbar actions as needed
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -32,7 +45,7 @@ export default function PostScreen() {
           <CreatePostBar
             title={postType === 'long' ? 'Create Long' : 'Create Short'}
             onBack={() => setPostType(null)}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmitButton}
           />
 
           <KeyboardAvoidingView
@@ -42,19 +55,22 @@ export default function PostScreen() {
           >
             <ScrollView keyboardShouldPersistTaps="handled">
               {postType === 'long' && (
-                <LongPostForm ref={longFormRef} 
-                showTextBox
-                showStars={showStars}
-                onSubmit={handleSubmit}
+                <LongPostForm
+                  ref={longFormRef}
+                  showTextBox
+                  showStars={showStars}
+                  onToolbarAction={handleToolbarAction}
+                  onSubmit={handleFormSubmit}
                 />
               )}
 
               {postType === 'short' && (
                 <ShortPostForm
-                ref={shortFormRef}
-                showTextBox
-                showStars={showStars}
-                onSubmit={handleSubmit}
+                  ref={shortFormRef}
+                  showTextBox
+                  showStars={showStars}
+                  onToolbarAction={handleToolbarAction}
+                  onSubmit={handleFormSubmit}
                 />
               )}
             </ScrollView>

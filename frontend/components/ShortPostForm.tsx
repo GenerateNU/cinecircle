@@ -1,5 +1,4 @@
 import React, {
-  useState,
   forwardRef,
   useImperativeHandle
 } from 'react';
@@ -11,7 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import StarRating from './StarRating';
-import CreatePostToolBar from './CreatePostToolBar'
+import CreatePostToolBar from './CreatePostToolBar';
 
 export interface ShortPostFormRef {
   submit: () => void;
@@ -20,15 +19,15 @@ export interface ShortPostFormRef {
 interface ShortPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
+  onToolbarAction: (action: string) => void; // Expect this as a prop
   onSubmit: (data: { content: string; rating?: number }) => void;
 }
 
-const PostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
-({ showTextBox, showStars, onSubmit }, ref) => {
-  const [content, setContent] = useState('');
-  const [rating, setRating] = useState<number>(0);
+const ShortPostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
+({ showTextBox, showStars, onToolbarAction, onSubmit }, ref) => {
+  const [content, setContent] = React.useState('');
+  const [rating, setRating] = React.useState<number>(0);
 
-//Exposes the submit function to the parent
   useImperativeHandle(ref, () => ({
     submit() {
       onSubmit({
@@ -40,7 +39,6 @@ const PostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
 
   return (
     <View style={styles.container}>
-
       {showStars && (
         <View style={styles.starContainer}>
           <StarRating
@@ -63,12 +61,12 @@ const PostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
       )}
 
       <Text style={styles.charCount}>{content.length}/280</Text>
-      <CreatePostToolBar/>
+      <CreatePostToolBar onToolbarAction={onToolbarAction}/>
     </View>
   );
 });
 
-export default PostForm;
+export default ShortPostForm;
 
 const styles = StyleSheet.create({
   container: {
