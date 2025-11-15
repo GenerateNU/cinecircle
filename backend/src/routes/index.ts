@@ -11,11 +11,12 @@ import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
-import { getComment, createComment, updateComment, deleteComment} from "../controllers/comment"
-import { createRating, getRatings, getRatingById, deleteRating, updateRating } from "../controllers/ratings";
-
+import { getComment, createComment, updateComment, deleteComment, getMovieComments} from "../controllers/comment"
+import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
+import { getAllMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
 import { getHomeFeed } from "../controllers/feed";
+// backend/src/routes/index.ts
 
 const router = Router();
 
@@ -27,6 +28,8 @@ router.get("/swagger-output.json", serveSwagger);
 
 //OpenAPI 3.0 spec
 router.get("/openapi.json", serveSwagger);
+
+router.get("/movies", getAllMovies);
 
 // everything under here is a private endpoint
 router.use('/api', authenticateUser, ensureUserProfile); 
@@ -61,12 +64,15 @@ router.post("/api/comment", createComment);
 router.get("/api/comment/:id", getComment)
 router.put("/api/comment/:id", updateComment);
 router.delete("/api/comment/:id", deleteComment);
+router.get("/api/:movieId/comments", getMovieComments);
 // Ratings routes
 router.post('/api/ratings', createRating);
 router.get('/api/ratings', getRatings);
 router.get('/api/ratings/:id', getRatingById);
 router.put('/api/ratings/:id', updateRating);
 router.delete('/api/ratings/:id', deleteRating);
+router.get("/api/:movieId/ratings", getMovieRatings);
+
 
 // Local events routes
 router.get("/api/local-event/:id", getLocalEvent);

@@ -16,3 +16,42 @@ export type Props = {
   user?: User;
   userId?: string;
 };
+
+
+export type Movie = {
+  movieId: string;
+  localRating: number | null;
+  imdbRating: number | null;
+  languages: string[] | null;
+  title: string;
+  description: string;
+  numRatings: number | null;
+};
+
+export type Rating = {
+  id: string;
+  userId: string;
+  movieId: string;
+  rating: number;
+  review?: string;
+  createdAt: string;
+};
+
+export type Comment = {
+  id: string;
+  userId: string;
+  movieId: string;
+  content: string;
+  createdAt: string;
+};
+
+export type Summary = {
+  movieId: string;
+  summaryText: string;
+  pros?: string[];
+  cons?: string[];
+  stats?: {
+    averageRating: number;
+    totalReviews: number;
+  };
+};    

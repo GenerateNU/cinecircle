@@ -1,5 +1,8 @@
 import { api } from "./apiClient";
 import type { components } from "../types/api-generated";
+import { setLanguage } from "../app/il8n/il8n";
+import type { LanguageCode } from "../app/il8n/languages";
+
 
 type ProtectedResponse = components["schemas"]["ProtectedResponse"];
 type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"];
@@ -31,4 +34,24 @@ export function getUserRatings(userId: string) {
 
 export function getUserComments(userId: string) {
   return api.get<GetUserCommentsResponse>(`/api/user/comments`, { user_id: userId });
+}
+
+export async function fetchUserProfile() {
+  const res = await api.get<any>("/api/user/profile");
+  console.log("[user] raw profile response:", res);
+
+  // Your API is returning the envelope directly, so:
+  const profileEnvelope = res;
+  console.log("[user] parsed profile:", profileEnvelope);
+
+  const primaryLanguage = profileEnvelope?.userProfile?.primaryLanguage;
+  console.log("[user] primaryLanguage from envelope:", primaryLanguage);
+
+  if (primaryLanguage) {
+    setLanguage(primaryLanguage); // "Hindi" in your logs
+  } else {
+    console.log("[user] no primaryLanguage found, keeping default 'en'");
+  }
+
+  return profileEnvelope;
 }

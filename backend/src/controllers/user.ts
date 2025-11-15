@@ -79,6 +79,7 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
         data: {
           userId: req.user.id,
           onboardingCompleted: false,
+          updatedAt: new Date(),
         },
       });
     }
