@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import StarRating from './StarRating';
+import CreatePostToolBar from './CreatePostToolBar'
 
 export interface LongPostFormRef {
   submit: () => void;
@@ -10,11 +11,10 @@ interface LongPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
   onSubmit: (data: { content: string; rating?: number }) => void;
-  onToolbarAction: (action: string) => void;
 }
 
 const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
-({ showTextBox, showStars, onSubmit, onToolbarAction }, ref) => {
+({ showTextBox, showStars, onSubmit }, ref) => {
   const [content, setContent] = useState('');
   const [rating, setRating] = useState<number>(0);
   const [title, setTitle] = useState('');
@@ -64,26 +64,7 @@ const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
         onChangeText={setContent}
       />
 
-     <View style={styles.toolbar}>
-        <TouchableOpacity
-        onPress={() => onToolbarAction("rating")}
-        style={styles.toolbarItem}
-        >
-        <Text style={styles.toolbarText}>Rating</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.toolbarItem}>
-        <Text style={styles.toolbarText}>Video</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.toolbarItem}>
-        <Text style={styles.toolbarText}>GIF</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.toolbarItem}>
-        <Text style={styles.toolbarText}>Photo</Text>
-        </TouchableOpacity>
-    </View>
+     <CreatePostToolBar/>
     </View>
   );
 });
