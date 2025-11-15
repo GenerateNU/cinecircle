@@ -6,6 +6,222 @@ import jwt from "jsonwebtoken";
 import { HTTP_STATUS } from "../helpers/constants";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
+jest.mock("../../services/db", () => {
+  const userProfiles = new Map<string, any>();
+  const ratings = new Map<string, any>();
+  const posts = new Map<string, any>();
+  const comments = new Map<string, any>();
+
+  const clone = (record: any) => (record ? { ...record } : record);
+
+  const matchesWhere = (record: any, where: Record<string, any> = {}) => {
+    if (!where) return true;
+    return Object.entries(where).every(([key, value]) => {
+      if (key === 'OR' && Array.isArray(value)) {
+        return value.some((clause) => matchesWhere(record, clause));
+      }
+      if (key === 'AND' && Array.isArray(value)) {
+        return value.every((clause) => matchesWhere(record, clause));
+      }
+      if (value && typeof value === 'object' && 'in' in value) {
+        return value.in.includes(record[key]);
+      }
+      return record[key] === value;
+    });
+  };
+
+  const buildCommentWithInclude = (record: any, include: any): any => {
+    if (!record) return null;
+    const result = { ...record };
+
+    if (include?.child_comment) {
+      const childConfig = include.child_comment === true ? {} : include.child_comment;
+      const nestedInclude = childConfig.include ?? {};
+      let children = Array.from(comments.values()).filter((c) => c.parentId === record.id);
+      if (childConfig.orderBy?.createdAt === 'asc') {
+        children = children.sort(
+          (a, b) =>
+            new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime(),
+        );
+      } else if (childConfig.orderBy?.createdAt === 'desc') {
+        children = children.sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+        );
+      }
+      result.child_comment = children.map((child) =>
+        buildCommentWithInclude(child, nestedInclude),
+      );
+    }
+
+    if (include?.parent_comment) {
+      const parentConfig = include.parent_comment === true ? {} : include.parent_comment;
+      const parent = record.parentId ? comments.get(record.parentId) : null;
+      result.parent_comment = buildCommentWithInclude(
+        parent,
+        parentConfig.include ?? {},
+      );
+    }
+
+    return result;
+  };
+
+  const ensureRecordExists = (record: any) => {
+    if (!record) {
+      const error: any = new Error('Record not found');
+      error.code = 'P2025';
+      throw error;
+    }
+    return record;
+  };
+
+  const userProfileModel = {
+    upsert: jest.fn(async ({ where: { userId }, create, update }: any) => {
+      const existing = userProfiles.get(userId);
+      if (existing) {
+        const updated = { ...existing, ...update };
+        userProfiles.set(userId, updated);
+        return clone(updated);
+      }
+      userProfiles.set(userId, { ...create });
+      return clone(userProfiles.get(userId));
+    }),
+    create: jest.fn(async ({ data }: any) => {
+      userProfiles.set(data.userId, { ...data });
+      return clone(userProfiles.get(data.userId));
+    }),
+    findUnique: jest.fn(async ({ where: { userId } }: any) =>
+      clone(userProfiles.get(userId) ?? null),
+    ),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [userId, profile] of Array.from(userProfiles.entries())) {
+        if (!where || matchesWhere(profile, where)) {
+          userProfiles.delete(userId);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+  };
+
+  const ratingModel = {
+    create: jest.fn(async ({ data }: any) => {
+      const id = data.id ?? crypto.randomUUID();
+      const record = { ...data, id };
+      ratings.set(id, record);
+      return clone(record);
+    }),
+    delete: jest.fn(async ({ where: { id } }: any) => {
+      const record = ratings.get(id);
+      ensureRecordExists(record);
+      ratings.delete(id);
+      return clone(record);
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(ratings.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          ratings.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+    findUnique: jest.fn(async ({ where: { id } }: any) => clone(ratings.get(id) ?? null)),
+  };
+
+  const postModel = {
+    create: jest.fn(async ({ data }: any) => {
+      const id = data.id ?? crypto.randomUUID();
+      const record = { ...data, id };
+      posts.set(id, record);
+      return clone(record);
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(posts.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          posts.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+    delete: jest.fn(async ({ where: { id } }: any) => {
+      const record = posts.get(id);
+      ensureRecordExists(record);
+      posts.delete(id);
+      return clone(record);
+    }),
+  };
+
+  const resetChildParentLinks = (parentId: string) => {
+    for (const [id, record] of comments.entries()) {
+      if (record.parentId === parentId) {
+        comments.set(id, { ...record, parentId: null });
+      }
+    }
+  };
+
+  const commentModel = {
+    create: jest.fn(async ({ data }: any) => {
+      const id = data.id ?? crypto.randomUUID();
+      const record = { ...data, id };
+      comments.set(id, record);
+      return clone(record);
+    }),
+    findUnique: jest.fn(async ({ where: { id }, include }: any) => {
+      const record = comments.get(id);
+      if (!record) return null;
+      if (include) {
+        return buildCommentWithInclude(record, include);
+      }
+      return clone(record);
+    }),
+    update: jest.fn(async ({ where: { id }, data }: any) => {
+      const record = comments.get(id);
+      ensureRecordExists(record);
+      const updated = { ...record, ...data };
+      comments.set(id, updated);
+      return clone(updated);
+    }),
+    delete: jest.fn(async ({ where: { id } }: any) => {
+      const record = comments.get(id);
+      ensureRecordExists(record);
+      resetChildParentLinks(id);
+      comments.delete(id);
+      return clone(record);
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(comments.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          resetChildParentLinks(id);
+          comments.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+  };
+
+  return {
+    prisma: {
+      userProfile: userProfileModel,
+      rating: ratingModel,
+      post: postModel,
+      comment: commentModel,
+      $disconnect: jest.fn(async () => {
+        userProfiles.clear();
+        ratings.clear();
+        posts.clear();
+        comments.clear();
+      }),
+    },
+  };
+});
+
 jest.mock("../../middleware/auth", () => ({
   authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     req.user = {
@@ -63,6 +279,7 @@ describe("Comment API Tests", () => {
       create: {
         userId: TEST_USER_ID,
         username: "testuser",
+        updatedAt: new Date(),
       },
     });
 
@@ -73,6 +290,7 @@ describe("Comment API Tests", () => {
       create: {
         userId: OTHER_USER_ID,
         username: "otheruser",
+        updatedAt: new Date(),
       },
     });
   });

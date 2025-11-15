@@ -1,4 +1,4 @@
 import React from 'react';
-import ProfilePage from './profile'; // ← the file you showed me
+import ProfilePage from './profile'; 
 export { default } from './profilePage';
 

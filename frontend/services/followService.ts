@@ -1,4 +1,3 @@
-// src/services/followService.ts
 import { api } from "./apiClient";
 import type { components } from "../types/api-generated";
 

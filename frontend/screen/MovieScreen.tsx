@@ -23,6 +23,7 @@ import { UiTextKey } from '../app/il8n/keys';
 
 // ✅ Make sure this exists and is exported
 import { fetchUserProfile } from '../services/userService';
+import { router } from 'expo-router';
 
 interface MovieCard {
   id: string;
@@ -96,6 +97,21 @@ export default function MoviesScreen() {
   const [newReleasesError, setNewReleasesError] = useState<string | null>(null);
 
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
+
+  const handleSearchSubmit = (text: string): void => {
+    const query = (text || '').trim();
+    if (!query) {
+      return;
+    }
+    router.push({
+      pathname: '/profilePage/user/[userId]',
+      params: {
+        userId: query,
+        username: query,
+        name: query,
+      },
+    });
+  };
 
   // 🔍 Log every render to see what language + labels we get
   console.log('[MoviesScreen] render', {
@@ -259,6 +275,7 @@ export default function MoviesScreen() {
         placeholder="Enter search text"
         value={searchText}
         onChangeText={setSearchText}
+        onSubmitEditing={handleSearchSubmit}
       />
 
       <View className="tabsContainer" style={styles.tabsContainer}>

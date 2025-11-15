@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import type { Response,Request } from 'express';
-
-const prisma = new PrismaClient();
+import type { AuthenticatedRequest } from '../middleware/auth';
+import { prisma } from '../services/db';
 
 export const createRating = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
