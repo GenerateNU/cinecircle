@@ -175,6 +175,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/openapi.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/protected": {
         parameters: {
             query?: never;
@@ -256,6 +296,13 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
                 /** @description Internal Server Error */
                 500: {
                     headers: {
@@ -280,9 +327,19 @@ export interface paths {
                         /** @example any */
                         username?: unknown;
                         /** @example any */
-                        preferredLanguages?: unknown;
+                        onboardingCompleted?: unknown;
                         /** @example any */
-                        preferredCategories?: unknown;
+                        primaryLanguage?: unknown;
+                        /** @example any */
+                        secondaryLanguage?: unknown;
+                        /** @example any */
+                        profilePicture?: unknown;
+                        /** @example any */
+                        country?: unknown;
+                        /** @example any */
+                        city?: unknown;
+                        /** @example any */
+                        favoriteGenres?: unknown;
                         /** @example any */
                         favoriteMovies?: unknown;
                         /** @example any */
@@ -867,6 +924,57 @@ export interface paths {
                 };
             };
         };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -2398,30 +2506,54 @@ export interface components {
         /** @description -------- User Profile Basic (GET /api/user/profile) -------- */
         GetUserProfileBasicResponse: {
             message?: string;
-            user?: unknown;
+            user?: components["schemas"]["UserProfileBasic"];
             timestamp?: string;
             endpoint?: string;
         };
-        /** @description -------- User Profile Update/Delete -------- */
-        UpdateUserProfileInput: {
-            username?: string | null;
-            preferredLanguages?: string[];
-            preferredCategories?: string[];
-            favoriteMovies?: string[];
+        /** @description Basic auth user info returned from /api/user/profile GET endpoint */
+        UserProfileBasic: {
+            id: string;
+            email: string;
+            role: string;
         };
-        UpdateUserProfileResponse: {
-            message: string;
-            data: components["schemas"]["UserProfile"];
+        /** @description -------- User Profile (GET /api/user/profile) -------- */
+        GetUserProfileResponse: {
+            message?: string;
+            userProfile: components["schemas"]["UserProfile"];
+            timestamp?: string;
+            endpoint?: string;
         };
         /** @description Minimal user profile payloads used by your endpoints. */
         UserProfile: {
             userId: string;
             username?: string | null;
-            preferredLanguages: string[];
-            preferredCategories: string[];
+            onboardingCompleted: boolean;
+            primaryLanguage: string;
+            secondaryLanguage: string[];
+            profilePicture: string | null;
+            country: string | null;
+            city: string | null;
+            favoriteGenres: string[];
             favoriteMovies: string[];
-            createdAt?: string;
-            updatedAt?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /** @description -------- User Profile Update/Delete -------- */
+        UpdateUserProfileInput: {
+            username?: string | null;
+            onboardingCompleted?: boolean;
+            primaryLanguage?: string;
+            secondaryLanguage?: string[];
+            country?: string | null;
+            city?: string | null;
+            favoriteGenres?: string[];
+            favoriteMovies?: string[];
+        };
+        UpdateUserProfileResponse: {
+            message: string;
+            data: components["schemas"]["UserProfile"];
         };
         DeleteUserProfileResponse: {
             message: string;

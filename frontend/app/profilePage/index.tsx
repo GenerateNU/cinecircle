@@ -18,11 +18,11 @@ import MoviesGrid from './components/MoviesGrid';
 import PostsList from './components/PostsList';
 import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
-import { getUserProfileBasic } from '../../services/userService';
+import { getUserProfile } from '../../services/userService';
 import { getFollowers, getFollowing } from '../../services/followService';
 import type { components } from '../../types/api-generated';
 
-type UserProfileBasic = components["schemas"]["UserProfileBasic"];
+type UserProfile = components['schemas']['UserProfile'];
 
 type Props = {
   user?: User;
@@ -38,7 +38,7 @@ const NAV_HEIGHT = 64;
 
 const ProfilePage = ({ user: userProp }: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
-  const [profile, setProfile] = useState<UserProfileBasic | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,15 +54,15 @@ const ProfilePage = ({ user: userProp }: Props) => {
       setError(null);
 
       // Fetch user profile (returns id, email, role)
-      const profileRes = await getUserProfileBasic();
-      if (profileRes.user?.id) {
-        setProfile(profileRes.user);
+      const profileRes = await getUserProfile();
+      if (profileRes.userProfile?.userId) {
+        setProfile(profileRes.userProfile);
 
         // Fetch followers and following counts in parallel
         try {
           const [followersRes, followingRes] = await Promise.all([
-            getFollowers(profileRes.user.id),
-            getFollowing(profileRes.user.id),
+            getFollowers(profileRes.userProfile.userId),
+            getFollowing(profileRes.userProfile.userId),
           ]);
           setFollowersCount(followersRes.followers?.length || 0);
           setFollowingCount(followingRes.following?.length || 0);
@@ -82,15 +82,17 @@ const ProfilePage = ({ user: userProp }: Props) => {
   // Build display user from real data + placeholders for missing fields
   const displayUser: User = profile
     ? {
-        // Use email as name/username since backend doesn't have these fields yet
-        name: profile.email?.split('@')[0] || 'User',
-        username: profile.email?.split('@')[0] || 'user',
+        // Use username from backend profile
+        name: profile.username || 'User',
+        username: profile.username || 'user',
         bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field
         followers: followersCount,
         following: followingCount,
-        profilePic: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          profile.email || 'User'
-        )}&size=200&background=667eea&color=fff`, // Generated avatar
+        profilePic:
+          profile.profilePicture ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            profile.username || 'User'
+          )}&size=200&background=667eea&color=fff`, // Use backend pic or generated avatar
       }
     : userProp || {
         name: 'User',

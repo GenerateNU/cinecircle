@@ -1,9 +1,8 @@
 import { api } from "./apiClient";
 import type { components } from "../types/api-generated";
 
-// Auto-generated types from backend
 type ProtectedResponse = components["schemas"]["ProtectedResponse"];
-type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
+type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"];
 type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"];
 type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
 type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
@@ -14,8 +13,8 @@ export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);
 }
 
-export function getUserProfileBasic() {
-  return api.get<GetUserProfileBasicResponse>(`/api/user/profile`);
+export function getUserProfile() {
+  return api.get<GetUserProfileResponse>(`/api/user/profile`);
 }
 
 export function updateUserProfile(payload: UpdateUserProfileInput) {
