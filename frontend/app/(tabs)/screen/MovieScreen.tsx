@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import MovieChosenScreen from './MovieChosenScreen';
 import RecByFriendsScreen from './RecByFriendsScreen';
-import SearchBar from '../components/SearchBar';
 import { router } from 'expo-router';
 import SearchBar from '../../../components/SearchBar';
 
