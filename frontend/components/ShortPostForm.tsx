@@ -12,18 +12,18 @@ import {
 } from 'react-native';
 import StarRating from './StarRating';
 
-export interface PostFormRef {
+export interface ShortPostFormRef {
   submit: () => void;
 }
 
-interface PostFormProps {
+interface ShortPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
   onSubmit: (data: { content: string; rating?: number }) => void;
   onToolbarAction: (action: string) => void;
 }
 
-const PostForm = forwardRef<PostFormRef, PostFormProps>(
+const PostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
 ({ showTextBox, showStars, onSubmit, onToolbarAction }, ref) => {
   const [content, setContent] = useState('');
   const [rating, setRating] = useState<number>(0);
