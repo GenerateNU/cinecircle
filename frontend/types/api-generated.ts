@@ -2797,6 +2797,29 @@ export interface components {
         DeleteMovieResponse: {
             message: string;
         };
+        /** @description Local event */
+        LocalEvent: {
+            id: string;
+            title: string;
+            location: string;
+            date: string;
+            time: string;
+            genre: string;
+            cost: number | null;
+            occasion: string | null;
+            description: string;
+            languages: string[];
+            lat: number | null;
+            lon: number | null;
+        };
+        GetLocalEventsResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"][];
+        };
+        GetLocalEventResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"];
+        };
     };
     responses: never;
     parameters: never;
