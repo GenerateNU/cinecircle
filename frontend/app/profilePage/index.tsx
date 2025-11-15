@@ -18,7 +18,7 @@ import MoviesGrid from './components/MoviesGrid';
 import PostsList from './components/PostsList';
 import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
-import { getUserProfileBasic } from '../../services/userService';
+import { getUserProfile } from '../../services/userService';
 import { getFollowers, getFollowing } from '../../services/followService';
 import type { components } from '../../types/api-generated';
 
@@ -54,15 +54,15 @@ const ProfilePage = ({ user: userProp }: Props) => {
       setError(null);
 
       // Fetch user profile (returns id, email, role)
-      const profileRes = await getUserProfileBasic();
-      if (profileRes.user?.id) {
-        setProfile(profileRes.user);
+      const profileRes = await getUserProfile();
+      if (profileRes.userProfile?.userId) {
+        setProfile(profileRes.userProfile);
 
         // Fetch followers and following counts in parallel
         try {
           const [followersRes, followingRes] = await Promise.all([
-            getFollowers(profileRes.user.id),
-            getFollowing(profileRes.user.id),
+            getFollowers(profileRes.userProfile.userId),
+            getFollowing(profileRes.userProfile.userId),
           ]);
           setFollowersCount(followersRes.followers?.length || 0);
           setFollowingCount(followingRes.following?.length || 0);

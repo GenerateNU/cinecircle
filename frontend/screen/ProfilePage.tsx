@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { getUserProfileBasic } from '../services/userService';
+import { getUserProfile } from '../services/userService';
 import { getFollowers, getFollowing } from '../services/followService';
 import { User, Props } from '../types/models';
 
@@ -39,12 +39,12 @@ const ProfilePage = ({ user, userId }: Props) => {
       setLoading(true);
 
       // Fetch current user's profile (returns id, email, role)
-      const profileRes = await getUserProfileBasic();
-      if (profileRes.user?.id) {
-        setProfile(profileRes.user);
+      const profileRes = await getUserProfile();
+      if (profileRes.userProfile?.userId) {
+        setProfile(profileRes.userProfile);
 
         // Use the userId prop if provided, otherwise use current user's id
-        const targetUserId = userId || profileRes.user.id;
+        const targetUserId = userId || profileRes.userProfile.userId;
 
         // Fetch followers and following counts
         const [followersRes, followingRes] = await Promise.all([
