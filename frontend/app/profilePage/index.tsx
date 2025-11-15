@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  DeviceEventEmitter,
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
@@ -18,7 +19,7 @@ import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
 import Avatar from '../../components/Avatar';
 import SectionHeader from '../../components/SectionHeader';
-import { followUser, unfollowUser, getFollowers, getFollowing } from '../../services/followService';
+import { getFollowers, getFollowing } from '../../services/followService';
 import type { components } from '../../types/api-generated';
 import { getUserProfile } from '../../services/userService';
 
@@ -26,6 +27,10 @@ type UserProfile = components['schemas']['UserProfile'];
 
 type Props = {
   user?: User;
+  isMe?: boolean;
+  onFollow?: () => Promise<void> | void;
+  onUnfollow?: () => Promise<void> | void;
+  isFollowing?: boolean;
 };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -40,12 +45,18 @@ const ACCENT_COLOR = '#D62E05';
 const BUTTON_COLOR = '#F7D5CD';
 const EDIT_BUTTON_ACCENT = '#DE5837';
 
-const ProfilePage = ({ user: userProp }: Props) => {
+const ProfilePage = ({
+  user: userProp,
+  isMe = true,
+  onFollow,
+  onUnfollow,
+  isFollowing = false,
+}: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isMe);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProfileData = useCallback(async () => {
@@ -81,20 +92,42 @@ const ProfilePage = ({ user: userProp }: Props) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchProfileData();
-    }, [fetchProfileData])
+      if (isMe) {
+        fetchProfileData();
+      }
+    }, [fetchProfileData, isMe])
   );
 
-  const resolvedUsername =
-    profile?.username && profile.username.trim().length > 0
+  useEffect(() => {
+    if (!isMe) {
+      setLoading(false);
+      setError(null);
+    }
+  }, [isMe]);
+
+  useEffect(() => {
+    if (!isMe) return;
+    const sub = DeviceEventEmitter.addListener('followStatusChanged', () => {
+      fetchProfileData();
+    });
+    return () => {
+      sub.remove();
+    };
+  }, [fetchProfileData, isMe]);
+
+  const resolvedUsername = isMe
+    ? profile?.username && profile.username.trim().length > 0
       ? profile.username
+      : 'user'
+    : userProp?.username && userProp.username.trim().length > 0
+      ? userProp.username
       : 'user';
 
-  // Use the stored username when available
-  const derivedBio =
-    profile?.favoriteMovies?.[0]?.trim() || 'No Bio';
+  const derivedBio = isMe
+    ? profile?.favoriteMovies?.[0]?.trim() || 'No Bio'
+    : userProp?.bio || 'No Bio';
 
-  const displayUser: User = profile
+  const displayUser: User = isMe && profile
     ? {
         name: resolvedUsername || 'User',
         username: resolvedUsername || 'user',
@@ -107,7 +140,21 @@ const ProfilePage = ({ user: userProp }: Props) => {
             resolvedUsername || 'User'
           )}&size=200&background=667eea&color=fff`,
       }
-    : userProp || {
+    : userProp
+    ? {
+        ...userProp,
+        name: userProp.name || resolvedUsername || 'User',
+        username: resolvedUsername || 'user',
+        bio: derivedBio,
+        followers: userProp.followers ?? 0,
+        following: userProp.following ?? 0,
+        profilePic:
+          userProp.profilePic ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            resolvedUsername || 'User'
+          )}&size=200&background=667eea&color=fff`,
+      }
+    : {
         name: 'User',
         username: 'user',
         bio: 'Movie enthusiast',
@@ -154,31 +201,33 @@ const ProfilePage = ({ user: userProp }: Props) => {
           ]}
         >
           {/* Settings button top-right */}
-          <View style={tw`flex-row justify-end px-4 pt-3`}>
-            <TouchableOpacity
-              onPress={() => router.push('/profilePage/settings')}
-              style={tw`w-10 h-10 items-center justify-center rounded-full`}
-              accessibilityRole="button"
-              accessibilityLabel="Open settings"
-            >
-              <View
-                style={[
-                  tw`w-10 h-10 items-center justify-center rounded-xl`,
-                  {
-                    backgroundColor: BUTTON_COLOR,
-                    borderColor: ACCENT_COLOR,
-                    borderWidth: 1,
-                  },
-                ]}
+          {isMe && (
+            <View style={tw`flex-row justify-end px-4 pt-3`}>
+              <TouchableOpacity
+                onPress={() => router.push('/profilePage/settings')}
+                style={tw`w-10 h-10 items-center justify-center rounded-full`}
+                accessibilityRole="button"
+                accessibilityLabel="Open settings"
               >
-                <Ionicons
-                  name="settings-outline"
-                  size={22}
-                  color={ACCENT_COLOR}
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
+                <View
+                  style={[
+                    tw`w-10 h-10 items-center justify-center rounded-xl`,
+                    {
+                      backgroundColor: BUTTON_COLOR,
+                      borderColor: ACCENT_COLOR,
+                      borderWidth: 1,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="settings-outline"
+                    size={22}
+                    color={ACCENT_COLOR}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Profile block (avatar overlaps the gray header) */}
@@ -236,28 +285,63 @@ const ProfilePage = ({ user: userProp }: Props) => {
             </View>
           </View>
 
-          {/* Buttons */}
+          {/* Primary action button */}
           <View style={tw`mt-3 self-center w-[88%]`}>
-            <TouchableOpacity
-              style={[
-                tw`items-center justify-center px-[18px] py-[10px]`,
-                {
-                  borderColor: EDIT_BUTTON_ACCENT,
-                  borderWidth: 1,
-                  backgroundColor: BUTTON_COLOR,
-                  borderRadius: 8,
-                },
-              ]}
-            >
-              <Text
+            {isMe ? (
+              <TouchableOpacity
                 style={[
-                  tw`font-semibold text-center`,
-                  { color: EDIT_BUTTON_ACCENT },
+                  tw`items-center justify-center px-[18px] py-[10px]`,
+                  {
+                    borderColor: EDIT_BUTTON_ACCENT,
+                    borderWidth: 1,
+                    backgroundColor: BUTTON_COLOR,
+                    borderRadius: 8,
+                  },
                 ]}
               >
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    tw`font-semibold text-center`,
+                    { color: EDIT_BUTTON_ACCENT },
+                  ]}
+                >
+                  Edit Profile
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                disabled={
+                  (isFollowing && !onUnfollow) ||
+                  (!isFollowing && !onFollow)
+                }
+                onPress={() =>
+                  (isFollowing ? onUnfollow?.() : onFollow?.()) ?? undefined
+                }
+                style={[
+                  tw`items-center justify-center px-[18px] py-[10px]`,
+                  {
+                    borderColor: '#801C03',
+                    borderWidth: 1,
+                    backgroundColor: '#D62E05',
+                    borderRadius: 8,
+                    opacity:
+                      (isFollowing && !onUnfollow) ||
+                      (!isFollowing && !onFollow)
+                        ? 0.6
+                        : 1,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    tw`font-semibold text-center`,
+                    { color: '#F7D5CD' },
+                  ]}
+                >
+                  {isFollowing ? 'Unfollow' : 'Follow'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
         </View>

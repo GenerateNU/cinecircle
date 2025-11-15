@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Alert,
   Image,
+  DeviceEventEmitter,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -65,6 +66,13 @@ const Following = () => {
 
   useEffect(() => {
     fetchFollowingData();
+  }, [fetchFollowingData]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('followStatusChanged', () => {
+      fetchFollowingData({ silent: true });
+    });
+    return () => sub.remove();
   }, [fetchFollowingData]);
 
   const handleRefresh = useCallback(async () => {

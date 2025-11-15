@@ -4,12 +4,14 @@ import { Feather } from '@expo/vector-icons';
 type SearchBarProps = {
     placeholder?: string;
     onChangeText?: (text: string) => void;
+    onSubmitEditing?: (text: string) => void;
     value?: string;
 };
 
 export default function SearchBar({ 
     placeholder = "Search", 
     onChangeText,
+    onSubmitEditing,
     value 
 }: SearchBarProps) {
     return (
@@ -22,6 +24,17 @@ export default function SearchBar({
                     placeholderTextColor="#999"
                     onChangeText={onChangeText}
                     value={value}
+                    returnKeyType="search"
+                    onSubmitEditing={(e) =>
+                        onSubmitEditing?.(e?.nativeEvent?.text ?? value ?? '')
+                    }
+                />
+                <Feather
+                    name="arrow-right-circle"
+                    size={22}
+                    color="#999"
+                    style={styles.iconButton}
+                    onPress={() => onSubmitEditing?.(value ?? '')}
                 />
             </View>
         </View>
@@ -45,6 +58,9 @@ const styles = StyleSheet.create({
     },
     searchIcon: {
         marginRight: 8,
+    },
+    iconButton: {
+        marginLeft: 8,
     },
     searchInput: {
         flex: 1,
