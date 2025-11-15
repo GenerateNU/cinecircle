@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import StarRating from './StarRating';
+import CreatePostToolBar from './CreatePostToolBar'
 
 export interface ShortPostFormRef {
   submit: () => void;
@@ -20,11 +21,10 @@ interface ShortPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
   onSubmit: (data: { content: string; rating?: number }) => void;
-  onToolbarAction: (action: string) => void;
 }
 
 const PostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
-({ showTextBox, showStars, onSubmit, onToolbarAction }, ref) => {
+({ showTextBox, showStars, onSubmit }, ref) => {
   const [content, setContent] = useState('');
   const [rating, setRating] = useState<number>(0);
 
@@ -63,27 +63,7 @@ const PostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
       )}
 
       <Text style={styles.charCount}>{content.length}/280</Text>
-
-      <View style={styles.toolbar}>
-        <TouchableOpacity
-          onPress={() => onToolbarAction("rating")}
-          style={styles.toolbarItem}
-        >
-          <Text style={styles.toolbarText}>Rating</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.toolbarItem}>
-          <Text style={styles.toolbarText}>Video</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.toolbarItem}>
-          <Text style={styles.toolbarText}>GIF</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.toolbarItem}>
-          <Text style={styles.toolbarText}>Photo</Text>
-        </TouchableOpacity>
-      </View>
+      <CreatePostToolBar/>
     </View>
   );
 });
@@ -112,20 +92,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     color: '#A3A3A3',
-  },
-  toolbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderColor: '#E5E5E5',
-    marginTop: 20,
-  },
-  toolbarItem: {
-    alignItems: 'center',
-  },
-  toolbarText: {
-    fontSize: 14,
-    color: '#E05B4E',
   },
 });
