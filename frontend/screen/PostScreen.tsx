@@ -19,7 +19,6 @@ export default function PostScreen() {
     //console.log("Form submitted data:", formData);
   };
 
-  // Handles submit button click
   const handleSubmitButton = () => {
     if (postType === 'long') {
       longFormRef.current?.submit();
@@ -28,10 +27,8 @@ export default function PostScreen() {
     }
   };
 
-  // Handles toolbar actions
   const handleToolbarAction = (action: string) => {
     if (action === 'rating') setShowStars(prev => !prev);
-    // add other toolbar actions as needed
   };
 
   return (

@@ -10,7 +10,7 @@ export interface LongPostFormRef {
 interface LongPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
-  onToolbarAction: (action: string) => void; // <-- Added here
+  onToolbarAction: (action: string) => void;
   onSubmit: (data: { content: string; rating?: number; title?: string; subtitle?: string; tags?: string[] }) => void;
 }
 
@@ -115,7 +115,6 @@ const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
           />
         )}
 
-        {/* Pass the handler from props, not a local function */}
         <CreatePostToolBar onToolbarAction={onToolbarAction}/>
       </View>
     );

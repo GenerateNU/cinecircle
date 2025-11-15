@@ -7,7 +7,6 @@ import {
   TextInput,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import StarRating from './StarRating';
 import CreatePostToolBar from './CreatePostToolBar';
@@ -19,7 +18,7 @@ export interface ShortPostFormRef {
 interface ShortPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
-  onToolbarAction: (action: string) => void; // Expect this as a prop
+  onToolbarAction: (action: string) => void;
   onSubmit: (data: { content: string; rating?: number }) => void;
 }
 
