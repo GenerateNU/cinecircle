@@ -9,6 +9,7 @@ export type Movie = {
   imdbRating?: number | null;      // converted to number in controller
   localRating?: number | string | null; // schema is String, controller may coerce Number
   numRatings?: number | string | null;  // same note as above
+  posterUrl?: string | null;       // optional field when TMDB poster paths are available
 };
 
 export type User = {
@@ -75,4 +76,14 @@ export type FollowEdge = {
   followingId: string;
   follower?: UserProfile;
   following?: UserProfile;
+};
+
+export type RecommendationFriend = {
+  userId: string;
+  username?: string | null;
+};
+
+export type MutualRecommendation = {
+  movie: Movie;
+  likedBy: RecommendationFriend[];
 };

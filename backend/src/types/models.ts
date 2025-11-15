@@ -55,3 +55,13 @@ export type FollowEdge = {
   follower?: UserProfile;
   following?: UserProfile;
 };
+
+export type RecommendationFriend = {
+  userId: string;
+  username?: string | null;
+};
+
+export type MutualRecommendation = {
+  movie: Movie;
+  likedBy: RecommendationFriend[];
+};

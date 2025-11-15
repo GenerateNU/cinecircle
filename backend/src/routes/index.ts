@@ -16,6 +16,7 @@ import { createRating, getRatings, getRatingById, deleteRating, updateRating } f
 
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
 import { getHomeFeed } from "../controllers/feed";
+import { getMutualRecommendations } from "../controllers/recommendations";
 
 const router = Router();
 
@@ -33,6 +34,8 @@ router.get('/api/protected', protect);
 router.get('/api/user/profile', getUserProfile);
 router.put("/api/user/profile", updateUserProfile);
 router.delete("/api/user/profile", deleteUserProfile);
+
+router.get("/api/recommendations/mutual", getMutualRecommendations);
 
 // User follow routes
 router.post('/api/user/follow', followUser);
