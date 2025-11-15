@@ -6,6 +6,10 @@ import { followUser, unfollowUser, getFollowers, getFollowing } from './followSe
 import { getUserProfile } from '../../../services/userService';
 import type { User } from '../types';
 
+/**
+ * Standalone profile screen for viewing another user's page.
+ * Mirrors logged-in styling but fetches counts directly and shows follow/unfollow CTA.
+ */
 export default function OtherUserProfile() {
   const params = useLocalSearchParams<{
     userId?: string;
@@ -58,7 +62,7 @@ export default function OtherUserProfile() {
         console.error('Failed to determine current user:', err);
       }
     };
-    fetchCurrentUser();
+    fetchCurrentUser(); // ensures we know whether the visitor already follows this profile
   }, []);
 
   const displayUser: User = useMemo(() => {

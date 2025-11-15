@@ -22,6 +22,10 @@ type FollowEdge = components['schemas']['FollowEdge'];
 
 const NAV_HEIGHT = 64;
 
+/**
+ * Logged-in user's following list. Responds to `followStatusChanged`
+ * events so it updates when follow/unfollow actions happen elsewhere.
+ */
 const Following = () => {
   const [profile, setProfile] = useState<UserProfileBasic | null>(null);
   const [following, setFollowing] = useState<FollowEdge[]>([]);
@@ -69,6 +73,7 @@ const Following = () => {
   }, [fetchFollowingData]);
 
   useEffect(() => {
+    // When the user follows/unfollows elsewhere we refresh this list
     const sub = DeviceEventEmitter.addListener('followStatusChanged', () => {
       fetchFollowingData({ silent: true });
     });

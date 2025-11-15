@@ -15,6 +15,10 @@ import type { components } from '../../../../types/api-generated';
 
 type FollowEdge = components['schemas']['FollowEdge'];
 
+/**
+ * Followers list for the user profile reached via search.
+ * Pulls data directly so the UI mirrors the logged-in user's list formatting.
+ */
 export default function OtherUserFollowersPage() {
   const { userId, name, username } = useLocalSearchParams<{
     userId?: string;

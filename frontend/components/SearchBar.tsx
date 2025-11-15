@@ -2,6 +2,10 @@ import { View, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import tw from 'twrnc';
 
+/**
+ * Tailwind-only search bar. `onSubmitEditing` fires on enter key
+ * and when the arrow icon is tapped, so caller logic stays centralized.
+ */
 type SearchBarProps = {
     placeholder?: string;
     onChangeText?: (text: string) => void;

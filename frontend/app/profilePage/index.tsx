@@ -110,6 +110,7 @@ const ProfilePage = ({
 
   useEffect(() => {
     if (!isMe) return;
+    // When other screens emit follow status changes we refresh counts for the logged-in user.
     const sub = DeviceEventEmitter.addListener('followStatusChanged', () => {
       fetchProfileData();
     });
@@ -261,6 +262,7 @@ const ProfilePage = ({
 
           {/* Stats row */}
           <View style={tw`mt-[14px] flex-row items-center`}>
+            {/* Followers tile routes to own list or the other user's list */}
             <TouchableOpacity
               style={tw`flex-1`}
               accessibilityRole="button"
@@ -286,6 +288,7 @@ const ProfilePage = ({
                 <Text style={tw`font-semibold`}>Followers</Text>
               </Text>
             </TouchableOpacity>
+            {/* Following tile follows same pattern (self vs other) */}
             <TouchableOpacity
               style={tw`flex-1`}
               accessibilityRole="button"
@@ -319,6 +322,7 @@ const ProfilePage = ({
           {/* Primary action button */}
           <View style={tw`mt-3 self-center w-[88%]`}>
             {isMe ? (
+              // Logged-in user sees edit button
               <TouchableOpacity
                 style={[
                   tw`items-center justify-center px-[18px] py-[10px]`,
@@ -340,6 +344,7 @@ const ProfilePage = ({
                 </Text>
               </TouchableOpacity>
             ) : (
+              // Viewing someone else: show follow/unfollow with disabled states when callbacks missing
               <TouchableOpacity
                 disabled={
                   (isFollowing && !onUnfollow) ||

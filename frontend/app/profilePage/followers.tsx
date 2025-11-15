@@ -26,6 +26,10 @@ type FollowEdge = components['schemas']['FollowEdge'];
 
 const NAV_HEIGHT = 64;
 
+/**
+ * Logged-in user's followers page. Matches design of the other-user view but uses
+ * local data + follow-back actions.
+ */
 const Followers = () => {
   const [profile, setProfile] = useState<UserProfileBasic | null>(null);
   const [followers, setFollowers] = useState<FollowEdge[]>([]);

@@ -15,6 +15,9 @@ import type { components } from '../../../../types/api-generated';
 
 type FollowEdge = components['schemas']['FollowEdge'];
 
+/**
+ * Following list for another user (mirrors styling of the local following screen).
+ */
 export default function OtherUserFollowingPage() {
   const { userId, name, username } = useLocalSearchParams<{
     userId?: string;
