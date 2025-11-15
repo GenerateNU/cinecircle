@@ -13,7 +13,7 @@ export default function NextButton({
   title = "Next", 
   onPress, 
   size = "medium", 
-  variation = "variation2",
+  variation = "variation1",
   disabled = false 
 }: NextButtonProps) {
   return (

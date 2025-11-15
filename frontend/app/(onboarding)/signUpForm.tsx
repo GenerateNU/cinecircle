@@ -4,14 +4,12 @@ import { useState } from 'react';
 import { router } from "expo-router";
 import { Text, View } from "react-native";
 import { supabase } from '../../lib/supabase';
-import { useOnboarding } from './_layout';
 
 const SignUpForm = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const { updateData } = useOnboarding();
 
     const signUp = async () => {
       setLoading(true);
@@ -25,9 +23,6 @@ const SignUpForm = () => {
         setLoading(false);
         return;
       }
-
-      // Save email/password to onboarding context
-      updateData({ email, password });
 
       if (data.user && !data.user.email_confirmed_at) {
         setMessage('Please check your email for the confirmation link!');

@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native'
 import { createContext, useContext, useState } from 'react';
 
 type OnboardingData = {
@@ -40,14 +41,16 @@ export default function OnboardingLayout() {
 
   return (
     <OnboardingContext.Provider value={{ data, updateData, resetData }}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          gestureEnabled: false,
-          animation: 'slide_from_right',
-          contentStyle: { backgroundColor: '#fff' },
-        }}
-      />
+      <View style={{ flex: 1 }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            gestureEnabled: false,
+            animation: 'slide_from_right',
+            contentStyle: { backgroundColor: '#fff' },
+          }}
+        />
+      </View>
     </OnboardingContext.Provider>
   );
 };
