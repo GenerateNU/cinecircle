@@ -32,6 +32,7 @@ export type GetUserProfileBasicResponse = {
 export type GetUserProfileResponse = {
   message?: string;
   userProfile: UserProfile;
+  user?: UserProfileBasic;
   timestamp?: string;
   endpoint?: string;
 };

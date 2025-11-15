@@ -1499,6 +1499,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/local-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/local-event/{id}": {
         parameters: {
             query?: never;
@@ -2641,6 +2690,29 @@ export interface components {
         DeleteMovieResponse: {
             message: string;
         };
+        /** @description Local event */
+        LocalEvent: {
+            id: string;
+            title: string;
+            location: string;
+            date: string;
+            time: string;
+            genre: string;
+            cost: number | null;
+            occasion: string | null;
+            description: string;
+            languages: string[];
+            lat: number | null;
+            lon: number | null;
+        };
+        GetLocalEventsResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"][];
+        };
+        GetLocalEventResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"];
+        };
     };
     responses: never;
     parameters: never;
@@ -2650,3 +2722,58 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
+import type {
+  PingResponse,
+  DbTestResponse,
+  ProtectedResponse,
+  GetUserProfileBasicResponse,
+  UpdateUserProfileInput,
+  UpdateUserProfileResponse,
+  DeleteUserProfileResponse,
+  GetUserRatingsResponse,
+  GetUserCommentsResponse,
+  FollowBody,
+  FollowUnfollowResponse,
+  GetFollowersResponse,
+  GetFollowingResponse,
+  GetMovieEnvelope,
+  UpdateMovieInput,
+  UpdateMovieEnvelope,
+  DeleteMovieResponse,
+} from "./apiTypes";
+import type { Movie, UserProfile, Rating, Comment, FollowEdge, UserProfileBasic } from "./models";
+
+/**
+ * Temporary shim so frontend code can import the same `components["schemas"]["Foo"]`
+ * types that the generated file exposes on other branches. It maps to the
+ * hand-written apiTypes/models definitions we already keep in the repo.
+ *
+ * When the OpenAPI generator runs, this file should be overwritten.
+ */
+export interface components {
+  schemas: {
+    PingResponse: PingResponse;
+    DbTestResponse: DbTestResponse;
+    ProtectedResponse: ProtectedResponse;
+    GetUserProfileBasicResponse: GetUserProfileBasicResponse;
+    UpdateUserProfileInput: UpdateUserProfileInput;
+    UpdateUserProfileResponse: UpdateUserProfileResponse;
+    DeleteUserProfileResponse: DeleteUserProfileResponse;
+    GetUserRatingsResponse: GetUserRatingsResponse;
+    GetUserCommentsResponse: GetUserCommentsResponse;
+    FollowBody: FollowBody;
+    FollowUnfollowResponse: FollowUnfollowResponse;
+    GetFollowersResponse: GetFollowersResponse;
+    GetFollowingResponse: GetFollowingResponse;
+    Movie: Movie;
+    UserProfile: UserProfile;
+    UserProfileBasic: UserProfileBasic;
+    Rating: Rating;
+    Comment: Comment;
+    FollowEdge: FollowEdge;
+    GetMovieEnvelope: GetMovieEnvelope;
+    UpdateMovieInput: UpdateMovieInput;
+    UpdateMovieEnvelope: UpdateMovieEnvelope;
+    DeleteMovieResponse: DeleteMovieResponse;
+  };
+}

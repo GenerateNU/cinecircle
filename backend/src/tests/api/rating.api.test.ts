@@ -6,6 +6,121 @@ import jwt from "jsonwebtoken";
 import { HTTP_STATUS } from "../helpers/constants";
 import { AuthenticatedRequest } from "../../middleware/auth";
 
+jest.mock('../../services/db', () => {
+  let idCounter = 1;
+  const ratings = new Map<string, any>();
+  const userProfiles = new Map<string, any>();
+
+  const clone = (record: any) => (record ? { ...record } : record);
+  const matchesWhere = (record: any, where: Record<string, any> = {}) =>
+    Object.entries(where).every(([key, value]) => record[key] === value);
+
+  const ratingModel = {
+    create: jest.fn(async ({ data }) => {
+      const id = data.id ?? `rating-${idCounter++}`;
+      const record = { ...data, id };
+      ratings.set(id, record);
+      return clone(record);
+    }),
+    createMany: jest.fn(async ({ data }) => {
+      data.forEach((item: any) => {
+        const id = item.id ?? `rating-${idCounter++}`;
+        const record = { ...item, id };
+        ratings.set(id, record);
+      });
+      return { count: data.length };
+    }),
+    findMany: jest.fn(async ({ where, orderBy }: any = {}) => {
+      let results = Array.from(ratings.values());
+      if (where) {
+        results = results.filter((record) => matchesWhere(record, where));
+      }
+      if (orderBy?.date === 'desc') {
+        results.sort(
+          (a, b) =>
+            new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
+        );
+      }
+      return results.map(clone);
+    }),
+    findUnique: jest.fn(async ({ where: { id } }: any) => clone(ratings.get(id) ?? null)),
+    deleteMany: jest.fn(async ({ where }: any) => {
+      let count = 0;
+      for (const [id, record] of Array.from(ratings.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          ratings.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+    delete: jest.fn(async ({ where: { id } }: any) => {
+      const record = ratings.get(id);
+      if (!record) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      ratings.delete(id);
+      return clone(record);
+    }),
+    update: jest.fn(async ({ where: { id }, data }: any) => {
+      const record = ratings.get(id);
+      if (!record) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      const updated = { ...record, ...data };
+      ratings.set(id, updated);
+      return clone(updated);
+    }),
+  };
+
+  const userProfileModel = {
+    findUnique: jest.fn(async ({ where: { userId } }: any) =>
+      clone(userProfiles.get(userId) ?? null),
+    ),
+    create: jest.fn(async ({ data }: any) => {
+      const record = { ...data };
+      userProfiles.set(record.userId, record);
+      return clone(record);
+    }),
+    update: jest.fn(async ({ where: { userId }, data }: any) => {
+      const record = userProfiles.get(userId);
+      if (!record) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      const updated = { ...record, ...data };
+      userProfiles.set(userId, updated);
+      return clone(updated);
+    }),
+    delete: jest.fn(async ({ where: { userId } }: any) => {
+      const record = userProfiles.get(userId);
+      if (!record) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      userProfiles.delete(userId);
+      return clone(record);
+    }),
+  };
+
+  return {
+    prisma: {
+      rating: ratingModel,
+      userProfile: userProfileModel,
+      $disconnect: jest.fn(async () => {
+        ratings.clear();
+        userProfiles.clear();
+      }),
+    },
+  };
+});
+
 jest.mock('../../middleware/auth', () => ({
   authenticateUser: (req: AuthenticatedRequest, res: any, next: NextFunction) => {
     // Check for Authorization header
