@@ -6,6 +6,7 @@ import {
   getMovieById,
   updateMovie,
 } from "../controllers/tmdb";
+import { translateText, getSupportedLanguages } from "../controllers/translate";
 import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
@@ -90,5 +91,9 @@ router.delete("/post/:postId", deletePost);
 router.post("/post/:postId/like", toggleLikePost);
 router.get("/post/:postId/likes", getPostLikes);
 router.get("/:postId/replies", getPostReplies);
+
+// translation routes
+router.get("/translate", translateText);
+router.get("/translate/languages", getSupportedLanguages);
 
 export default router;
