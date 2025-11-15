@@ -31,14 +31,14 @@ export default function SearchBar({
 const styles = StyleSheet.create({
     container: {
         padding: 16,
-        backgroundColor: '#FFF',
+        backgroundColor: 'transparent',
     },
     searchBox: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFF',
+        backgroundColor: 'transparent',
         borderWidth: 2,
-        borderColor: '#8B7FD6',
+        borderColor: '#D62E05',
         borderRadius: 8,
         paddingHorizontal: 12,
         height: 48,
