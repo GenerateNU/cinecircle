@@ -16,7 +16,6 @@ export const followUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     await prisma.userFollow.create({
       data: {
-        id: crypto.randomUUID(), // or uuidv4()
         followerId,
         followingId,
       },
@@ -58,9 +57,9 @@ export const getFollowers = async (req: Request, res: Response) => {
   try {
     const followers = await prisma.userFollow.findMany({
       where: { followingId: userId },
-      include: { 
-        UserProfile_UserFollow_followerIdToUserProfile: true,
-        UserProfile_UserFollow_followingIdToUserProfile: true 
+      include: {
+        follower: true,
+        following: true,
       },
     });
 
@@ -79,9 +78,9 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const following = await prisma.userFollow.findMany({
       where: { followerId: userId },
-      include: { 
-        UserProfile_UserFollow_followerIdToUserProfile: true,
-        UserProfile_UserFollow_followingIdToUserProfile: true 
+      include: {
+        follower: true,
+        following: true,
       },
     });
 
@@ -95,9 +94,9 @@ export const getFollowing = async (req: Request, res: Response) => {
 };
 
 type UserFollowWithProfiles = Prisma.UserFollowGetPayload<{
-  include: { 
-    UserProfile_UserFollow_followerIdToUserProfile: true; 
-    UserProfile_UserFollow_followingIdToUserProfile: true; 
+  include: {
+    follower: true;
+    following: true;
   };
 }>;
 
@@ -106,11 +105,11 @@ export function mapUserFollowDbToApi(row: UserFollowWithProfiles): FollowEdge {
     id: row.id,
     followerId: row.followerId,
     followingId: row.followingId,
-    follower: row.UserProfile_UserFollow_followerIdToUserProfile
-      ? mapUserProfileDbToApi(row.UserProfile_UserFollow_followerIdToUserProfile)
+    follower: row.follower
+      ? mapUserProfileDbToApi(row.follower)
       : undefined,
-    following: row.UserProfile_UserFollow_followingIdToUserProfile
-      ? mapUserProfileDbToApi(row.UserProfile_UserFollow_followingIdToUserProfile)
+    following: row.following
+      ? mapUserProfileDbToApi(row.following)
       : undefined,
   };
 }
