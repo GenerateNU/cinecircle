@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import StarRating from './StarRating';
-import CreatePostToolBar from './CreatePostToolBar'
+import CreatePostToolBar from './CreatePostToolBar';
 
 export interface LongPostFormRef {
   submit: () => void;
@@ -14,60 +14,105 @@ interface LongPostFormProps {
 }
 
 const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
-({ showTextBox, showStars, onSubmit }, ref) => {
-  const [content, setContent] = useState('');
-  const [rating, setRating] = useState<number>(0);
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
+  ({ showTextBox, showStars, onSubmit }, ref) => {
+    const [content, setContent] = useState('');
+    const [rating, setRating] = useState<number>(0);
+    const [title, setTitle] = useState('');
+    const [subtitle, setSubtitle] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagInput, setTagInput] = useState('');
+    const [showTagInput, setShowTagInput] = useState(false);
 
-//Exposes the submit function to the parent
-  useImperativeHandle(ref, () => ({
-    submit() {
-      onSubmit({
-        content,
-        rating: rating || undefined,
-      });
-    },
-  }));
+    useImperativeHandle(ref, () => ({
+      submit() {
+        onSubmit({
+          content,
+          rating: rating || undefined,
+        });
+      },
+    }));
 
-  return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.title}
-        placeholder="Add a title..."
-        placeholderTextColor="#C4C4C4"
-        value={title}
-        onChangeText={setTitle}
-      />
+    // Add tag and clear input
+    const addTag = () => {
+      const cleaned = tagInput.trim();
+      if (cleaned && !tags.includes(cleaned)) {
+        setTags([...tags, cleaned]);
+      }
+      setTagInput('');
+      setShowTagInput(false);
+    };
 
-      <View style={styles.starContainer}>
-        <StarRating
-          rating={rating}
-          onRatingChange={setRating}
+    return (
+      <View style={styles.container}>
+        <TextInput
+          style={styles.title}
+          placeholder="Add a title..."
+          placeholderTextColor="#C4C4C4"
+          value={title}
+          onChangeText={setTitle}
         />
+
+        <View style={styles.starContainer}>
+          <StarRating
+            rating={rating}
+            onRatingChange={setRating}
+          />
+        </View>
+
+        <TextInput
+          style={styles.subtitle}
+          placeholder="Add a subtitle..."
+          placeholderTextColor="#C4C4C4"
+          value={subtitle}
+          onChangeText={setSubtitle}
+        />
+
+        <TextInput
+          style={styles.body}
+          multiline
+          placeholder="Start sharing your thoughts..."
+          placeholderTextColor="#C4C4C4"
+          value={content}
+          onChangeText={setContent}
+        />
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tagsContainer}
+          contentContainerStyle={{ alignItems: 'center' }}
+        >
+          {tags.map((tag, idx) => (
+            <View key={idx} style={styles.tagPill}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+          <TouchableOpacity
+            style={styles.tagAddPill}
+            onPress={() => setShowTagInput(true)}
+          >
+            <Text style={styles.addTagText}>+ Tag</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        {showTagInput && (
+          <TextInput
+            style={styles.tagInput}
+            placeholder="Enter tag..."
+            value={tagInput}
+            onChangeText={setTagInput}
+            onSubmitEditing={addTag}
+            returnKeyType="done"
+            autoFocus
+            onBlur={() => setShowTagInput(false)}
+          />
+        )}
+
+        <CreatePostToolBar />
       </View>
-
-      <TextInput
-        style={styles.subtitle}
-        placeholder="Add a subtitle..."
-        placeholderTextColor="#C4C4C4"
-        value={subtitle}
-        onChangeText={setSubtitle}
-      />
-
-      <TextInput
-        style={styles.body}
-        multiline
-        placeholder="Start sharing your thoughts..."
-        placeholderTextColor="#C4C4C4"
-        value={content}
-        onChangeText={setContent}
-      />
-
-     <CreatePostToolBar/>
-    </View>
-  );
-});
+    );
+  }
+);
 
 export default LongPostForm;
 
@@ -90,49 +135,46 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   starContainer: {
-    alignItems: 'flex-start', // Left-align the stars
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
-  tagsSection: {
+  tagsContainer: {
+    minHeight: 48,
+    flexDirection: 'row',
     marginVertical: 12,
+    flexWrap: 'nowrap',
+  },
+  tagPill: {
+    backgroundColor: '#E5F2F7',
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  tagText: {
+    fontSize: 15,
+    color: '#458EA6',
+  },
+  tagAddPill: {
+    borderWidth: 1,
+    borderColor: '#458EA6',
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  addTagText: {
+    fontSize: 15,
+    color: '#458EA6',
   },
   tagInput: {
     borderBottomWidth: 1,
     borderBottomColor: '#CCC',
     fontSize: 16,
-    marginRight: 8,
-    width: '60%',
-  },
-  addTagButton: {
-    padding: 6,
-    backgroundColor: '#EEE',
-    borderRadius: 4,
-    alignSelf: 'center',
-    marginLeft: 4,
-  },
-  tagsList: {
-    marginTop: 8,
-  },
-  tagItem: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: '#F2F2F2',
-    marginRight: 6,
-    borderRadius: 12,
-  },
-   toolbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderColor: '#E5E5E5',
-    marginTop: 20,
-  },
-  toolbarItem: {
-    alignItems: 'center',
-  },
-  toolbarText: {
-    fontSize: 14,
-    color: '#E05B4E',
+    marginVertical: 4,
+    width: '70%',
+    alignSelf: 'flex-start',
   },
 });
