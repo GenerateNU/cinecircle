@@ -9,6 +9,7 @@ export type Movie = {
   imdbRating?: number | null;      // converted to number in controller
   localRating?: number | string | null; // schema is String, controller may coerce Number
   numRatings?: number | string | null;  // same note as above
+  imageUrl?: string | null;
 };
 
 /** Basic auth user info returned from /api/user/profile GET endpoint */

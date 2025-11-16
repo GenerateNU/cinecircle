@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import type { AuthenticatedRequest } from "../middleware/auth";
 import { prisma } from "../services/db";
 
@@ -234,3 +234,54 @@ export const deleteComment = async (req: AuthenticatedRequest, res: Response) =>
     });
   }
 };
+
+// backend/src/controllers/comment.ts
+export async function getMovieComments(req: Request, res: Response) {
+  try {
+    const { movieId } = req.params;
+
+    if (!movieId) {
+      return res.status(400).json({ message: "movieId is required" });
+    }
+
+    // 1) Find all ratings for this movie
+    const ratingsForMovie = await prisma.rating.findMany({
+      where: { movieId },
+      select: { id: true },
+    });
+
+    const ratingIds = ratingsForMovie.map((r) => r.id);
+    if (ratingIds.length === 0) {
+      return res.status(200).json({ comments: [] });
+    }
+
+    // 2) Find comments that reference those ratings
+    const commentsFromDb = await prisma.comment.findMany({
+      where: {
+        ratingId: { in: ratingIds },
+        // If you later want to also include post-based comments:
+        // OR: [
+        //   { ratingId: { in: ratingIds } },
+        //   { post: { movieId } } // if you have relation from comment -> post -> movie
+        // ]
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // 3) Normalize to frontend Comment shape
+    const comments = commentsFromDb.map((c) => ({
+      id: c.id,
+      userId: c.userId,
+      ratingId: c.ratingId,
+      postId: c.postId,
+      text: c.content,                 // frontend uses comment.text
+      date: c.createdAt.toISOString(), // frontend uses comment.date
+      parentId: c.parentId,
+    }));
+
+    return res.status(200).json({ comments });
+  } catch (err) {
+    console.error("Error in getMovieComments:", err);
+    return res.status(500).json({ message: "Failed to fetch comments" });
+  }
+}
