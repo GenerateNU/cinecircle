@@ -1,4 +1,12 @@
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -11,24 +19,39 @@ type TabToggleProps = {
   tabs: Tab[];
   activeTab: string;
   onTabChange: (tab: string) => void;
+  activeColor?: string;
+  inactiveColor?: string;
+  indicatorColor?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 };
 
-export default function TabToggle({ tabs, activeTab, onTabChange }: TabToggleProps) {
+export default function TabToggle({
+  tabs,
+  activeTab,
+  onTabChange,
+  activeColor = '#000',
+  inactiveColor = '#666',
+  indicatorColor = '#007AFF',
+  containerStyle,
+}: TabToggleProps) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {tabs.map((tab) => (
         <TouchableOpacity
           key={tab.key}
           style={[
             styles.tab,
-            activeTab === tab.key && styles.activeTab
+            activeTab === tab.key && { borderBottomColor: indicatorColor },
           ]}
           onPress={() => onTabChange(tab.key)}
         >
-          <Text style={[
-            styles.tabText,
-            activeTab === tab.key && styles.activeTabText
-          ]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: inactiveColor },
+              activeTab === tab.key && { color: activeColor, fontWeight: '600' },
+            ]}
+          >
             {tab.label}
           </Text>
         </TouchableOpacity>
@@ -53,16 +76,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  activeTab: {
-    borderBottomColor: '#007AFF',
-  },
   tabText: {
     fontSize: width * 0.04,
     fontWeight: '500',
     color: '#666',
-  },
-  activeTabText: {
-    color: '#000',
-    fontWeight: '600',
   },
 });
