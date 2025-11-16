@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { getProtected, getUserProfile } from '../services/userService';
 import { api } from '../services/apiClient';
 import type { components } from '../types/api-generated';
-import Events from './Events';
 
 type DbTestResponse = components['schemas']['DbTestResponse'];
 
@@ -18,8 +18,6 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
   const navigation = useNavigation();
   const [backendMessage, setBackendMessage] = useState('');
   const [dbMessage, setDbMessage] = useState('');
-  const [showProfile, setShowProfile] = useState(false);
-  const [showEvents, setShowEventsPage] = useState(false);
 
   const callProtectedBackend = async () => {
     try {
@@ -48,18 +46,6 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     }
   };
 
-  if (showEvents) {
-    return (
-      <View style={{ flex: 1 }}>
-        <Button
-          title="← Back to Dashboard"
-          onPress={() => setShowEventsPage(false)}
-        />
-        <Events />
-      </View>
-    );
-  }
-
   return (
     <View>
       <Text style={{ marginBottom: 10 }}>
@@ -73,7 +59,7 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
         <Button title="Call Protected Backend" onPress={callProtectedBackend} />
         <Button title="Get User Profile" onPress={fetchUserProfile} />
         <Button title="Test DB" onPress={testDatabase} />
-        <Button title="Events Page" onPress={() => setShowEventsPage(true)} />
+        <Button title="Events Page" onPress={() => router.push('/events')} />
       </View>
       {backendMessage ? (
         <Text style={styles.result}>{backendMessage}</Text>
