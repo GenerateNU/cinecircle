@@ -6,227 +6,413 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-} from "react-native";
-import { useState, useEffect } from "react";
-import SearchBar from "../components/SearchBar";
-import RatingRow from "../components/RatingRow";
-import TagList from "../components/TagList";
-import ActionButtons from "../components/ActionButtons";
-import ReviewCard from "../components/ReviewCard";
+} from 'react-native';
+import { useState, useEffect } from 'react';
+import SearchBar from '../components/SearchBar';
+import RatingRow from '../components/RatingRow';
+import TagList from '../components/TagList';
+import ActionButtons from '../components/ActionButtons';
+import ReviewCard from '../components/ReviewCard';
+import FilterBar from '../components/FilterBar';
+
 import {
+  fetchAndSaveByTmdbId,
   getMovieRatings,
   getMovieComments,
-  getMovieSummary,
-  getMovieByCinecircleId,
-} from "../services/moviesService";
-import type { Rating, Comment, Summary, Movie } from "../types/models";
-import { t } from "../app/il8n/il8n";
-import { UiTextKey } from "../app/il8n/keys";
+} from '../services/moviesService';
+import { translateTextApi } from '../services/translationService';
+
+import type { Movie as ApiMovie, Rating, Comment } from '../types/models';
+import type { components } from '../types/api-generated';
+
+// Match backend envelope type
+type GetMovieEnvelope = components['schemas']['GetMovieEnvelope'];
 
 type MovieChosenScreenProps = {
   movieId: string;
 };
 
+// 🔹 Shared type for per-item translation state
+type ItemTranslationState = {
+  isHindi: boolean;
+  loading: boolean;
+  translatedText?: string | null;
+  error?: string | null;
+};
+
 export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
-  const [activeTab, setActiveTab] = useState<"reviews" | "comments">("reviews");
+  const [activeTab, setActiveTab] = useState<'reviews' | 'comments'>('reviews');
+
+  // Movie metadata from backend
+  const [movie, setMovie] = useState<ApiMovie | null>(null);
+  const [movieLoading, setMovieLoading] = useState(false);
+  const [movieError, setMovieError] = useState<string | null>(null);
+
+  // Ratings + comments from backend
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [listsError, setListsError] = useState<string | null>(null);
 
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
+  // Description translation state
+  const [translatedDescription, setTranslatedDescription] =
+    useState<string | null>(null);
+  const [isTranslatingDescription, setIsTranslatingDescription] =
+    useState(false);
+  const [translateError, setTranslateError] = useState<string | null>(null);
+  const [isShowingHindi, setIsShowingHindi] = useState(false);
 
-  const [movieEnvelope, setMovieEnvelope] = useState<Movie | null>(null);
+  // 🔹 Per-review + per-comment translation maps
+  const [ratingTranslations, setRatingTranslations] = useState<
+    Record<string, ItemTranslationState>
+  >({});
+  const [commentTranslations, setCommentTranslations] = useState<
+    Record<string, ItemTranslationState>
+  >({});
 
+  // --- Fetch movie + ratings + comments when movieId changes ---
   useEffect(() => {
-    const fetchMovieData = async () => {
+    const fetchAll = async () => {
       try {
-        console.log("=== FETCH MOVIE DATA START ===");
-        console.log("Movie ID:", movieId);
+        console.log('[MovieChosen] fetchAll start', { movieId });
+        setMovieLoading(true);
+        setMovieError(null);
+        setListsError(null);
 
-        setLoading(true);
-        setError(null);
-        setSummaryError(null);
+        // reset translation state on movie change
+        setTranslatedDescription(null);
+        setIsShowingHindi(false);
+        setTranslateError(null);
+        setRatingTranslations({});
+        setCommentTranslations({});
 
-        // Optional: fetch movie meta (title, description, etc.)
-        try {
-          const movieRes = await getMovieByCinecircleId(movieId);
-          console.log("Movie envelope:", JSON.stringify(movieRes, null, 2));
-          const m = movieRes.data ?? movieRes;
-          setMovieEnvelope(m as Movie);
-        } catch (metaErr) {
-          console.log("Failed to fetch movie meta (non-fatal):", metaErr);
+        const [movieEnv, ratingsRes, commentsRes] = await Promise.all([
+          fetchAndSaveByTmdbId(movieId),
+          getMovieRatings(movieId),
+          getMovieComments(movieId),
+        ]);
+
+        console.log(
+          '[MovieChosen] movie envelope:',
+          JSON.stringify(movieEnv, null, 2),
+        );
+        console.log(
+          '[MovieChosen] ratings response:',
+          JSON.stringify(ratingsRes, null, 2),
+        );
+        console.log(
+          '[MovieChosen] comments response:',
+          JSON.stringify(commentsRes, null, 2),
+        );
+
+        if (!movieEnv || !movieEnv.data) {
+          setMovie(null);
+          setMovieError('Movie not found');
+        } else {
+          setMovie(movieEnv.data as ApiMovie);
         }
 
-        const ratingsResponse = await getMovieRatings(movieId);
-        const commentsResponse = await getMovieComments(movieId);
-
-        setRatings(ratingsResponse.ratings || []);
-        setComments(commentsResponse.comments || []);
-
-        setSummaryLoading(true);
-        try {
-          const summaryResponse = await getMovieSummary(movieId);
-          setSummary(summaryResponse);
-        } catch (summaryErr: any) {
-          console.error("Error fetching AI summary:", summaryErr?.message);
-          setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
-        }
+        setRatings(ratingsRes?.ratings || []);
+        setComments(commentsRes?.comments || []);
+        console.log('[MovieChosen] lengths:', {
+          ratings: ratingsRes?.ratings?.length || 0,
+          comments: commentsRes?.comments?.length || 0,
+        });
       } catch (err: any) {
-        console.error("=== FETCH MOVIE DATA ERROR ===");
-        console.error("Error type:", err?.constructor?.name);
-        console.error("Error message:", err?.message);
-        setError(t(UiTextKey.FailedToLoadMovieData));
-        setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
+        console.error(
+          '[MovieChosen] error fetching data:',
+          err?.message || err,
+        );
+        setMovieError('Failed to load movie');
+        setListsError('Failed to load reviews/comments');
       } finally {
-        setLoading(false);
-        setSummaryLoading(false);
-        console.log("=== FETCH MOVIE DATA END ===");
+        setMovieLoading(false);
+        console.log('[MovieChosen] fetchAll end');
       }
     };
 
     if (movieId) {
-      fetchMovieData();
+      fetchAll();
     }
   }, [movieId]);
 
-  const calculateAverageRating = () => {
-    if (ratings.length === 0) return 0;
-    const sum = ratings.reduce((acc, r) => acc + r.stars, 0);
-    return Number((sum / ratings.length).toFixed(1));
+  const description = movie?.description ?? '';
+
+  // --- Toggle: English ↔ Hindi for description ---
+  const handleTranslateDescription = async () => {
+    if (!description) return;
+
+    // If currently showing Hindi, go back to English (no API call)
+    if (isShowingHindi) {
+      console.log('[translate] toggling description back to English');
+      setTranslatedDescription(null);
+      setIsShowingHindi(false);
+      setTranslateError(null);
+      return;
+    }
+
+    // Otherwise: English → Hindi via API
+    try {
+      setIsTranslatingDescription(true);
+      setTranslateError(null);
+
+      console.log('[translate] description -> hi', {
+        movieId,
+        descriptionSnippet: description.slice(0, 40),
+      });
+
+      const resp = await translateTextApi(description, 'hi', 'en');
+      console.log('[translate] response:', resp);
+
+      setTranslatedDescription(resp.destinationText);
+      setIsShowingHindi(true);
+    } catch (err: any) {
+      console.error(
+        '[translate] error translating description:',
+        err?.message || err,
+      );
+      setTranslateError('Failed to translate description');
+    } finally {
+      setIsTranslatingDescription(false);
+    }
   };
 
-  const getAllTags = () => {
-    const allTags = ratings.flatMap((r) => r.tags || []);
-    const uniqueTags = [...new Set(allTags)].slice(0, 5);
-    return uniqueTags;
-  };
+  const descriptionToShow = translatedDescription ?? description;
 
-  const title = movieEnvelope?.title ?? "Inception";
-  const description =
-    movieEnvelope?.description ??
-    "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.";
+  const translateButtonLabel = isShowingHindi
+    ? 'Show English'
+    : isTranslatingDescription
+    ? 'Translating...'
+    : 'Translate to Hindi';
+
+  // --- 🔹 Toggle translation for a single review (Rating) ---
+  const handleToggleRatingTranslation = async (rating: Rating) => {
+  const id = rating.id;
+  const originalText =
+    (rating as any).comment ?? (rating as any).text ?? '';
+
+  if (!originalText) {
+    console.log('[translate] no comment text on rating', { id });
+    return;
+  }
+
+  const current = ratingTranslations[id];
+
+  // If we're currently loading, do nothing
+  if (current?.loading) return;
+
+  // If it's already Hindi → flip back to English (no API call)
+  if (current?.isHindi) {
+    setRatingTranslations((prev) => ({
+      ...prev,
+      [id]: { ...current, isHindi: false, error: null },
+    }));
+    return;
+  }
+
+  // If we already have a cached translation → just show it
+  if (current?.translatedText) {
+    setRatingTranslations((prev) => ({
+      ...prev,
+      [id]: { ...current, isHindi: true, error: null },
+    }));
+    return;
+  }
+
+  // Otherwise: need to translate EN → HI
+  setRatingTranslations((prev) => ({
+    ...prev,
+    [id]: {
+      isHindi: false,
+      loading: true,
+      translatedText: null,
+      error: null,
+    },
+  }));
+
+  try {
+    console.log('[translate] rating -> hi', {
+      id,
+      textSnippet: originalText.slice(0, 40),
+    });
+
+    const resp = await translateTextApi(originalText, 'hi', 'en');
+
+    setRatingTranslations((prev) => ({
+      ...prev,
+      [id]: {
+        isHindi: true,
+        loading: false,
+        translatedText: resp.destinationText,
+        error: null,
+      },
+    }));
+  } catch (err: any) {
+    console.error(
+      '[translate] error translating rating:',
+      err?.message || err,
+    );
+    setRatingTranslations((prev) => ({
+      ...prev,
+      [id]: {
+        isHindi: false,
+        loading: false,
+        translatedText: current?.translatedText ?? null,
+        error: 'Failed to translate review',
+      },
+    }));
+  }
+};
+  // --- 🔹 Toggle translation for a single comment ---
+  const handleToggleCommentTranslation = async (comment: Comment) => {
+  const id = comment.id;
+  const originalText =
+    (comment as any).text ?? (comment as any).content ?? '';
+
+  if (!originalText) {
+    console.log('[translate] no text on comment', { id });
+    return;
+  }
+
+  const current = commentTranslations[id];
+
+  if (current?.loading) return;
+
+  // Already Hindi → back to English
+  if (current?.isHindi) {
+    setCommentTranslations((prev) => ({
+      ...prev,
+      [id]: { ...current, isHindi: false, error: null },
+    }));
+    return;
+  }
+
+  // Cached translation → show Hindi
+  if (current?.translatedText) {
+    setCommentTranslations((prev) => ({
+      ...prev,
+      [id]: { ...current, isHindi: true, error: null },
+    }));
+    return;
+  }
+
+  // Need to call API
+  setCommentTranslations((prev) => ({
+    ...prev,
+    [id]: {
+      isHindi: false,
+      loading: true,
+      translatedText: null,
+      error: null,
+    },
+  }));
+
+  try {
+    console.log('[translate] comment -> hi', {
+      id,
+      textSnippet: originalText.slice(0, 40),
+    });
+
+    const resp = await translateTextApi(originalText, 'hi', 'en');
+
+    setCommentTranslations((prev) => ({
+      ...prev,
+      [id]: {
+        isHindi: true,
+        loading: false,
+        translatedText: resp.destinationText,
+        error: null,
+      },
+    }));
+  } catch (err: any) {
+    console.error(
+      '[translate] error translating comment:',
+      err?.message || err,
+    );
+    setCommentTranslations((prev) => ({
+      ...prev,
+      [id]: {
+        isHindi: false,
+        loading: false,
+        translatedText: current?.translatedText ?? null,
+        error: 'Failed to translate comment',
+      },
+    }));
+  }
+};
+
+  console.log('[MovieChosen render]', {
+    movieId,
+    movieTitle: movie?.title,
+    ratingsCount: ratings.length,
+    commentsCount: comments.length,
+  });
 
   return (
     <ScrollView style={styles.container}>
+      {/* Search Bar */}
       <SearchBar />
 
-      {/* Movie Title + metadata (can later be fully dynamic) */}
-      <Text style={styles.title}>{title}</Text>
+      {/* Movie Title */}
+      <Text style={styles.title}>{movie?.title ?? 'Movie Title'}</Text>
+
+      {/* Metadata */}
       <View style={styles.metaContainer}>
-        {/* You can swap this to real year/director when your movie model supports it */}
+        {/* Hard-coded for now; wire real year/director later */}
         <Text style={styles.metaText}>2010 • Directed by: Christopher Nolan</Text>
-        <Text style={styles.genreText}>Action • Sci-Fi • Thriller</Text>
+        <Text style={styles.genreText}>Genre • Genre • Genre • Genre • Genre</Text>
       </View>
 
-      <Text style={styles.description} numberOfLines={3}>
-        {description}
-      </Text>
-
-      {!loading && getAllTags().length > 0 && <TagList tags={getAllTags()} />}
-
-      {/* AI Summary */}
-      <View style={styles.summaryContainer}>
-        <Text style={styles.sectionHeader}>{t(UiTextKey.AiSummary)}</Text>
-
-        {summaryLoading && (
-          <View style={styles.summaryLoadingRow}>
+      {/* Description + Translate toggle */}
+      <View>
+        {movieLoading ? (
+          <View style={styles.loadingRow}>
             <ActivityIndicator size="small" />
-            <Text style={styles.summaryLoadingText}>
-              {/* can i18n this sentence later if you want */}
-              Analyzing reviews...
-            </Text>
+            <Text style={styles.loadingText}>Loading movie...</Text>
           </View>
-        )}
-
-        {summaryError && !summaryLoading && (
-          <Text style={styles.summaryErrorText}>{summaryError}</Text>
-        )}
-
-        {summary && !summaryLoading && !summaryError && (
+        ) : movieError ? (
+          <Text style={styles.errorText}>{movieError}</Text>
+        ) : (
           <>
-            <Text style={styles.summaryOverall}>{summary.movieId}</Text>
+            <Text style={styles.description} numberOfLines={3}>
+              {descriptionToShow || 'No description available.'}
+            </Text>
 
-            {/*<View style={styles.summaryRow}>
-              {summary.pros?.length > 0 && (
-                <View style={styles.summaryColumn}>
-                  <Text style={styles.summarySubheader}>
-                    {t(UiTextKey.PeopleLiked)}
-                  </Text>
-                  {summary.pros.slice(0, 3).map((item, idx) => (
-                    <Text key={`pro-${idx}`} style={styles.summaryBullet}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              )}
+            <View style={styles.translateRow}>
+              <TouchableOpacity
+                style={styles.translateButton}
+                onPress={handleTranslateDescription}
+                disabled={isTranslatingDescription || !description}
+              >
+                <Text style={styles.translateButtonText}>
+                  {translateButtonLabel}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-              {summary.cons?.length > 0 && (
-                <View style={styles.summaryColumn}>
-                  <Text style={styles.summarySubheader}>
-                    {t(UiTextKey.CommonComplaints)}
-                  </Text>
-                  {summary.cons.slice(0, 3).map((item, idx) => (
-                    <Text key={`con-${idx}`} style={styles.summaryBullet}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              )}
-            </View>*/}
-            {/*
-            {summary.stats && (
-              <View style={styles.statsRow}>
-                <Text style={styles.statsText}>
-                  👍 {summary.stats.positive} {t(UiTextKey.PositiveCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  😐 {summary.stats.neutral} {t(UiTextKey.NeutralCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  👎 {summary.stats.negative} {t(UiTextKey.NegativeCount)}
-                </Text>
-                <Text style={styles.statsTotalText}>
-                  {t(UiTextKey.BasedOnReviews).replace(
-                    "{count}",
-                    String(summary.stats.total ?? 0)
-                  )}
-                </Text>
-              </View>
+            {translateError && (
+              <Text style={styles.translateErrorText}>{translateError}</Text>
             )}
-
-            {summary.quotes && summary.quotes.length > 0 && (
-              <View style={styles.quoteContainer}>
-                <Text style={styles.quoteLabel}>
-                  {t(UiTextKey.RepresentativeComment)}
-                </Text>
-                <Text style={styles.quoteText}>"{summary.quotes[0]}"</Text>
-              </View>
-            )}
-            */}
           </>
         )}
       </View>
 
+      {/* Tags (placeholder for now) */}
+      <TagList tags={['Tag 1', 'Tag 1', 'Tag 1', 'Tag 1', 'Tag 1']} />
+
+      {/* Ratings (real count, placeholder display) */}
       <View style={styles.ratingsContainer}>
-        <RatingRow
-          label={t(UiTextKey.CineCircleAverage)}
-          rating={calculateAverageRating()}
-        />
-        <Text style={styles.ratingCount}>
-          {t(UiTextKey.BasedOnReviews).replace(
-            '{count}',
-            String(ratings.length)
-          )}
+        <RatingRow label="Overall" rating={0} />
+        <Text style={styles.ratingsMeta}>
+          Based on {ratings.length} rating{ratings.length === 1 ? '' : 's'}
         </Text>
         <RatingRow label="Rotten Tomatoes" rating={0} />
-        <RatingRow label="IMDB" rating={8.8} />
+        <RatingRow label="IMDB" rating={0} />
       </View>
 
+      {/* Action Buttons */}
       <ActionButtons />
 
+      {/* Tabs */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'reviews' && styles.activeTab]}
@@ -238,7 +424,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               activeTab === 'reviews' && styles.activeTabText,
             ]}
           >
-            {t(UiTextKey.Reviews)} ({ratings.length})
+            Reviews
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -251,41 +437,131 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               activeTab === 'comments' && styles.activeTabText,
             ]}
           >
-            {t(UiTextKey.Comments)} ({comments.length})
+            Comments
           </Text>
         </TouchableOpacity>
       </View>
 
+      {/* Filter Bar */}
+      <FilterBar />
+
+      {/* Content */}
       <View style={styles.contentContainer}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000" />
-            <Text style={styles.loadingText}>{t(UiTextKey.Loading)}</Text>
-          </View>
-        ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : activeTab === 'reviews' ? (
+        {listsError && <Text style={styles.errorText}>{listsError}</Text>}
+
+        {activeTab === 'reviews' ? (
           ratings.length > 0 ? (
-            ratings.map(rating => (
-              <ReviewCard key={rating.id} /* rating={rating} */ />
-            ))
+            ratings.map((r) => {
+              const state = ratingTranslations[r.id] || {
+                isHindi: false,
+                loading: false,
+                translatedText: null,
+                error: null,
+              };
+
+              const originalText =
+                (r as any).comment ?? (r as any).text ?? '';
+              const textToShow =
+                state.isHindi && state.translatedText
+                  ? state.translatedText
+                  : originalText;
+
+              const buttonLabel = state.isHindi
+                ? 'Show English'
+                : state.loading
+                ? 'Translating...'
+                : 'Translate to Hindi';
+
+              return (
+                <View key={r.id} style={styles.reviewBlock}>
+                  {/* Your existing review card layout */}
+                  <ReviewCard
+                    // later: pass props like rating={r}
+                  />
+                  {originalText ? (
+                    <View style={styles.itemTranslateContainer}>
+                      <Text style={styles.itemText}>{textToShow}</Text>
+                      <TouchableOpacity
+                        style={styles.itemTranslateButton}
+                        onPress={() => handleToggleRatingTranslation(r)}
+                        disabled={state.loading}
+                      >
+                        <Text style={styles.itemTranslateButtonText}>
+                          {buttonLabel}
+                        </Text>
+                      </TouchableOpacity>
+                      {state.error && (
+                        <Text style={styles.translateErrorText}>
+                          {state.error}
+                        </Text>
+                      )}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })
           ) : (
             <Text style={styles.placeholderText}>
-              {t(UiTextKey.NoReviewsYet)} {t(UiTextKey.BeFirstToReview)}
+              No reviews yet. Be the first to review!
             </Text>
           )
         ) : comments.length > 0 ? (
-          comments.map(comment => (
-            <View key={comment.id} style={styles.commentCard}>
-              <Text style={styles.commentText}>{comment.content}</Text>
-              <Text style={styles.commentMeta}>
-                {new Date(comment.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
-          ))
+          comments.map((c) => {
+            const state = commentTranslations[c.id] || {
+              isHindi: false,
+              loading: false,
+              translatedText: null,
+              error: null,
+            };
+
+            const originalText =
+              (c as any).text ?? (c as any).content ?? '';
+            const textToShow =
+              state.isHindi && state.translatedText
+                ? state.translatedText
+                : originalText;
+
+            const buttonLabel = state.isHindi
+              ? 'Show English'
+              : state.loading
+              ? 'Translating...'
+              : 'Translate to Hindi';
+
+            const rawDate =
+              (c as any).date ?? (c as any).createdAt ?? null;
+            const dateLabel = (() => {
+              if (!rawDate) return '';
+              const d = new Date(rawDate);
+              return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
+            })();
+
+            return (
+              <View key={c.id} style={styles.commentCard}>
+                <Text style={styles.commentText}>{textToShow}</Text>
+
+                <TouchableOpacity
+                  style={styles.itemTranslateButton}
+                  onPress={() => handleToggleCommentTranslation(c)}
+                  disabled={state.loading || !originalText}
+                >
+                  <Text style={styles.itemTranslateButtonText}>
+                    {buttonLabel}
+                  </Text>
+                </TouchableOpacity>
+
+                {state.error && (
+                  <Text style={styles.translateErrorText}>{state.error}</Text>
+                )}
+
+                {dateLabel ? (
+                  <Text style={styles.commentMeta}>{dateLabel}</Text>
+                ) : null}
+              </View>
+            );
+          })
         ) : (
           <Text style={styles.placeholderText}>
-            {t(UiTextKey.NoCommentsYet)} {t(UiTextKey.StartConversation)}
+            No comments yet. Start the conversation!
           </Text>
         )}
       </View>
@@ -294,10 +570,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
   title: {
     fontSize: 34,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 8,
@@ -306,83 +585,149 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
-  metaText: { fontSize: 14, color: "#666" },
-  genreText: { fontSize: 14, color: "#666", marginTop: 4 },
+  metaText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  genreText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
   description: {
     fontSize: 15,
     lineHeight: 22,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: "#333",
+    color: '#333',
   },
-  summaryContainer: { backgroundColor: "#FFF", padding: 16, marginTop: 8 },
-  sectionHeader: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
-  summaryLoadingRow: { flexDirection: "row", alignItems: "center" },
-  summaryLoadingText: { marginLeft: 8, fontSize: 14, color: "#999" },
-  summaryErrorText: { fontSize: 14, color: "#FF3B30" },
-  summaryOverall: { fontSize: 15, color: "#333", marginBottom: 8 },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+  },
+  errorText: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#FF3B30',
+  },
+  translateRow: {
+    paddingHorizontal: 16,
+    marginBottom: 4,
+  },
+  translateButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#000',
+  },
+  translateButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  translateErrorText: {
+    paddingHorizontal: 16,
     marginTop: 4,
-    gap: 16,
+    fontSize: 12,
+    color: '#FF3B30',
   },
-  summaryColumn: { flex: 1 },
-  summarySubheader: { fontSize: 14, fontWeight: "600", marginBottom: 4 },
-  summaryBullet: { fontSize: 13, color: "#555" },
-  statsRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 10, gap: 8 },
-  statsText: { fontSize: 12, color: "#666" },
-  statsTotalText: { fontSize: 12, color: "#999" },
-  quoteContainer: { marginTop: 10 },
-  quoteLabel: { fontSize: 13, fontWeight: "500", marginBottom: 2 },
-  quoteText: { fontSize: 13, fontStyle: "italic", color: "#444" },
   ratingsContainer: {
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     padding: 16,
     marginTop: 12,
   },
-  ratingCount: {
+  ratingsMeta: {
     fontSize: 12,
-    color: "#999",
+    color: '#999',
     marginTop: 4,
     marginBottom: 12,
   },
   tabContainer: {
-    flexDirection: "row",
-    backgroundColor: "#FFF",
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    borderBottomColor: '#E0E0E0',
   },
-  tab: { flex: 1, paddingVertical: 16, alignItems: "center" },
-  activeTab: { borderBottomWidth: 3, borderBottomColor: "#000" },
-  tabText: { fontSize: 16, color: "#999" },
-  activeTabText: { color: "#000", fontWeight: "600" },
-  contentContainer: { padding: 16 },
-  loadingContainer: { paddingVertical: 32, alignItems: "center" },
-  loadingText: { marginTop: 12, fontSize: 16, color: "#999" },
-  errorText: {
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  activeTab: {
+    borderBottomWidth: 3,
+    borderBottomColor: '#000',
+  },
+  tabText: {
     fontSize: 16,
-    color: "#FF3B30",
-    textAlign: "center",
-    paddingVertical: 32,
+    color: '#999',
+  },
+  activeTabText: {
+    color: '#000',
+    fontWeight: '600',
+  },
+  contentContainer: {
+    padding: 16,
   },
   placeholderText: {
     fontSize: 16,
-    color: "#999",
-    textAlign: "center",
+    color: '#999',
+    textAlign: 'center',
     paddingVertical: 32,
   },
+  reviewBlock: {
+    marginBottom: 16,
+  },
+  itemTranslateContainer: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  itemText: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  itemTranslateButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: '#000',
+    marginTop: 2,
+  },
+  itemTranslateButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
   commentCard: {
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  commentText: { fontSize: 15, color: "#333", marginBottom: 8 },
-  commentMeta: { fontSize: 12, color: "#999" },
+  commentText: {
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 8,
+  },
+  commentMeta: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 6,
+  },
 });

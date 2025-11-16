@@ -17,6 +17,7 @@ import { getAllMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
+import { translateText, getSupportedLanguages } from "../controllers/translate"
 // backend/src/routes/index.ts
 
 const router = Router();
@@ -29,6 +30,9 @@ router.get("/swagger-output.json", serveSwagger);
 
 //OpenAPI 3.0 spec
 router.get("/openapi.json", serveSwagger);
+
+router.get("/api/translate", translateText);
+router.get("/api/languages", getSupportedLanguages);
 
 router.get("/movies", getAllMovies);
 
