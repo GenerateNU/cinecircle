@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getLocalEvent, type LocalEvent } from '../services/eventsService';
+import LocationSection from '../components/LocationSection';
 
 export default function EventDetailScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -230,6 +231,14 @@ export default function EventDetailScreen() {
               </View>
             </ScrollView>
           </View>
+
+          {/* Location with Map */}
+          <LocationSection
+            location={event.location}
+            latitude={event.lat ?? 42.3601}
+            longitude={event.lon ?? -71.0589}
+            size="large"
+          />
         </View>
       </ScrollView>
     </View>

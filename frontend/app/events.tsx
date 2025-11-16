@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { getLocalEvents, type LocalEvent } from '../services/eventsService';
+import FilterModal, { FilterOption } from '../components/FilterModal';
 
 interface EventCardProps {
   event: LocalEvent;
@@ -70,10 +71,24 @@ const UpcomingEventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
   );
 };
 
+interface FilterState {
+  price: string[];
+  distance: string[];
+  dates: string[];
+  eventType: string[];
+}
+
 export default function Events() {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<LocalEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterState>({
+    price: [],
+    distance: [],
+    dates: [],
+    eventType: [],
+  });
 
   useEffect(() => {
     loadEvents();
@@ -95,6 +110,26 @@ export default function Events() {
 
   const handleEventPress = (eventId: string) => {
     router.push(`/eventDetail?eventId=${eventId}`);
+  };
+
+  const handleCategoryPress = (category: string) => {
+    setActiveModal(category);
+  };
+
+  const handleFilterApply = (category: string, selectedValues: string[]) => {
+    const filterKey = category
+      .toLowerCase()
+      .replace(' ', '') as keyof FilterState;
+    setFilters(prev => ({
+      ...prev,
+      [filterKey]: selectedValues,
+    }));
+    console.log('Applied filters:', {
+      ...filters,
+      [filterKey]: selectedValues,
+    });
+    // TODO: Call backend API with filters
+    loadEvents();
   };
 
   if (loading) {
@@ -121,9 +156,57 @@ export default function Events() {
   const upcomingEvents = events.slice(0, 5);
   const trendingEvents = events.slice(0, 3);
   const recommendedEvents = events.slice(0, 4);
-  const categories = Array.from(
+
+  // Filter categories for modal buttons
+  const filterCategories = ['Price', 'Near Me', 'Dates', 'Event Type'];
+
+  // Extract unique genres for browse categories
+  const genreCategories = Array.from(
     new Set(events.map(e => e.genre).filter(Boolean))
   );
+
+  // Filter configurations
+  const filterConfigs: Record<
+    string,
+    { title: string; options: FilterOption[] }
+  > = {
+    Price: {
+      title: 'Price',
+      options: [
+        { id: 'free', label: 'Free', value: 0 },
+        { id: '1-25', label: '$1 - $25', value: '1-25' },
+        { id: '26-50', label: '$26 - $50', value: '26-50' },
+        { id: '50+', label: '$50 +', value: '50+' },
+      ],
+    },
+    'Near Me': {
+      title: 'Near Me',
+      options: [
+        { id: '5', label: '5 Miles', value: 5 },
+        { id: '10', label: '10 Miles', value: 10 },
+        { id: '15', label: '15 Miles', value: 15 },
+        { id: '20+', label: '20 Miles +', value: 20 },
+      ],
+    },
+    Dates: {
+      title: 'Dates',
+      options: [
+        { id: 'today', label: 'Today', value: 'today' },
+        { id: 'week', label: 'This Week', value: 'week' },
+        { id: 'month', label: 'This Month', value: 'month' },
+        { id: 'later', label: 'Later', value: 'later' },
+      ],
+    },
+    'Event Type': {
+      title: 'Event Type',
+      options: [
+        { id: 'screening', label: 'Screening', value: 'screening' },
+        { id: 'meetup', label: 'Meet & Greet', value: 'meetup' },
+        { id: 'premiere', label: 'Premiere', value: 'premiere' },
+        { id: 'festival', label: 'Festival', value: 'festival' },
+      ],
+    },
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -133,6 +216,19 @@ export default function Events() {
       >
         {/* Header */}
         <Text style={styles.header}>Events</Text>
+
+        {/* Filter Buttons Row */}
+        <View style={styles.filterButtonsRow}>
+          {filterCategories.map((category, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.filterButton}
+              onPress={() => handleCategoryPress(category)}
+            >
+              <Text style={styles.filterButtonText}>{category}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Trending Section */}
         <View style={styles.sectionHeader}>
@@ -174,7 +270,7 @@ export default function Events() {
           style={styles.categoriesScroll}
           contentContainerStyle={styles.categoriesContent}
         >
-          {categories.map((category, index) => (
+          {genreCategories.map((category, index) => (
             <TouchableOpacity key={index} style={styles.categoryPill}>
               <Text style={styles.categoryText}>{category}</Text>
             </TouchableOpacity>
@@ -205,6 +301,26 @@ export default function Events() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {/* Filter Modals */}
+      {filterCategories.map(category => {
+        const config = filterConfigs[category];
+        const filterKey = category
+          .toLowerCase()
+          .replace(' ', '') as keyof FilterState;
+
+        return (
+          <FilterModal
+            key={category}
+            visible={activeModal === category}
+            onClose={() => setActiveModal(null)}
+            title={config.title}
+            options={config.options}
+            selectedValues={filters[filterKey] || []}
+            onApply={values => handleFilterApply(category, values)}
+          />
+        );
+      })}
     </View>
   );
 }
@@ -232,7 +348,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     paddingHorizontal: 20,
     marginTop: 60,
+    marginBottom: 10,
+  },
+  filterButtonsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
     marginBottom: 20,
+    gap: 10,
+  },
+  filterButton: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#d32f2f',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+  },
+  filterButtonText: {
+    color: '#d32f2f',
+    fontSize: 14,
+    fontWeight: '500',
   },
   sectionHeader: {
     flexDirection: 'row',
