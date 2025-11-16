@@ -29,6 +29,9 @@ router.get("/swagger-output.json", serveSwagger);
 //OpenAPI 3.0 spec
 router.get("/openapi.json", serveSwagger);
 
+router.get("/api/translate", translateText);
+router.get("/api/languages", getSupportedLanguages);
+
 // everything under here is a private endpoint
 router.use('/api', authenticateUser, ensureUserProfile); 
 
@@ -91,9 +94,5 @@ router.delete("/post/:postId", deletePost);
 router.post("/post/:postId/like", toggleLikePost);
 router.get("/post/:postId/likes", getPostLikes);
 router.get("/:postId/replies", getPostReplies);
-
-// translation routes
-router.get("/translate", translateText);
-router.get("/translate/languages", getSupportedLanguages);
 
 export default router;
