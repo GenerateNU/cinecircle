@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,31 +6,30 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Image,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { getLocalEvent, LocalEvent } from '../services/eventsService';
+import { router, useLocalSearchParams } from 'expo-router';
+import { getLocalEvent, type LocalEvent } from '../../services/eventsService';
+import LocationSection from '../../components/LocationSection';
 
 export default function EventDetailScreen() {
-  const route = useRoute();
-  const navigation = useNavigation();
-  const { eventId } = route.params as { eventId: string };
-
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<LocalEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
-    loadEventDetails();
+    if (eventId) loadEventDetails();
   }, [eventId]);
 
   const loadEventDetails = async () => {
+    if (!eventId) return;
+
     try {
       setLoading(true);
       setError(null);
-      const eventData = await getLocalEvent(eventId);
-      setEvent(eventData.data ?? null);
+      const response = await getLocalEvent(eventId);
+      setEvent(response.data ?? null);
     } catch (err) {
       console.error('Failed to load event:', err);
       setError('Failed to load event details. Please try again.');
@@ -59,21 +58,19 @@ export default function EventDetailScreen() {
     );
   }
 
-  const descriptionText = event.description || 'No description available.';
-  const truncatedDescription = showFullDescription
-    ? descriptionText
-    : descriptionText.length > 150
-      ? `${descriptionText.substring(0, 150)}...`
-      : descriptionText;
+  const formatDescription = () => {
+    const text = event.description || 'No description available.';
+    if (showFullDescription || text.length <= 150) return text;
+    return `${text.substring(0, 150)}...`;
+  };
 
-  // Mock attendees data (in production, this would come from the API)
-  const mockAttendees = [
-    { id: '1', name: 'User 1', avatar: null },
-    { id: '2', name: 'User 2', avatar: null },
-    { id: '3', name: 'User 3', avatar: null },
-    { id: '4', name: 'User 4', avatar: null },
-    { id: '5', name: 'User 5', avatar: null },
-  ];
+  const shouldShowReadMore = (event.description?.length || 0) > 150;
+
+  // Mock attendees for now
+  const mockAttendees = Array.from({ length: 5 }, (_, i) => ({
+    id: `${i + 1}`,
+    name: `User ${i + 1}`,
+  }));
   const additionalAttendees = 7;
 
   return (
@@ -87,16 +84,16 @@ export default function EventDetailScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => router.back()}
             >
               <Text style={styles.backButtonText}>←</Text>
             </TouchableOpacity>
             <View style={styles.rightActions}>
               <TouchableOpacity style={styles.iconButton}>
-                <Text style={styles.iconText}>↗</Text> {/* Share button */}
+                <Text style={styles.iconText}>↗</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton}>
-                <Text style={styles.iconText}>🔖</Text> {/* Bookmark button */}
+                <Text style={styles.iconText}>🔖</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -145,8 +142,8 @@ export default function EventDetailScreen() {
           {/* Description */}
           <View style={styles.descriptionSection}>
             <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.descriptionText}>{truncatedDescription}</Text>
-            {descriptionText.length > 150 && (
+            <Text style={styles.descriptionText}>{formatDescription()}</Text>
+            {shouldShowReadMore && (
               <TouchableOpacity
                 onPress={() => setShowFullDescription(!showFullDescription)}
               >
@@ -181,7 +178,7 @@ export default function EventDetailScreen() {
             </View>
           )}
 
-          {/* Who's Going */}
+          {/* Attendees */}
           <View style={styles.attendeesSection}>
             <Text style={styles.sectionTitle}>Who's Going?</Text>
             <View style={styles.attendeesRow}>
@@ -190,25 +187,21 @@ export default function EventDetailScreen() {
                   key={attendee.id}
                   style={[
                     styles.avatarCircle,
-                    { marginLeft: index > 0 ? -12 : 0 },
+                    index > 0 && { marginLeft: -12 },
                   ]}
                 >
-                  <Text style={styles.avatarText}>
-                    {attendee.name.charAt(0)}
-                  </Text>
+                  <Text style={styles.avatarText}>{attendee.name[0]}</Text>
                 </View>
               ))}
-              {additionalAttendees > 0 && (
-                <View
-                  style={[
-                    styles.avatarCircle,
-                    styles.moreAvatar,
-                    { marginLeft: -12 },
-                  ]}
-                >
-                  <Text style={styles.avatarText}>+{additionalAttendees}</Text>
-                </View>
-              )}
+              <View
+                style={[
+                  styles.avatarCircle,
+                  styles.moreAvatar,
+                  { marginLeft: -12 },
+                ]}
+              >
+                <Text style={styles.avatarText}>+{additionalAttendees}</Text>
+              </View>
             </View>
           </View>
 
@@ -238,6 +231,14 @@ export default function EventDetailScreen() {
               </View>
             </ScrollView>
           </View>
+
+          {/* Location with Map */}
+          <LocationSection
+            location={event.location}
+            latitude={event.lat ?? 42.3601}
+            longitude={event.lon ?? -71.0589}
+            size="large"
+          />
         </View>
       </ScrollView>
     </View>

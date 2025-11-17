@@ -73,3 +73,27 @@ export type FollowEdge = {
   follower?: UserProfile;
   following?: UserProfile;
 };
+
+
+export type Movie = {
+  movieId: string;
+  localRating: number | null;
+  imdbRating: number | null;
+  languages: string[] | null;
+  title: string;
+  description: string;
+  numRatings: number | null;
+  imageUrl: string | null;
+};
+
+
+export type Summary = {
+  movieId: string;
+  summaryText: string;
+  pros?: string[];
+  cons?: string[];
+  stats?: {
+    averageRating: number;
+    totalReviews: number;
+  };
+};    

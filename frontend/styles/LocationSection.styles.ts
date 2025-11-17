@@ -20,6 +20,10 @@ export const styles = StyleSheet.create({
     borderRadius: width * 0.03,
     overflow: 'hidden',
   },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
   mapPlaceholder: {
     width: '100%',
     height: '100%',

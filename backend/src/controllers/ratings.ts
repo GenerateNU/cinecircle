@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { Response,Request } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { prisma } from '../services/db';
 
@@ -160,3 +160,36 @@ export const deleteRating = async (req: AuthenticatedRequest, res: Response) => 
     });
   }
 };
+
+export async function getMovieRatings(req: Request, res: Response) {
+  try {
+    const { movieId } = req.params;
+
+    if (!movieId) {
+      return res.status(400).json({ message: "movieId is required" });
+    }
+
+    // Find all ratings attached to this movie
+    const ratingsFromDb = await prisma.rating.findMany({
+      where: { movieId },
+      orderBy: { date: 'desc' },
+    });
+
+    // If you need to normalize / map to frontend Rating shape, do it here:
+    const ratings = ratingsFromDb.map((r) => ({
+      id: r.id,
+      userId: r.userId,
+      movieId: r.movieId,
+      stars: r.stars,
+      comment: r.comment,
+      tags: r.tags as string[] | null, // if tags is JSON
+      date: r.date, // or r.createdAt
+      votes: r.votes,
+    }));
+
+    return res.status(200).json({ ratings });
+  } catch (err) {
+    console.error("Error in getMovieRatings:", err);
+    return res.status(500).json({ message: "Failed to fetch ratings" });
+  }
+}
