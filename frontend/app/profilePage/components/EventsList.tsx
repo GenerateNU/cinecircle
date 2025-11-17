@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import tw from 'twrnc';
-import EventCard from '../../../components/EventCard';
+import UpcomingEventCard from '../../events/components/UpcomingEventCard';
 
 type Event = {
   id: string;
@@ -46,7 +46,9 @@ const ATTENDED_EVENTS: Event[] = [
 ];
 
 const EventsList = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>('saved');
+  const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>(
+    'saved'
+  );
   const events = activeSubTab === 'saved' ? SAVED_EVENTS : ATTENDED_EVENTS;
 
   return (
@@ -55,7 +57,9 @@ const EventsList = () => {
         <TouchableOpacity
           style={[
             tw`flex-1 items-center pb-2 border-b-2`,
-            activeSubTab === 'saved' ? tw`border-black` : tw`border-transparent`,
+            activeSubTab === 'saved'
+              ? tw`border-black`
+              : tw`border-transparent`,
           ]}
           onPress={() => setActiveSubTab('saved')}
         >
@@ -70,7 +74,9 @@ const EventsList = () => {
         <TouchableOpacity
           style={[
             tw`flex-1 items-center pb-2 border-b-2`,
-            activeSubTab === 'attended' ? tw`border-black` : tw`border-transparent`,
+            activeSubTab === 'attended'
+              ? tw`border-black`
+              : tw`border-transparent`,
           ]}
           onPress={() => setActiveSubTab('attended')}
         >
@@ -85,8 +91,8 @@ const EventsList = () => {
       </View>
 
       <View style={tw`gap-3`}>
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} size="small" />
+        {events.map(event => (
+          <UpcomingEventCard key={event.id} event={event} size="small" />
         ))}
       </View>
     </View>
