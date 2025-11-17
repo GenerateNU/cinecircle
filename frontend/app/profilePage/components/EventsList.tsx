@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import tw from 'twrnc';
-import EventCard from '../../../components/EventCard';
+import UpcomingEventCard from '../../events/components/UpcomingEventCard';
+import type { LocalEvent } from '../../../services/eventsService';
 
-type Event = {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-};
-
-const SAVED_EVENTS: Event[] = [
+const SAVED_EVENTS: LocalEvent[] = [
   {
     id: 'saved-1',
     title: 'Bollywood Night Screening',
     date: 'Sat, Nov 2',
     time: '7:00 PM',
     location: 'Cineplex Downtown',
+    genre: 'Screening',
+    cost: null,
+    occasion: null,
+    description: '',
+    languages: [],
+    lat: null,
+    lon: null,
   },
   {
     id: 'saved-2',
@@ -25,16 +25,30 @@ const SAVED_EVENTS: Event[] = [
     date: 'Thu, Nov 7',
     time: '6:30 PM',
     location: 'Studio 54 Theater',
+    genre: 'Discussion',
+    cost: null,
+    occasion: null,
+    description: '',
+    languages: [],
+    lat: null,
+    lon: null,
   },
 ];
 
-const ATTENDED_EVENTS: Event[] = [
+const ATTENDED_EVENTS: LocalEvent[] = [
   {
     id: 'att-1',
     title: 'SRK Fan Meetup',
     date: 'Sun, Oct 20',
     time: '3:00 PM',
     location: 'City Park Amphitheater',
+    genre: 'Meetup',
+    cost: null,
+    occasion: null,
+    description: '',
+    languages: [],
+    lat: null,
+    lon: null,
   },
   {
     id: 'att-2',
@@ -42,11 +56,20 @@ const ATTENDED_EVENTS: Event[] = [
     date: 'Fri, Sep 13',
     time: '8:00 PM',
     location: 'Cinecircle HQ',
+    genre: 'Screening',
+    cost: null,
+    occasion: null,
+    description: '',
+    languages: [],
+    lat: null,
+    lon: null,
   },
 ];
 
 const EventsList = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>('saved');
+  const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>(
+    'saved'
+  );
   const events = activeSubTab === 'saved' ? SAVED_EVENTS : ATTENDED_EVENTS;
 
   return (
@@ -55,7 +78,9 @@ const EventsList = () => {
         <TouchableOpacity
           style={[
             tw`flex-1 items-center pb-2 border-b-2`,
-            activeSubTab === 'saved' ? tw`border-black` : tw`border-transparent`,
+            activeSubTab === 'saved'
+              ? tw`border-black`
+              : tw`border-transparent`,
           ]}
           onPress={() => setActiveSubTab('saved')}
         >
@@ -70,7 +95,9 @@ const EventsList = () => {
         <TouchableOpacity
           style={[
             tw`flex-1 items-center pb-2 border-b-2`,
-            activeSubTab === 'attended' ? tw`border-black` : tw`border-transparent`,
+            activeSubTab === 'attended'
+              ? tw`border-black`
+              : tw`border-transparent`,
           ]}
           onPress={() => setActiveSubTab('attended')}
         >
@@ -85,8 +112,8 @@ const EventsList = () => {
       </View>
 
       <View style={tw`gap-3`}>
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} size="small" />
+        {events.map(event => (
+          <UpcomingEventCard key={event.id} event={event} size="small" />
         ))}
       </View>
     </View>

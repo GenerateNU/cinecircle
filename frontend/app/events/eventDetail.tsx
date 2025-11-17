@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { getLocalEvent, type LocalEvent } from '../services/eventsService';
-import LocationSection from '../components/LocationSection';
+import { getLocalEvent, type LocalEvent } from '../../services/eventsService';
+import LocationSection from '../../components/LocationSection';
 
 export default function EventDetailScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
