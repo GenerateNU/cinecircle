@@ -13,9 +13,9 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import tw from 'twrnc';
 
-import HomeSearchBar from '../components/HomeSearchBar';
-import TabToggle from '../components/TabToggle';
-import SectionHeader from '../components/SectionHeader';
+import HomeSearchBar from '../../../components/HomeSearchBar';
+import TabToggle from '../../../components/TabToggle';
+import SectionHeader from '../../../components/SectionHeader';
 
 export type HomeScreenProps = {
   user?: any;

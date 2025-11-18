@@ -5,9 +5,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import PostTypeSelector from '../components/PostTypeSelector';
-import CreatePostBar from '../components/CreatePostBar';
-import PostForm from '../components/PostForm';
+import PostTypeSelector from '../../../components/PostTypeSelector';
+import CreatePostBar from '../../../components/CreatePostBar';
+import PostForm from '../../../components/PostForm';
 
 interface PostData {
   title: string;

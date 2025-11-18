@@ -1,6 +1,6 @@
 // frontend/app/i18n/dictionary.ts
-import { UiTextKey } from "./keys";
-import type { LanguageCode } from "../il8n/languages";
+import { UiTextKey } from "./_keys";
+import type { LanguageCode } from "./_languages";
 
 type TranslationTable = Partial<Record<UiTextKey, string>>;
 
