@@ -420,7 +420,7 @@ model Post {
   type            PostType
   votes           Int         @default(0)
   createdAt       DateTime    @default(now())
-  imageUrl        String?
+  imageUrls       String[]    @default([])
   parentPostId    String?     // For threading/replies
   Comment         Comment[]
   UserProfile     UserProfile @relation(fields: [userId], references: [userId])
