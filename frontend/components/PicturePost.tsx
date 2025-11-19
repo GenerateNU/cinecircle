@@ -11,7 +11,7 @@ type PicturePostProps = {
     date: string;
     avatarUri?: string;
     content: string;
-    imageUrl?: string | null;
+    imageUrls?: string[];
     userId?: string;
 };
 
@@ -21,17 +21,17 @@ export default function PicturePost({
     date,
     avatarUri,
     content,
-    imageUrl,
+    imageUrls = [],
     userId,
 }: PicturePostProps) {
-    const imageComponents = imageUrl ? [
+    const imageComponents = imageUrls.map((url, index) => (
         <Image 
-            source={{ uri: imageUrl }} 
+            source={{ uri: url }} 
             style={styles.image}
             resizeMode="cover"
-            key="image-0"
+            key={`image-${index}`}
         />
-    ] : [];
+    ));
 
     return (
         <View style={styles.container}>
@@ -44,7 +44,7 @@ export default function PicturePost({
             />
             <Text style={styles.content}>{content}</Text>
 
-            {imageUrl ? (
+            {imageUrls.length > 0 ? (
                 <MyCarousel 
                     components={imageComponents}
                     width={100}
