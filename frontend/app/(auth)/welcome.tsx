@@ -1,49 +1,41 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
-import AuthForm from '../../components/AuthForm';
+import { Text, Image, View, useWindowDimensions } from 'react-native'
+import { router } from 'expo-router'
+import logo from '../../assets/icon.png'
+import NextButton from '../../components/NextButton';
+import { styles } from '../../styles/Welcome.styles'
 
-export default function WelcomeScreen() {
-  const handleAuthSuccess = () => {
-    router.replace('/(tabs)/home');
-  };
-  
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome to CineCircle</Text>
-        <Text style={styles.subtitle}>
-          Connect with friends and share your movie experiences
-        </Text>
-      </View>
+export default function welcome () {
+    const { width, height } = useWindowDimensions();
+    const go = (to: string) => router.push(to);
 
-      <AuthForm onAuthSuccess={handleAuthSuccess} />
-
-      <StatusBar style="auto" />
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <View style={styles.content}>
+                <Image 
+                    source={logo}
+                    style={{
+                        width: width * 0.5,
+                        height: width * 0.5,
+                        marginBottom: height * 0.02,
+                    }}
+                    resizeMode="contain"
+                />
+                <Text style={[styles.title, { fontSize: width * 0.08 }]}>CineCircle</Text>
+            </View>
+            
+            <View style={styles.buttonContainer}>
+                <NextButton 
+                    title="Log in" 
+                    onPress={() => go("/(auth)/login")} 
+                    size="large" 
+                    variation='variation1'
+                />
+                <NextButton 
+                    title="Sign up" 
+                    onPress={() => go("/(auth)/signup")} 
+                    size="large"
+                />
+            </View>
+        </View>
+    )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-  },
-  header: {
-    marginBottom: 40,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-});

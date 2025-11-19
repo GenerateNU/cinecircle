@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { View, TouchableOpacity } from 'react-native';
 import { styles } from '../../styles/BottomNavBar.styles';
 
 export default function TabsLayout() {
@@ -8,69 +9,58 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: styles.bar,
-        tabBarItemStyle: styles.item,
       }}
+      tabBar={(props) => <CustomTabBar {...props} />}
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <MaterialIcons 
-              name="home" 
-              style={focused ? styles.activeIcon : styles.icon}
-            />
-          ),
-        }}
-      />
-      
-      <Tabs.Screen
-        name="movies"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <MaterialIcons 
-              name="confirmation-number" 
-              style={focused ? styles.activeIcon : styles.icon}
-            />
-          ),
-        }}
-      />
-      
-      <Tabs.Screen
-        name="post"
-        options={{
-          tabBarIcon: () => (
-            <MaterialIcons 
-              name="add-circle" 
-              style={styles.postButton}
-            />
-          ),
-        }}
-      />
-      
-      <Tabs.Screen
-        name="events"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <MaterialIcons 
-              name="place" 
-              style={focused ? styles.activeIcon : styles.icon}
-            />
-          ),
-        }}
-      />
-      
-      <Tabs.Screen
-        name="profile"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <MaterialIcons 
-              name="account-circle" 
-              style={focused ? styles.activeIcon : styles.icon}
-            />
-          ),
-        }}
-      />
+      <Tabs.Screen name="home" />
+      <Tabs.Screen name="movies" />
+      <Tabs.Screen name="post" />
+      <Tabs.Screen name="events" />
+      <Tabs.Screen name="profile" />
     </Tabs>
+  );
+}
+
+function CustomTabBar({ state, descriptors, navigation }: any) {
+  const iconNames = ['home', 'confirmation-number', 'add-circle', 'place', 'account-circle'];
+  
+  return (
+    <View style={styles.bar}>
+      {state.routes.map((route: any, index: number) => {
+        const isFocused = state.index === index;
+        const isPostButton = route.name === 'post';
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            style={[styles.item, { overflow: 'visible' }]}
+          >
+            <MaterialIcons
+              name={iconNames[index] as any}
+              style={
+                isPostButton
+                  ? styles.postButton
+                  : isFocused
+                  ? styles.activeIcon
+                  : styles.icon
+              }
+            />
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   );
 }

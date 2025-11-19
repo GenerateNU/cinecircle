@@ -1,4 +1,4 @@
-import PostScreen from './screen/PostScreen';
+import PostScreen from '../../screen/PostScreen';
 export default function PostRoute() {
   return <PostScreen />;
 }

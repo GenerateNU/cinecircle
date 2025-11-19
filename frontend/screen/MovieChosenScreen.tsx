@@ -7,20 +7,20 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useState, useEffect } from "react";
-import SearchBar from "../../../components/SearchBar";
-import RatingRow from "../../../components/RatingRow";
-import TagList from "../../../components/TagList";
-import ActionButtons from "../../../components/ActionButtons";
-import ReviewCard from "../../../components/ReviewCard";
+import SearchBar from "../components/SearchBar";
+import RatingRow from "../components/RatingRow";
+import TagList from "../components/TagList";
+import ActionButtons from "../components/ActionButtons";
+import ReviewCard from "../components/ReviewCard";
 import {
   getMovieRatings,
   getMovieComments,
   getMovieSummary,
   getMovieByCinecircleId,
-} from "../../../services/moviesService";
-import type { Rating, Comment, Summary, Movie } from "../../../types/models";
-import { t } from "../../../il8n/_il8n";
-import { UiTextKey } from "../../../il8n/_keys";
+} from "../services/moviesService";
+import type { Rating, Comment, Summary, Movie } from "../types/models";
+import { t } from "../il8n/_il8n";
+import { UiTextKey } from "../il8n/_keys";
 
 type MovieChosenScreenProps = {
   movieId: string;

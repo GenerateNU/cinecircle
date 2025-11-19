@@ -12,16 +12,16 @@ import {
 } from 'react-native';
 import MovieChosenScreen from './MovieChosenScreen';
 import RecByFriendsScreen from './RecByFriendsScreen';
-import SearchBar from '../../../components/SearchBar';
-import { getAllMovies } from '../../../services/moviesService';
-import type { Movie as ApiMovie } from '../../../types/models';
+import SearchBar from '../components/SearchBar';
+import { getAllMovies } from '../services/moviesService';
+import type { Movie as ApiMovie } from '../types/models';
 
 // ✅ FIX: correct i18n imports (no extra /app, right folder name)
-import { t, getLanguage } from '../../../il8n/_il8n';
-import { UiTextKey } from '../../../il8n/_keys';
+import { t, getLanguage } from '../il8n/_il8n';
+import { UiTextKey } from '../il8n/_keys';
 
 // ✅ Make sure this exists and is exported
-import { fetchUserProfile } from '../../../services/userService';
+import { fetchUserProfile } from '../services/userService';
 import { router } from 'expo-router';
 
 interface MovieCard {
