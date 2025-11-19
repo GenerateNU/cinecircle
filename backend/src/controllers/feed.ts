@@ -19,6 +19,13 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
     });
     const followingIds = following.map((f) => f.followingId);
 
+    // Get all posts liked by the current user
+    const likedPosts = await prisma.postLike.findMany({
+      where: { userId: user.id },
+      select: { postId: true },
+    });
+    const likedPostIds = new Set(likedPosts.map((like: { postId: string }) => like.postId));
+
     const recentRatings = await prisma.rating.findMany({
       where: {
         userId: { in: followingIds },
@@ -46,9 +53,10 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             username: true,
           },
         },
-        PostLike: true,
-        Comment: {
-          select: { id: true },
+        _count: {
+          select: {
+            Comment: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -83,26 +91,35 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             username: true,
           },
         },
-        PostLike: true,
-        Comment: {
-          select: { id: true },
+        _count: {
+          select: {
+            Comment: true,
+          },
         },
       },
       orderBy: { votes: 'desc' },
       take: 5,
     });
 
-    const postsWithCounts = [...recentPosts, ...trendingPosts].map(post => ({
+    const recentPostsWithCounts = recentPosts.map(post => ({
       ...post,
-      likeCount: post.PostLike?.length || 0,
-      commentCount: post.Comment?.length || 0,
+      likeCount: post.votes, // Use votes field which is kept in sync by toggleLikePost
+      commentCount: post._count.Comment,
+      isLiked: likedPostIds.has(post.id),
+    }));
+
+    const trendingPostsWithCounts = trendingPosts.map(post => ({
+      ...post,
+      likeCount: post.votes, // Use votes field which is kept in sync by toggleLikePost
+      commentCount: post._count.Comment,
+      isLiked: likedPostIds.has(post.id),
     }));
 
     const feed = [
       ...recentRatings.map((r) => ({ type: 'rating', data: r })),
-      ...postsWithCounts.filter(p => recentPosts.includes(p)).map((p) => ({ type: 'post', data: p })),
+      ...recentPostsWithCounts.map((p) => ({ type: 'post', data: p })),
       ...trendingRatings.map((r) => ({ type: 'trending_rating', data: r })),
-      ...postsWithCounts.filter(p => trendingPosts.includes(p)).map((p) => ({ type: 'trending_post', data: p })),
+      ...trendingPostsWithCounts.map((p) => ({ type: 'trending_post', data: p })),
     ];
 
     function getTimestamp(item: Rating | Post): Date {

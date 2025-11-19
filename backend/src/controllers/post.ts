@@ -117,7 +117,7 @@ export const getPostById = async (req: Request, res: Response) => {
         message: "Post found successfully",
         data: {
           ...post,
-          likeCount: post.PostLike.length,
+          likeCount: post.votes,
           commentCount: post.Comment.length,
           replyCount: post.Replies.length,
         },
@@ -183,7 +183,7 @@ export const getPosts = async (req: Request, res: Response) => {
   
       const postsWithCounts = posts.map((post) => ({
         ...post,
-        likeCount: post.PostLike.length,
+        likeCount: post.votes,
         commentCount: post.Comment.length,
         replyCount: post.Replies.length,
       }));
@@ -456,7 +456,7 @@ export const getPostReplies = async (req: Request, res: Response) => {
   
       const repliesWithCounts = replies.map((reply) => ({
         ...reply,
-        likeCount: reply.PostLike.length,
+        likeCount: reply.votes,
         replyCount: reply.Replies.length,
       }));
   
