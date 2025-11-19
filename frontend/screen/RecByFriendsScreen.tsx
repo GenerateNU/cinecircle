@@ -66,6 +66,7 @@ export default function RecByFriendsScreen() {
               date={formatDate(post.createdAt)}
               content={post.content}
               imageUrl={post.imageUrl || undefined}
+              userId={post.userId}
             />
           ) : (
             <TextPost
@@ -73,13 +74,14 @@ export default function RecByFriendsScreen() {
               username={username}
               date={formatDate(post.createdAt)}
               content={post.content}
+              userId={post.userId}
             />
           )}
           <View style={styles.interactionWrapper}>
             <InteractionBar
               initialLikes={post.likeCount || post.votes}
               initialComments={post.commentCount || 0}
-              isLiked={false} // TODO: Check if current user liked
+              isLiked={false}
               onLikePress={() => handlePostLike(post.id)}
               onCommentPress={() => handleComment(post.id)}
             />
@@ -92,8 +94,6 @@ export default function RecByFriendsScreen() {
 
   const renderRating = (rating: Rating, index: number) => {
     const username = rating.UserProfile?.username || 'Unknown';
-    
-    // TODO: Fetch movie title from movieId
     const movieTitle = `Movie #${rating.movieId}`;
 
     return (
@@ -106,11 +106,13 @@ export default function RecByFriendsScreen() {
             reviewerName={username}
             movieTitle={movieTitle}
             rating={rating.stars}
+            userId={rating.userId}
+            reviewerUserId={rating.userId}
           />
           <View style={styles.interactionWrapper}>
             <InteractionBar
               initialLikes={rating.votes}
-              initialComments={0} // TODO: Get comment count
+              initialComments={0}
               isLiked={false}
               onLikePress={() => console.log('Rating like not implemented')}
               onCommentPress={() => console.log('Rating comment')}
@@ -132,7 +134,7 @@ export default function RecByFriendsScreen() {
     
     try {
       await togglePostLike(postId, user.id);
-      await loadFeed(); // Refresh feed
+      await loadFeed();
     } catch (err) {
       console.error('Error liking post:', err);
     }
@@ -140,7 +142,6 @@ export default function RecByFriendsScreen() {
 
   const handleComment = (itemId: string) => {
     console.log('Navigate to comments:', itemId);
-    // TODO: Navigate to comments screen
   };
 
   if (loading) {

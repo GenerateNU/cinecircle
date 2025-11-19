@@ -14,6 +14,8 @@ type ReviewPostProps = {
     reviewerAvatarUri?: string;
     movieTitle: string;
     rating?: number;
+    userId?: string;
+    reviewerUserId?: string;
 };
 
 export default function ReviewPost({
@@ -25,6 +27,8 @@ export default function ReviewPost({
     reviewerAvatarUri,
     movieTitle,
     rating = 5,
+    userId,
+    reviewerUserId,
 }: ReviewPostProps) {
     return (
         <View style={styles.container}>
@@ -33,6 +37,7 @@ export default function ReviewPost({
                 username={username}
                 date={date}
                 avatarUri={avatarUri}
+                userId={userId}
             />
 
             <View style={styles.nestedReview}>
@@ -40,6 +45,7 @@ export default function ReviewPost({
                     name={reviewerName}
                     avatarUri={reviewerAvatarUri}
                     avatarSize={width * 0.06}
+                    userId={reviewerUserId}
                 />
                 <Text style={styles.movieTitle}>{movieTitle}</Text>
 

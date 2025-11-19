@@ -11,7 +11,8 @@ type PicturePostProps = {
     date: string;
     avatarUri?: string;
     content: string;
-    imageUrl?: string; 
+    imageUrl?: string | null;
+    userId?: string;
 };
 
 export default function PicturePost({
@@ -21,13 +22,14 @@ export default function PicturePost({
     avatarUri,
     content,
     imageUrl,
+    userId,
 }: PicturePostProps) {
-    // Convert single imageUrl to carousel components
     const imageComponents = imageUrl ? [
         <Image 
             source={{ uri: imageUrl }} 
             style={styles.image}
             resizeMode="cover"
+            key="image-0"
         />
     ] : [];
 
@@ -38,6 +40,7 @@ export default function PicturePost({
                 username={username}
                 date={date}
                 avatarUri={avatarUri}
+                userId={userId}
             />
             <Text style={styles.content}>{content}</Text>
 
