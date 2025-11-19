@@ -50,11 +50,12 @@ export default function OnboardingLayout() {
       >
         <Stack.Screen name="username" />
         <Stack.Screen name="profileSelect" />
-        <Stack.Screen name="primaryLanguage" />
-        <Stack.Screen name="secondaryLanguage" />
-        <Stack.Screen name="country" />
-        <Stack.Screen name="city" />
-        <Stack.Screen name="genres" />
+        <Stack.Screen name="primaryLanguageSelect" />
+        <Stack.Screen name="secondaryLanguageSelect" />
+        <Stack.Screen name="countrySelect" />
+        <Stack.Screen name="citySelect" />
+        <Stack.Screen name="genresSelect" />
+        <Stack.Screen name="complete" />
       </Stack>
     </OnboardingContext.Provider>
   );
