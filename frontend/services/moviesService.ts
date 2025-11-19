@@ -1,13 +1,16 @@
 // frontend/app/services/moviesService.ts
 import { api } from "./apiClient";
 import type { components } from "../types/api-generated";
-import type { Movie, Rating, Comment, Summary } from "../types/models";
 
 // OpenAPI-generated types
 type GetMovieEnvelope = components["schemas"]["GetMovieEnvelope"];
 type UpdateMovieInput = components["schemas"]["UpdateMovieInput"];
 type UpdateMovieEnvelope = components["schemas"]["UpdateMovieEnvelope"];
 type DeleteMovieResponse = components["schemas"]["DeleteMovieResponse"];
+type Movie = components["schemas"]["Movie"];
+type Rating = components["schemas"]["Rating"];
+type Comment = components["schemas"]["Comment"];
+// type Summary = components["schemas"]["Summary"]; 
 
 export function fetchAndSaveByTmdbId(tmdbId: string) {
   return api.get<GetMovieEnvelope>(`/movies/${tmdbId}`);
@@ -34,8 +37,6 @@ export async function getAllMovies(): Promise<Movie[]> {
   return res.movies;
 }
 
-// You probably already had equivalents of these; recreating:
-
 export async function getMovieRatings(
   movieId: string
 ): Promise<{ ratings: Rating[] }> {
@@ -54,10 +55,10 @@ export async function getMovieRatings(
 }
 
 
-// AI semantic summary endpoint (when you hook it up)
-export async function getMovieSummary(movieId: string): Promise<Summary> {
-  return api.get<Summary>(`/movies/${encodeURIComponent(movieId)}/summary`);
-}
+// AI semantic summary endpoint
+// export async function getMovieSummary(movieId: string): Promise<Summary> {
+//   return api.get<Summary>(`/movies/${encodeURIComponent(movieId)}/summary`);
+// }
 
 // Movie comments: GET /api/:movieId/comments
 export async function getMovieComments(
