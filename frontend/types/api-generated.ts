@@ -2702,6 +2702,7 @@ export interface components {
             onboardingCompleted?: boolean;
             primaryLanguage?: string;
             secondaryLanguage?: string[];
+            profilePicture?: string | null;
             country?: string | null;
             city?: string | null;
             favoriteGenres?: string[];

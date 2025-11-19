@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import tw from 'twrnc';
-import { User } from '../types';
+import { User } from '../_types';
 import { Feather } from '@expo/vector-icons';
 
 type Props = {
