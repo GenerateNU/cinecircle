@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Dimensions, ActivityIndicator, View, Text } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  View,
+  Text,
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { fetchHomeFeed, togglePostLike } from '../services/feedService';
 import TextPost from '../components/TextPost';
@@ -8,8 +15,8 @@ import ReviewPost from '../components/ReviewPost';
 import InteractionBar from '../components/InteractionBar';
 import type { components } from '../types/api-generated';
 
-type Post = components["schemas"]["Post"];
-type Rating = components["schemas"]["Rating"];
+type Post = components['schemas']['Post'];
+type Rating = components['schemas']['Rating'];
 
 const { width } = Dimensions.get('window');
 
@@ -44,7 +51,7 @@ export default function RecByFriendsScreen() {
 
   const renderFeedItem = (item: FeedItem, index: number) => {
     const isPost = item.type === 'post' || item.type === 'trending_post';
-    
+
     if (isPost) {
       return renderPost(item.data as Post, index);
     } else {
@@ -65,7 +72,7 @@ export default function RecByFriendsScreen() {
               username={username}
               date={formatDate(post.createdAt)}
               content={post.content}
-              imageUrl={post.imageUrl || undefined}
+              imageUrls={post.imageUrls || []}
               userId={post.userId}
             />
           ) : (
@@ -81,8 +88,8 @@ export default function RecByFriendsScreen() {
             <InteractionBar
               initialLikes={post.likeCount || post.votes}
               initialComments={post.commentCount || 0}
-              isLiked={false}
-              onLikePress={() => handlePostLike(post.id)}
+              isLiked={post.isLiked || false}
+              onLikePress={() => handlePostLike(post.id, post.isLiked || false)}
               onCommentPress={() => handleComment(post.id)}
             />
           </View>
@@ -114,7 +121,7 @@ export default function RecByFriendsScreen() {
               initialLikes={rating.votes}
               initialComments={0}
               isLiked={false}
-              onLikePress={() => console.log('Rating like not implemented')}
+              onLikePress={() => console.log('Rating like')}
               onCommentPress={() => console.log('Rating comment')}
             />
           </View>
@@ -129,14 +136,59 @@ export default function RecByFriendsScreen() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const handlePostLike = async (postId: string) => {
+  const handlePostLike = async (postId: string, currentlyLiked: boolean) => {
     if (!user?.id) return;
-    
+
     try {
+      // Optimistically update UI
+      setFeedItems(prevItems =>
+        prevItems.map(item => {
+          if (item.type === 'post' || item.type === 'trending_post') {
+            const post = item.data as Post;
+            if (post.id === postId) {
+              return {
+                ...item,
+                data: {
+                  ...post,
+                  isLiked: !currentlyLiked,
+                  likeCount: currentlyLiked
+                    ? (post.likeCount || 0) - 1
+                    : (post.likeCount || 0) + 1,
+                  votes: currentlyLiked ? post.votes - 1 : post.votes + 1,
+                },
+              };
+            }
+          }
+          return item;
+        })
+      );
+
+      // Call API in background
       await togglePostLike(postId, user.id);
-      await loadFeed();
     } catch (err) {
       console.error('Error liking post:', err);
+      // Revert optimistic update on error
+      setFeedItems(prevItems =>
+        prevItems.map(item => {
+          if (item.type === 'post' || item.type === 'trending_post') {
+            const post = item.data as Post;
+            if (post.id === postId) {
+              return {
+                ...item,
+                data: {
+                  ...post,
+                  isLiked: currentlyLiked,
+                  likeCount: currentlyLiked
+                    ? (post.likeCount || 0) + 1
+                    : (post.likeCount || 0) - 1,
+                  votes: currentlyLiked ? post.votes + 1 : post.votes - 1,
+                },
+              };
+            }
+          }
+          return item;
+        })
+      );
     }
   };
 
