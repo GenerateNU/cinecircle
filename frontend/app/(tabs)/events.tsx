@@ -1,4 +1,4 @@
 import Events from '../events/index';
-export default function HomeRoute() {
+export default function EventsRoute() {
     return <Events />
 }
