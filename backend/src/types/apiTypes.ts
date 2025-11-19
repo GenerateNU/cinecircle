@@ -97,7 +97,7 @@ export type CreatePostInput = {
   userId: string;
   content: string;
   type?: 'SHORT' | 'LONG';
-  imageUrl?: string;
+  imageUrls?: string[];
   parentPostId?: string;
 };
 
@@ -109,7 +109,7 @@ export type CreatePostResponse = {
 export type UpdatePostInput = {
   content?: string;
   type?: 'SHORT' | 'LONG';
-  imageUrl?: string;
+  imageUrls?: string[];
 };
 
 export type UpdatePostResponse = {

@@ -109,7 +109,7 @@ export type Post = {
   type: 'SHORT' | 'LONG';
   votes: number;
   createdAt: string;
-  imageUrl: string | null;
+  imageUrls: string[];
   parentPostId: string | null;
   UserProfile?: {
     userId: string;
@@ -121,6 +121,7 @@ export type Post = {
   likeCount?: number;
   commentCount?: number;
   replyCount?: number;
+  isLiked?: boolean;
 };
 
 export type PostLike = {
