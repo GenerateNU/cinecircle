@@ -499,6 +499,13 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
                 /** @description Conflict */
                 409: {
                     headers: {
@@ -564,6 +571,13 @@ export interface paths {
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1655,6 +1669,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/local-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/local-event/{id}": {
         parameters: {
             query?: never;
@@ -2593,6 +2656,248 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/search/movies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    language?: string;
+                    minRating?: string;
+                    minLocalRating?: string;
+                    maxResults?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    limit?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    minStars?: string;
+                    tags?: string;
+                    limit?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/search/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    type?: string;
+                    limit?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/{api{where{userId:user.id}}": {
         parameters: {
             query?: never;
@@ -2676,6 +2981,7 @@ export interface components {
         GetUserProfileResponse: {
             message?: string;
             userProfile: components["schemas"]["UserProfile"];
+            user?: components["schemas"]["UserProfileBasic"];
             timestamp?: string;
             endpoint?: string;
         };
@@ -2829,58 +3135,3 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
-import type {
-  PingResponse,
-  DbTestResponse,
-  ProtectedResponse,
-  GetUserProfileBasicResponse,
-  UpdateUserProfileInput,
-  UpdateUserProfileResponse,
-  DeleteUserProfileResponse,
-  GetUserRatingsResponse,
-  GetUserCommentsResponse,
-  FollowBody,
-  FollowUnfollowResponse,
-  GetFollowersResponse,
-  GetFollowingResponse,
-  GetMovieEnvelope,
-  UpdateMovieInput,
-  UpdateMovieEnvelope,
-  DeleteMovieResponse,
-} from "./apiTypes";
-import type { Movie, UserProfile, Rating, Comment, FollowEdge, UserProfileBasic } from "./models";
-
-/**
- * Temporary shim so frontend code can import the same `components["schemas"]["Foo"]`
- * types that the generated file exposes on other branches. It maps to the
- * hand-written apiTypes/models definitions we already keep in the repo.
- *
- * When the OpenAPI generator runs, this file should be overwritten.
- */
-export interface components {
-  schemas: {
-    PingResponse: PingResponse;
-    DbTestResponse: DbTestResponse;
-    ProtectedResponse: ProtectedResponse;
-    GetUserProfileBasicResponse: GetUserProfileBasicResponse;
-    UpdateUserProfileInput: UpdateUserProfileInput;
-    UpdateUserProfileResponse: UpdateUserProfileResponse;
-    DeleteUserProfileResponse: DeleteUserProfileResponse;
-    GetUserRatingsResponse: GetUserRatingsResponse;
-    GetUserCommentsResponse: GetUserCommentsResponse;
-    FollowBody: FollowBody;
-    FollowUnfollowResponse: FollowUnfollowResponse;
-    GetFollowersResponse: GetFollowersResponse;
-    GetFollowingResponse: GetFollowingResponse;
-    Movie: Movie;
-    UserProfile: UserProfile;
-    UserProfileBasic: UserProfileBasic;
-    Rating: Rating;
-    Comment: Comment;
-    FollowEdge: FollowEdge;
-    GetMovieEnvelope: GetMovieEnvelope;
-    UpdateMovieInput: UpdateMovieInput;
-    UpdateMovieEnvelope: UpdateMovieEnvelope;
-    DeleteMovieResponse: DeleteMovieResponse;
-  };
-}

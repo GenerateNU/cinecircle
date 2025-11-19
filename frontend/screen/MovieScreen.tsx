@@ -15,15 +15,13 @@ import MovieChosenScreen from './MovieChosenScreen';
 import RecByFriendsScreen from './RecByFriendsScreen';
 import SearchBar from '../components/SearchBar';
 import { getAllMovies } from '../services/moviesService';
-import type { Movie as ApiMovie } from '../types/models';
-
-// ✅ FIX: correct i18n imports (no extra /app, right folder name)
+import type { components } from '../types/api-generated';
 import { t, getLanguage } from '../app/il8n/il8n';
 import { UiTextKey } from '../app/il8n/keys';
-
-// ✅ Make sure this exists and is exported
 import { fetchUserProfile } from '../services/userService';
 import { router } from 'expo-router';
+
+type Movie = components['schemas']['Movie'];
 
 interface MovieCard {
   id: string;
@@ -146,7 +144,7 @@ export default function MoviesScreen() {
 
         const mapped: MovieCard[] = apiMovies
           .slice(0, 8)
-          .map((m: ApiMovie, index) => {
+          .map((m: Movie, index) => {
             const title = m.title ?? 'Untitled';
             const movieId = m.movieId ?? String(index);
             const badge: MovieCard['badge'] | undefined =
