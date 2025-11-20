@@ -1,4 +1,3 @@
-import ProfilePage from '../../screen/ProfilePage'; 
-export default function RecByFriendsRoute() {
-    return <ProfilePage />;
-}
+import React from 'react';
+import ProfilePage from './profile'; 
+export { default } from '../profilePage';
