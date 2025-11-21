@@ -1,5 +1,4 @@
-// frontend/app/screens/MoviesScreen.tsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,8 +15,8 @@ import RecByFriendsScreen from './RecByFriendsScreen';
 import SearchBar from '../components/SearchBar';
 import { getAllMovies } from '../services/moviesService';
 import type { components } from '../types/api-generated';
-import { t, getLanguage } from '../app/il8n/il8n';
-import { UiTextKey } from '../app/il8n/keys';
+import { t, getLanguage } from '../il8n/_il8n';
+import { UiTextKey } from '../il8n/_keys';
 import { fetchUserProfile } from '../services/userService';
 import { router } from 'expo-router';
 

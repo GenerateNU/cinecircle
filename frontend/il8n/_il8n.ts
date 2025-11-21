@@ -1,5 +1,5 @@
 // frontend/app/i18n/i18n.ts
-import { UiTextKey } from "./keys";
+import { UiTextKey } from "./_keys";
 
 export type LanguageCode = "en" | "hi";
 

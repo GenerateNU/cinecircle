@@ -33,17 +33,17 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
     {
       label: 'Browse Movies',
       icon: <Feather name="film" size={18} color="#FFF" />,
-      onPress: () => router.push('/movies'),
+      onPress: () => router.push('movies'),
     },
     {
       label: 'Find Events',
       icon: <Feather name="map-pin" size={18} color="#FFF" />,
-      onPress: () => router.push('/events'),
+      onPress: () => router.push('events'),
     },
     {
       label: 'Profile',
       icon: <Feather name="user" size={18} color="#FFF" />,
-      onPress: () => router.push('/profile'),
+      onPress: () => router.push('profile'),
     },
   ];
   const [activeNav, setActiveNav] = React.useState(navOptions[0]);
@@ -168,7 +168,7 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
           )}
         </View>
 
-        {/* Optional: show who’s signed in */}
+        {/* Optional: show who's signed in */}
         {!!user && (
           <Text style={tw`text-sm text-gray-500 mt-4 px-5`}>
             Signed in as {user.email}

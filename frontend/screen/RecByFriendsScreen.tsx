@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import TextPost from '../components/TextPost';
 import PicturePost from '../components/PicturePost';
