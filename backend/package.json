@@ -31,10 +31,11 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.907.0",
     "@prisma/client": "^6.15.0",
     "@scalar/express-api-reference": "^0.8.16",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
