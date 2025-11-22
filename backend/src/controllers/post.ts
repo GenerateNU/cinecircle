@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
     try {
-      const { userId, content, type, imageUrl, parentPostId } = req.body;
+      const { userId, content, type, imageUrls, parentPostId } = req.body;
   
       // Validation
       if (!userId || !content) {
@@ -35,7 +35,7 @@ export const createPost = async (req: Request, res: Response) => {
           userId,
           content,
           type: type || "SHORT",
-          imageUrl,
+          imageUrls: imageUrls || [],
           parentPostId,
         },
         include: {
@@ -210,7 +210,7 @@ export const getPosts = async (req: Request, res: Response) => {
 export const updatePost = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
-      const { content, type, imageUrl } = req.body;
+      const { content, type, imageUrls } = req.body;
   
       if (!postId) {
         return res.status(400).json({ message: "Post ID is required" });
@@ -227,7 +227,7 @@ export const updatePost = async (req: Request, res: Response) => {
         }
         updateData.type = type;
       }
-      if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+      if (imageUrls !== undefined) updateData.imageUrls = imageUrls;
   
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({ message: "No fields to update" });
