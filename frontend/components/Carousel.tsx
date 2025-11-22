@@ -1,12 +1,10 @@
-import React from "react";
-import Carousel from "react-native-reanimated-carousel";
-import { Dimensions, View, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { ScrollView, View, StyleSheet, Dimensions } from "react-native";
 
 /**
- * TO USE 
- * - Components must be an array 
- * - width and height are the percent of the screen you want to fill 
- *   e.g 30 would be 30%
+ * Simple Carousel Component
+ * - Uses ScrollView with horizontal pagination
+ * - Works without react-native-reanimated-carousel
  */
 interface CarouselProps {
   components: React.ReactNode[]; 
@@ -16,24 +14,46 @@ interface CarouselProps {
 
 export default function MyCarousel({ components, width, height }: CarouselProps) {
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const carouselWidth = (width / 100) * screenWidth;
   const carouselHeight = (height / 100) * screenHeight;
 
   return (
     <View style={[styles.carouselContainer, { width: carouselWidth, height: carouselHeight }]}>
-      <Carousel
-        loop
-        width={carouselWidth}
-        height={carouselHeight}
-        data={components}
-        scrollAnimationDuration={800}
-        renderItem={({ item }) => (
-          <View style={styles.carouselItem}>
-            {item}
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(event) => {
+          const newIndex = Math.round(
+            event.nativeEvent.contentOffset.x / carouselWidth
+          );
+          setCurrentIndex(newIndex);
+        }}
+        style={{ width: carouselWidth, height: carouselHeight }}
+      >
+        {components.map((component, index) => (
+          <View key={index} style={[styles.carouselItem, { width: carouselWidth }]}>
+            {component}
           </View>
-        )}
-      />
+        ))}
+      </ScrollView>
+      
+      {/* Pagination Dots */}
+      {components.length > 1 && (
+        <View style={styles.pagination}>
+          {components.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                currentIndex === index && styles.activeDot
+              ]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -42,14 +62,26 @@ const styles = StyleSheet.create({
   carouselContainer: {
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
   },
   carouselItem: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "pink", //for testing 
-    borderRadius: "16",
-    marginHorizontal: 10,
-   
+  },
+  pagination: {
+    flexDirection: "row",
+    position: "absolute",
+    bottom: 10,
+    alignSelf: "center",
+    gap: 6,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+  },
+  activeDot: {
+    backgroundColor: "rgba(255, 255, 255, 1)",
   },
 });

@@ -10,15 +10,17 @@ type TextPostProps = {
     date: string;
     avatarUri?: string;
     content: string;
+    userId?: string;
 };
 
 export default function TextPost({
-                                     userName,
-                                     username,
-                                     date,
-                                     avatarUri,
-                                     content,
-                                 }: TextPostProps) {
+    userName,
+    username,
+    date,
+    avatarUri,
+    content,
+    userId,
+}: TextPostProps) {
     return (
         <View style={styles.container}>
             <UserBar
@@ -26,9 +28,9 @@ export default function TextPost({
                 username={username}
                 date={date}
                 avatarUri={avatarUri}
+                userId={userId}
             />
             <Text style={styles.content}>{content}</Text>
-            {/* PostActions component will go here */}
         </View>
     );
 }

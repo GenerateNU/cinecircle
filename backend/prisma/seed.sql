@@ -1,4 +1,5 @@
 -- Clear existing data (optional)
+TRUNCATE TABLE "public"."PostLike" CASCADE;
 TRUNCATE TABLE "public"."Comment" CASCADE;
 TRUNCATE TABLE "public"."Rating" CASCADE;
 TRUNCATE TABLE "public"."Post" CASCADE;
@@ -124,28 +125,182 @@ INSERT INTO "public"."Post" (
   "content",
   "type",
   "votes",
+  "createdAt",
+  "imageUrls",
+  "parentPostId"
+) VALUES
+  -- Text posts
+  ('p1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Just watched Shawshank Redemption again. Never gets old! 🎬', 'SHORT', 5, NOW() - INTERVAL '2 days', '{}', NULL),
+  ('p2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'The Dark Knight is a masterpiece of modern cinema. Christopher Nolan''s direction, Heath Ledger''s performance, and the moral complexity make it unforgettable.', 'LONG', 12, NOW() - INTERVAL '5 days', '{}', NULL),
+  ('p3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'Anyone else think Inception is overrated?', 'SHORT', -2, NOW() - INTERVAL '1 day', '{}', NULL),
+  ('p4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'Film analysis: The use of color grading in The Godfather to represent moral decay is absolutely brilliant. Each scene''s palette tells its own story.', 'LONG', 23, NOW() - INTERVAL '7 days', '{}', NULL),
+  ('p5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'Spirited Away on the big screen tonight! Can''t wait! 🍿', 'SHORT', 8, NOW() - INTERVAL '3 hours', '{}', NULL),
+  ('p6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'Just discovered the indie film scene. Why didn''t anyone tell me about this sooner?!', 'SHORT', 4, NOW() - INTERVAL '12 hours', '{}', NULL),
+  ('p7777777-7777-7777-7777-777777777777', '77777777-7777-7777-7777-777777777777', 'Hot take: Fight Club aged poorly', 'SHORT', -5, NOW() - INTERVAL '4 days', '{}', NULL),
+  ('p8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', 'Parasite winning Best Picture was a watershed moment for international cinema. It opened doors and changed perceptions about what mainstream audiences can appreciate.', 'LONG', 34, NOW() - INTERVAL '10 days', '{}', NULL),
+  ('p9999999-9999-9999-9999-999999999999', '99999999-9999-9999-9999-999999999999', 'Documentary recommendations anyone?', 'SHORT', 7, NOW() - INTERVAL '6 hours', '{}', NULL),
+  ('paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'The Matrix revolutionized action choreography and visual effects. Its influence can still be seen in films today, 25 years later.', 'LONG', 19, NOW() - INTERVAL '8 days', '{}', NULL),
+  ('pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'Going to the Summer Film Festival next month. Who''s in?', 'SHORT', 10, NOW() - INTERVAL '1 hour', '{}', NULL),
+  ('pcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'Rewatching LOTR trilogy this weekend. Epic! 🧙‍♂️', 'SHORT', 15, NOW() - INTERVAL '2 hours', '{}', NULL),
+  ('pdddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'Pulp Fiction: nonlinear storytelling at its finest', 'SHORT', 9, NOW() - INTERVAL '3 days', '{}', NULL),
+  ('peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', 'The cinematography in Interstellar is breathtaking. IMAX made all the difference.', 'SHORT', 17, NOW() - INTERVAL '6 days', '{}', NULL),
+  ('pffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'Studio Ghibli marathon happening! Starting with Totoro 🌳', 'SHORT', 6, NOW() - INTERVAL '4 hours', '{}', NULL),
+  ('pgggggg-gggg-gggg-gggg-gggggggggggg', '66666666-6666-6666-6666-666666666666', 'Se7en still holds up as one of the best thriller endings ever', 'SHORT', 13, NOW() - INTERVAL '5 days', '{}', NULL),
+  ('phhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '77777777-7777-7777-7777-777777777777', 'Star Wars original trilogy > prequels > sequels. Fight me.', 'SHORT', 2, NOW() - INTERVAL '8 hours', '{}', NULL),
+  ('piiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '88888888-8888-8888-8888-888888888888', 'Back to the Future is the perfect time travel movie. Everything about it works.', 'SHORT', 21, NOW() - INTERVAL '9 days', '{}', NULL),
+  ('pjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', '99999999-9999-9999-9999-999999999999', 'Film noir appreciation post: Double Indemnity, The Maltese Falcon, Touch of Evil. The shadows, the dialogue, the moral ambiguity - this genre defined cinema.', 'LONG', 14, NOW() - INTERVAL '11 days', '{}', NULL),
+  ('pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '12 Angry Men with just one room and phenomenal acting 👏', 'SHORT', 10, NOW() - INTERVAL '5 hours', '{}', NULL),
+  
+  -- Picture posts with image URLs (some with multiple images for carousel)
+  ('plllllll-llll-llll-llll-llllllllllll', '11111111-1111-1111-1111-111111111111', 'My home theater setup for movie night! 🎥', 'SHORT', 18, NOW() - INTERVAL '10 hours', ARRAY['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800'], NULL),
+  ('pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '22222222-2222-2222-2222-222222222222', 'Found this incredible vintage poster at the flea market today!', 'SHORT', 22, NOW() - INTERVAL '15 hours', ARRAY['https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
+  ('pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '33333333-3333-3333-3333-333333333333', 'Cinema architecture is art 🎭', 'SHORT', 14, NOW() - INTERVAL '1 day', ARRAY['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
+  ('pooooooo-oooo-oooo-oooo-oooooooooooo', '44444444-4444-4444-4444-444444444444', 'My growing Criterion Collection 📚', 'SHORT', 25, NOW() - INTERVAL '2 days', ARRAY['https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800'], NULL),
+  ('ppppppp-pppp-pppp-pppp-pppppppppppp', '55555555-5555-5555-5555-555555555555', 'Best seat in the house for tonight''s screening!', 'SHORT', 16, NOW() - INTERVAL '30 minutes', ARRAY['https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800', 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
+  
+  -- Reply posts (threads)
+  ('pqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '22222222-2222-2222-2222-222222222222', 'Totally agree! That scene gives me chills', 'SHORT', 3, NOW() - INTERVAL '1 day', '{}', 'p1111111-1111-1111-1111-111111111111'),
+  ('prrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '33333333-3333-3333-3333-333333333333', 'You clearly didn''t understand it then', 'SHORT', 1, NOW() - INTERVAL '20 hours', '{}', 'p3333333-3333-3333-3333-333333333333'),
+  ('pssssss-ssss-ssss-ssss-ssssssssssss', '44444444-4444-4444-4444-444444444444', 'Me! Been waiting for this all year', 'SHORT', 5, NOW() - INTERVAL '45 minutes', '{}', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+ON CONFLICT ("id") DO NOTHING;
+
+-- ============================================
+-- Post Likes (matching the votes count for each post)
+-- ============================================
+INSERT INTO "public"."PostLike" (
+  "id",
+  "postId",
+  "userId",
   "createdAt"
 ) VALUES
-  ('p1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Just watched Shawshank Redemption again. Never gets old! 🎬', 'SHORT', 5, NOW() - INTERVAL '2 days'),
-  ('p2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'The Dark Knight is a masterpiece of modern cinema. Christopher Nolan''s direction, Heath Ledger''s performance, and the moral complexity make it unforgettable.', 'LONG', 12, NOW() - INTERVAL '5 days'),
-  ('p3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'Anyone else think Inception is overrated?', 'SHORT', -2, NOW() - INTERVAL '1 day'),
-  ('p4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'Film analysis: The use of color grading in The Godfather to represent moral decay is absolutely brilliant. Each scene''s palette tells its own story.', 'LONG', 23, NOW() - INTERVAL '7 days'),
-  ('p5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'Spirited Away on the big screen tonight! Can''t wait! 🍿', 'SHORT', 8, NOW() - INTERVAL '3 hours'),
-  ('p6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'Just discovered the indie film scene. Why didn''t anyone tell me about this sooner?!', 'SHORT', 4, NOW() - INTERVAL '12 hours'),
-  ('p7777777-7777-7777-7777-777777777777', '77777777-7777-7777-7777-777777777777', 'Hot take: Fight Club aged poorly', 'SHORT', -5, NOW() - INTERVAL '4 days'),
-  ('p8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', 'Parasite winning Best Picture was a watershed moment for international cinema. It opened doors and changed perceptions about what mainstream audiences can appreciate.', 'LONG', 34, NOW() - INTERVAL '10 days'),
-  ('p9999999-9999-9999-9999-999999999999', '99999999-9999-9999-9999-999999999999', 'Documentary recommendations anyone?', 'SHORT', 7, NOW() - INTERVAL '6 hours'),
-  ('paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'The Matrix revolutionized action choreography and visual effects. Its influence can still be seen in films today, 25 years later.', 'LONG', 19, NOW() - INTERVAL '8 days'),
-  ('pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'Going to the Summer Film Festival next month. Who''s in?', 'SHORT', 11, NOW() - INTERVAL '1 hour'),
-  ('pcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'Rewatching LOTR trilogy this weekend. Epic! 🧙‍♂️', 'SHORT', 15, NOW() - INTERVAL '2 hours'),
-  ('pdddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'Pulp Fiction: nonlinear storytelling at its finest', 'SHORT', 9, NOW() - INTERVAL '3 days'),
-  ('peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', 'The cinematography in Interstellar is breathtaking. IMAX made all the difference.', 'SHORT', 17, NOW() - INTERVAL '6 days'),
-  ('pffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'Studio Ghibli marathon happening! Starting with Totoro 🌳', 'SHORT', 6, NOW() - INTERVAL '4 hours'),
-  ('pgggggg-gggg-gggg-gggg-gggggggggggg', '66666666-6666-6666-6666-666666666666', 'Se7en still holds up as one of the best thriller endings ever', 'SHORT', 13, NOW() - INTERVAL '5 days'),
-  ('phhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '77777777-7777-7777-7777-777777777777', 'Star Wars original trilogy > prequels > sequels. Fight me.', 'SHORT', 2, NOW() - INTERVAL '8 hours'),
-  ('piiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '88888888-8888-8888-8888-888888888888', 'Back to the Future is the perfect time travel movie. Everything about it works.', 'SHORT', 21, NOW() - INTERVAL '9 days'),
-  ('pjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', '99999999-9999-9999-9999-999999999999', 'Film noir appreciation post: Double Indemnity, The Maltese Falcon, Touch of Evil. The shadows, the dialogue, the moral ambiguity - this genre defined cinema.', 'LONG', 14, NOW() - INTERVAL '11 days'),
-  ('pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '12 Angry Men with just one room and phenomenal acting 👏', 'SHORT', 10, NOW() - INTERVAL '5 hours')
+  -- p1111111: 5 votes
+  ('l0000001-0001-0001-0001-000000000001', 'p1111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '1 day'),
+  ('l0000001-0001-0001-0001-000000000002', 'p1111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '1 day'),
+  ('l0000001-0001-0001-0001-000000000003', 'p1111111-1111-1111-1111-111111111111', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '1 day'),
+  ('l0000001-0001-0001-0001-000000000004', 'p1111111-1111-1111-1111-111111111111', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '1 day'),
+  ('l0000001-0001-0001-0001-000000000005', 'p1111111-1111-1111-1111-111111111111', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '1 day'),
+  
+  -- p2222222: 10 votes (only 10 unique users available)
+  ('l0000002-0002-0002-0002-000000000001', 'p2222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000002', 'p2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000003', 'p2222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000004', 'p2222222-2222-2222-2222-222222222222', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000005', 'p2222222-2222-2222-2222-222222222222', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000006', 'p2222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000007', 'p2222222-2222-2222-2222-222222222222', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000008', 'p2222222-2222-2222-2222-222222222222', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000009', 'p2222222-2222-2222-2222-222222222222', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '4 days'),
+  ('l0000002-0002-0002-0002-000000000010', 'p2222222-2222-2222-2222-222222222222', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '4 days'),
+  
+  -- p4444444: 23 votes (generate 10 unique users)
+  ('l0000004-0004-0004-0004-000000000001', 'p4444444-4444-4444-4444-444444444444', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000002', 'p4444444-4444-4444-4444-444444444444', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000003', 'p4444444-4444-4444-4444-444444444444', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000004', 'p4444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000005', 'p4444444-4444-4444-4444-444444444444', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000006', 'p4444444-4444-4444-4444-444444444444', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000007', 'p4444444-4444-4444-4444-444444444444', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000008', 'p4444444-4444-4444-4444-444444444444', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000009', 'p4444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '6 days'),
+  ('l0000004-0004-0004-0004-000000000010', 'p4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '6 days'),
+  
+  -- p5555555: 8 votes
+  ('l0000005-0005-0005-0005-000000000001', 'p5555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000002', 'p5555555-5555-5555-5555-555555555555', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000003', 'p5555555-5555-5555-5555-555555555555', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000004', 'p5555555-5555-5555-5555-555555555555', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000005', 'p5555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000006', 'p5555555-5555-5555-5555-555555555555', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000007', 'p5555555-5555-5555-5555-555555555555', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '2 hours'),
+  ('l0000005-0005-0005-0005-000000000008', 'p5555555-5555-5555-5555-555555555555', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '2 hours'),
+  
+  -- p6666666: 4 votes
+  ('l0000006-0006-0006-0006-000000000001', 'p6666666-6666-6666-6666-666666666666', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '11 hours'),
+  ('l0000006-0006-0006-0006-000000000002', 'p6666666-6666-6666-6666-666666666666', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '11 hours'),
+  ('l0000006-0006-0006-0006-000000000003', 'p6666666-6666-6666-6666-666666666666', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '11 hours'),
+  ('l0000006-0006-0006-0006-000000000004', 'p6666666-6666-6666-6666-666666666666', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '11 hours'),
+  
+  -- p8888888: 34 votes (generate 10 for brevity)
+  ('l0000008-0008-0008-0008-000000000001', 'p8888888-8888-8888-8888-888888888888', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000002', 'p8888888-8888-8888-8888-888888888888', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000003', 'p8888888-8888-8888-8888-888888888888', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000004', 'p8888888-8888-8888-8888-888888888888', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000005', 'p8888888-8888-8888-8888-888888888888', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000006', 'p8888888-8888-8888-8888-888888888888', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000007', 'p8888888-8888-8888-8888-888888888888', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000008', 'p8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000009', 'p8888888-8888-8888-8888-888888888888', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '9 days'),
+  ('l0000008-0008-0008-0008-000000000010', 'p8888888-8888-8888-8888-888888888888', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '9 days'),
+  
+  -- p9999999: 7 votes
+  ('l0000009-0009-0009-0009-000000000001', 'p9999999-9999-9999-9999-999999999999', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '5 hours'),
+  ('l0000009-0009-0009-0009-000000000002', 'p9999999-9999-9999-9999-999999999999', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '5 hours'),
+  ('l0000009-0009-0009-0009-000000000003', 'p9999999-9999-9999-9999-999999999999', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '5 hours'),
+  ('l0000009-0009-0009-0009-000000000004', 'p9999999-9999-9999-9999-999999999999', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '5 hours'),
+  ('l0000009-0009-0009-0009-000000000005', 'p9999999-9999-9999-9999-999999999999', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '5 hours'),
+  ('l0000009-0009-0009-0009-000000000006', 'p9999999-9999-9999-9999-999999999999', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '5 hours'),
+  ('l0000009-0009-0009-0009-000000000007', 'p9999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '5 hours'),
+  
+  -- paaaaaaa: 19 votes (generate 10)
+  ('l000000a-000a-000a-000a-000000000001', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000002', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000003', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000004', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000005', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000006', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000007', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000008', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000009', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '7 days'),
+  ('l000000a-000a-000a-000a-000000000010', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '7 days'),
+  
+  -- pbbbbbb: 10 votes (only 10 unique users available)
+  ('l000000b-000b-000b-000b-000000000001', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000002', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000003', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000004', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000005', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000006', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000007', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000008', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000009', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '30 minutes'),
+  ('l000000b-000b-000b-000b-000000000010', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '30 minutes'),
+  
+  -- pcccccc: 15 votes (generate 10)
+  ('l000000c-000c-000c-000c-000000000001', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000002', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000003', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000004', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000005', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000006', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000007', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000008', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000009', 'pcccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '1 hour'),
+  ('l000000c-000c-000c-000c-000000000010', 'pcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '1 hour'),
+  
+  -- Picture posts
+  -- plllllll: 18 votes (generate 10)
+  ('l000000l-000l-000l-000l-000000000001', 'plllllll-llll-llll-llll-llllllllllll', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000002', 'plllllll-llll-llll-llll-llllllllllll', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000003', 'plllllll-llll-llll-llll-llllllllllll', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000004', 'plllllll-llll-llll-llll-llllllllllll', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000005', 'plllllll-llll-llll-llll-llllllllllll', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000006', 'plllllll-llll-llll-llll-llllllllllll', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000007', 'plllllll-llll-llll-llll-llllllllllll', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000008', 'plllllll-llll-llll-llll-llllllllllll', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000009', 'plllllll-llll-llll-llll-llllllllllll', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '9 hours'),
+  ('l000000l-000l-000l-000l-000000000010', 'plllllll-llll-llll-llll-llllllllllll', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '9 hours'),
+  
+  -- pmmmmmmm: 22 votes (generate 10)
+  ('l000000m-000m-000m-000m-000000000001', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '11111111-1111-1111-1111-111111111111', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000002', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000003', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000004', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '55555555-5555-5555-5555-555555555555', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000005', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '66666666-6666-6666-6666-666666666666', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000006', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '77777777-7777-7777-7777-777777777777', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000007', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '88888888-8888-8888-8888-888888888888', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000008', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '99999999-9999-9999-9999-999999999999', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000009', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NOW() - INTERVAL '14 hours'),
+  ('l000000m-000m-000m-000m-000000000010', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '14 hours')
 ON CONFLICT ("id") DO NOTHING;
 
 -- ============================================
