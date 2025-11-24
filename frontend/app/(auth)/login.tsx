@@ -76,6 +76,8 @@ const LoginForm = () => {
                     onChangeText={setEmail}
                     value={email}
                     keyboardType="email-address"
+                    autoComplete="email"
+                    textContentType="emailAddress"
                 />
                 <TextInputComponent
                     field="Password"
@@ -83,6 +85,8 @@ const LoginForm = () => {
                     onChangeText={setPassword}
                     value={password}
                     secureTextEntry={true}
+                    autoComplete="current-password"
+                    textContentType="password"
                 />
                 <Text style={styles.message}>{message || ' '}</Text>
             </View>

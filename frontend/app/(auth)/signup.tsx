@@ -155,6 +155,8 @@ const SignUp = () => {
                     onChangeText={setEmail}
                     value={email}
                     keyboardType="email-address"
+                    autoComplete="email"
+                    textContentType="emailAddress"
                 />
                 <TextInputComponent
                     field="Password"
@@ -163,6 +165,8 @@ const SignUp = () => {
                     onChangeText={setPassword}
                     value={password}
                     secureTextEntry={true}
+                    autoComplete="new-password"
+                    textContentType="newPassword"
                 />
                 <TextInputComponent
                     field="Confirm Password"
@@ -171,6 +175,8 @@ const SignUp = () => {
                     onChangeText={setConfirmPassword}
                     value={confirmPassword}
                     secureTextEntry={true}
+                    autoComplete="new-password"
+                    textContentType="newPassword"
                 />
                 <Text style={styles.message}>{'*'+ message|| ' '}</Text>
             </View>
