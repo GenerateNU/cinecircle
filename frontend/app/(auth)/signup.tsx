@@ -2,7 +2,7 @@ import NextButton from "../../components/NextButton";
 import TextInputComponent from "../../components/TextInputComponent";
 import { router } from "expo-router"
 import { useState } from 'react';
-import { Text, View, StyleSheet, Dimensions } from "react-native";
+import { Text, View, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { supabase } from '../../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
@@ -171,11 +171,22 @@ const SignUp = () => {
                 <Text style={styles.message}>{'*'+ message|| ' '}</Text>
             </View>
 
-            <NextButton 
-                onPress={dispatchSignUp} 
-                title="Create Account"
-                disabled={loading} 
-            />
+            <View style={styles.bottomSection}>
+                <NextButton 
+                    onPress={dispatchSignUp} 
+                    title="Create Account"
+                    disabled={loading} 
+                />
+                
+                <TouchableOpacity 
+                    onPress={() => router.push('/(auth)/phone-login')}
+                    style={styles.phoneLoginLink}
+                >
+                    <Text style={styles.phoneLoginText}>
+                        Or sign up with WhatsApp
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -198,5 +209,20 @@ const styles = StyleSheet.create({
         marginTop: 10,
         color: '#666',
         textAlign: 'center',
+    },
+    bottomSection: {
+        width: '100%',
+        alignItems: 'center',
+        gap: 20,
+    },
+    phoneLoginLink: {
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+    },
+    phoneLoginText: {
+        color: '#007AFF',
+        fontSize: 16,
+        textAlign: 'center',
+        textDecorationLine: 'underline',
     }
 });

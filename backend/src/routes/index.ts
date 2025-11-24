@@ -17,12 +17,14 @@ import { getAllMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
+import { getAuthInfo } from "../controllers/auth";
 // backend/src/routes/index.ts
 
 const router = Router();
 
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
+router.get("/api/auth/info", getAuthInfo);
 
 // Legacy endpoint
 router.get("/swagger-output.json", serveSwagger);  

@@ -13,9 +13,9 @@ export default function Index() {
     );
   }
 
-  // Not authenticated -> go to auth
+  // Not authenticated -> go to auth (phone login for testing - TODO: change to welcome screen)
   if (!user) {
-    return <Redirect href="/(auth)/welcome" />;
+    return <Redirect href="/(auth)/phone-login" />;
   }
 
   // Authenticated but needs onboarding

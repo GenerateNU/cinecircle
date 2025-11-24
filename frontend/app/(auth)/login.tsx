@@ -1,12 +1,14 @@
 import NextButton from "../../components/NextButton";
 import TextInputComponent from "../../components/TextInputComponent";
 import { useState } from 'react';
-import { Text, View, StyleSheet, Dimensions } from "react-native";
+import { Text, View, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { supabase } from '../../lib/supabase';
+import { useRouter } from 'expo-router';
 
 const { height } = Dimensions.get('window');
 
 const LoginForm = () => {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
@@ -80,11 +82,22 @@ const LoginForm = () => {
                 <Text style={styles.message}>{message || ' '}</Text>
             </View>
 
-            <NextButton 
-                onPress={handleLogin} 
-                disabled={loading} 
-                size="large"
-            />
+            <View style={styles.bottomSection}>
+                <NextButton 
+                    onPress={handleLogin} 
+                    disabled={loading} 
+                    size="large"
+                />
+                
+                <TouchableOpacity 
+                    onPress={() => router.push('/(auth)/phone-login')}
+                    style={styles.phoneLoginLink}
+                >
+                    <Text style={styles.phoneLoginText}>
+                        Or sign in with WhatsApp
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -108,5 +121,20 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         minHeight: 40,
+    },
+    bottomSection: {
+        width: '100%',
+        alignItems: 'center',
+        gap: 20,
+    },
+    phoneLoginLink: {
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+    },
+    phoneLoginText: {
+        color: '#007AFF',
+        fontSize: 16,
+        textAlign: 'center',
+        textDecorationLine: 'underline',
     }
 });
