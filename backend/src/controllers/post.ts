@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import { prisma } from "../services/db.js";
 import { Prisma } from "@prisma/client";
+import sendFilesToS3 from "../services/sendFiles.js";
+import { S3_FOLDERS } from "../services/s3-folders.js";
 
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
     try {
-      const { userId, content, postType, parentPostId, reviewId } = req.body;
+      const { userId, content, postType, images } = req.body;
   
       // Validation
       if (!userId || !content) {
@@ -14,47 +16,25 @@ export const createPost = async (req: Request, res: Response) => {
         });
       }
   
-      if (postType && !["LONG_POST", "SHORT_POST"].includes(postType)) {
+      if (postType && !["LONG", "SHORT"].includes(postType)) {
         return res.status(400).json({ 
-          message: "Invalid postType. Must be LONG_POST or SHORT_POST" 
+          message: "Invalid postType. Must be LONG or SHORT" 
         });
       }
-  
-      // If it's a reply, verify parent post exists
-      if (parentPostId) {
-        const parentPost = await prisma.post.findUnique({
-          where: { postId: parentPostId },
-        });
-        if (!parentPost) {
-          return res.status(404).json({ message: "Parent post not found" });
-        }
-      }
-  
-      // If linked to review, verify review exists
-      if (reviewId) {
-        const review = await prisma.review.findUnique({
-          where: { reviewId },
-        });
-        if (!review) {
-          return res.status(404).json({ message: "Review not found" });
-        }
+
+      // Upload images to S3 if provided
+      let imageUrls: string[] = [];
+      if (images && Array.isArray(images) && images.length > 0) {
+        const uploadResults = await sendFilesToS3(images, S3_FOLDERS.POSTS);
+        imageUrls = uploadResults.filter((url): url is string => url !== null);
       }
   
       const newPost = await prisma.post.create({
         data: {
           userId,
           content,
-          postType: postType || "SHORT_POST",
-          parentPostId,
-          reviewId,
-        },
-        include: {
-          user: {
-            select: {
-              userId: true,
-              username: true,
-            },
-          },
+          type: postType || "SHORT",
+          images: imageUrls,
         },
       });
   
@@ -265,10 +245,29 @@ export const deletePost = async (req: Request, res: Response) => {
       if (!postId) {
         return res.status(400).json({ message: "Post ID is required" });
       }
-  
+
+      // Get post to access images before deletion
+      const post = await prisma.post.findUnique({
+        where: { postId },
+      });
+
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Delete post from database
       await prisma.post.delete({
         where: { postId },
       });
+
+      // Delete images from S3 (fire and forget - don't block response)
+      if (post.images && post.images.length > 0) {
+        const { S3ServiceImpl } = await import("../services/s3.js");
+        const s3Service = new S3ServiceImpl();
+        Promise.all(post.images.map(url => s3Service.delete(url).catch(err => 
+          console.error("Error deleting S3 image:", err)
+        )));
+      }
   
       res.json({
         message: "Post deleted successfully",
