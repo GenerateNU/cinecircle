@@ -45,23 +45,22 @@ describe("Post Controller Unit Tests", () => {
       const mockPostData = {
         userId: mockUserId,
         content: "This is a test post",
-        postType: "SHORT_POST",
+        postType: "SHORT",
       };
 
       mockRequest.body = mockPostData;
 
       const mockCreatedPost = {
         postId: "post-123",
-        ...mockPostData,
+        userId: mockUserId,
+        content: "This is a test post",
+        type: "SHORT",
+        images: [],
         votes: 0,
         parentPostId: null,
         reviewId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        user: {
-          userId: mockUserId,
-          username: "testuser",
-        },
       };
 
       jest.spyOn(prisma.post, "create").mockResolvedValueOnce(mockCreatedPost as any);
@@ -87,7 +86,7 @@ describe("Post Controller Unit Tests", () => {
 
       expect(responseObject.status).toHaveBeenCalledWith(400);
       expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Invalid postType. Must be LONG_POST or SHORT_POST",
+        message: "Invalid postType. Must be LONG or SHORT",
       });
     });
   });
@@ -125,7 +124,8 @@ describe("Post Controller Unit Tests", () => {
         postId: mockPostId,
         userId: "user-123",
         content: "Test post",
-        postType: "SHORT_POST",
+        type: "SHORT",
+        images: [],
         votes: 5,
         parentPostId: null,
         reviewId: null,
@@ -177,7 +177,8 @@ describe("Post Controller Unit Tests", () => {
         postId: mockPostId,
         userId: "user-123",
         content: "Updated content",
-        postType: "SHORT_POST",
+        type: "SHORT",
+        images: [],
         votes: 0,
         parentPostId: null,
         reviewId: null,
@@ -226,10 +227,27 @@ describe("Post Controller Unit Tests", () => {
     it("should delete post successfully", async () => {
       mockRequest.params = { postId: "post-123" };
 
-      jest.spyOn(prisma.post, "delete").mockResolvedValueOnce({} as any);
+      const mockPost = {
+        postId: "post-123",
+        userId: "user-123",
+        content: "Test post",
+        type: "SHORT",
+        images: [],
+        votes: 0,
+        parentPostId: null,
+        reviewId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      jest.spyOn(prisma.post, "findUnique").mockResolvedValueOnce(mockPost as any);
+      jest.spyOn(prisma.post, "delete").mockResolvedValueOnce(mockPost as any);
 
       await deletePost(mockRequest as Request, mockResponse as Response);
 
+      expect(prisma.post.findUnique).toHaveBeenCalledWith({
+        where: { postId: "post-123" },
+      });
       expect(prisma.post.delete).toHaveBeenCalledWith({
         where: { postId: "post-123" },
       });
@@ -241,19 +259,14 @@ describe("Post Controller Unit Tests", () => {
     it("should return 404 if post not found", async () => {
       mockRequest.params = { postId: "non-existent" };
 
-      const prismaError = new Prisma.PrismaClientKnownRequestError("Not found", {
-        code: "P2025",
-        clientVersion: "4.0.0",
-      });
-
-      jest.spyOn(prisma.post, "delete").mockRejectedValueOnce(prismaError);
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+      jest.spyOn(prisma.post, "findUnique").mockResolvedValueOnce(null);
 
       await deletePost(mockRequest as Request, mockResponse as Response);
 
       expect(responseObject.status).toHaveBeenCalledWith(404);
-
-      consoleErrorSpy.mockRestore();
+      expect(responseObject.json).toHaveBeenCalledWith({
+        message: "Post not found",
+      });
     });
   });
 });
