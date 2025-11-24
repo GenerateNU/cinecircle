@@ -1,7 +1,7 @@
 import NextButton from "../../components/NextButton";
 import TextInputComponent from "../../components/TextInputComponent";
 import { useState } from 'react';
-import { Text, View, StyleSheet, Dimensions } from "react-native";
+import { Text, View, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { supabase } from '../../lib/supabase';
 import BackButton from "../../components/BackButton";
 import { router } from "expo-router";
@@ -64,12 +64,10 @@ const LoginForm = () => {
 
     return (
         <View style={styles.container}>
-            {/* Back button positioned absolutely */}
-            <View style={styles.backButtonContainer}>
+            <TouchableOpacity style={styles.backButtonContainer}>
                 <BackButton onPress={() => router.back()}/>
-            </View>
+            </TouchableOpacity>
 
-            {/* Original content - unaffected by back button */}
             <View style={styles.inputWrapper}>
                 <TextInputComponent 
                     title="Welcome Back"

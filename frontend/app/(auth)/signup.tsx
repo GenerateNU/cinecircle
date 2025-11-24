@@ -2,7 +2,7 @@ import NextButton from "../../components/NextButton";
 import TextInputComponent from "../../components/TextInputComponent";
 import { router } from "expo-router"
 import { useState } from 'react';
-import { Text, View, StyleSheet, Dimensions } from "react-native";
+import { Text, View, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { supabase } from '../../lib/supabase';
 import BackButton from "../../components/BackButton";
 
@@ -143,9 +143,9 @@ const SignUp = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.backButtonContainer}>
+            <TouchableOpacity style={styles.backButtonContainer}>
                 <BackButton onPress={() => router.back()}/>
-            </View>
+            </TouchableOpacity>
             <View style={styles.inputWrapper}>
                 <TextInputComponent 
                     title="Create Your Account"
