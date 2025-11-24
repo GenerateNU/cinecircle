@@ -5,8 +5,12 @@ import { promises as fs } from 'fs';
  * Will send the list of files to the s3 bucket and return the urls in a list with the same index.
  *
  * @param files The list of files put into the S3 bucket
+ * @param folder Optional folder path within the bucket (e.g., 'posts', 'movies', 'profiles')
  */
-export default async function sendFilesToS3(base64s: any[]): Promise<(string | null)[]> {
+export default async function sendFilesToS3(
+  base64s: any[], 
+  folder?: string
+): Promise<(string | null)[]> {
     const s3Service = new S3ServiceImpl();
   
     const uploads = base64s.map(async (pd) => {
@@ -15,6 +19,7 @@ export default async function sendFilesToS3(base64s: any[]): Promise<(string | n
         buffer,
         filename: pd.name,
         mimetype: pd.fileType,
+        folder,
       });
     });
   

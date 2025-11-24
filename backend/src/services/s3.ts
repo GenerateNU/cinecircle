@@ -13,7 +13,7 @@ import {
 import type { Express } from "express";
 
 interface S3Service {
-    upload(input: { buffer: Buffer; filename: string; mimetype: string }): Promise<string | null>;
+    upload(input: { buffer: Buffer; filename: string; mimetype: string; folder?: string }): Promise<string | null>;
     delete(url: string): Promise<void>;
   }  
 
@@ -44,14 +44,15 @@ export class S3ServiceImpl implements S3Service {
     });
   }
 
-  async upload(input: { buffer: Buffer; filename: string; mimetype: string }): Promise<string | null> {
-    const fileKey = randomUUID() + "-" + input.filename;
+  async upload(input: { buffer: Buffer; filename: string; mimetype: string; folder?: string }): Promise<string | null> {
+    const uniqueFilename = randomUUID() + "-" + input.filename;
+    const fileKey = input.folder ? `${input.folder}/${uniqueFilename}` : uniqueFilename;
+    
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: fileKey,
       Body: input.buffer,
       ContentType: input.mimetype,
-      ACL: "public-read",
     });
   
     try {
