@@ -25,7 +25,6 @@ const LoginForm = () => {
     };
 
     const handleLogin = async () => {
-        // Validate inputs first
         const validation = validateInputs();
         if (!validation.valid) {
             setMessage(validation.error || 'Invalid input');
@@ -34,31 +33,33 @@ const LoginForm = () => {
 
         setLoading(true);
         setMessage('');
-        
+
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
+            email: email.trim(),
+            password,
             });
 
             if (error) {
-                setMessage(`Login error: ${error.message}`);
-                return;
+            console.error('Full error object:', JSON.stringify(error, null, 2));
+            console.error('Error name:', error.name);
+            console.error('Error status:', error.status);
+            setMessage(`Login error: ${error.message}`);
+            return;
             }
 
             if (data.user) {
-                setMessage('Signed in successfully!');
-                // OnboardingGuard will handle navigation
+            console.log('Login successful:', data.user.id);
+            setMessage('Signed in successfully!');
+            // Navigate to next screen here
             }
-
         } catch (error) {
+            console.error('Caught exception:', error);
             setMessage('An unexpected error occurred');
-            console.error('Login error:', error);
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <View style={styles.container}>
             <View style={styles.inputWrapper}>
