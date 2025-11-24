@@ -71,6 +71,7 @@ describe("Local Event API Tests", () => {
       create: {
         userId: TEST_USER_ID,
         username: "testuser",
+        updatedAt: new Date(),
       },
     });
     await prisma.local_event.createMany({ data: TEST_EVENTS });
@@ -253,4 +254,99 @@ describe("Local Event API Tests", () => {
       expect(response.body.message).toBe("Local event not found.");
     });
   });
+});
+jest.mock('../../services/db', () => {
+  const localEvents = new Map<string, any>();
+  const userProfiles = new Map<string, any>();
+
+  const clone = (record: any) => (record ? { ...record } : record);
+  const matchesWhere = (record: any, where: Record<string, any> = {}) =>
+    Object.entries(where).every(([key, value]) => record[key] === value);
+
+  const localEventModel = {
+    create: jest.fn(async ({ data }) => {
+      const id = data.id ?? crypto.randomUUID();
+      const record = { ...data, id };
+      localEvents.set(id, record);
+      return clone(record);
+    }),
+    createMany: jest.fn(async ({ data }) => {
+      data.forEach((item: any) => {
+        const id = item.id ?? crypto.randomUUID();
+        const record = { ...item, id };
+        localEvents.set(id, record);
+      });
+      return { count: data.length };
+    }),
+    findUnique: jest.fn(async ({ where: { id } }: any) => clone(localEvents.get(id) ?? null)),
+    findMany: jest.fn(async ({ where }: any = {}) =>
+      Array.from(localEvents.values())
+        .filter((record) => !where || matchesWhere(record, where))
+        .map(clone),
+    ),
+    update: jest.fn(async ({ where: { id }, data }: any) => {
+      const record = localEvents.get(id);
+      if (!record) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      const updated = { ...record, ...data };
+      localEvents.set(id, updated);
+      return clone(updated);
+    }),
+    delete: jest.fn(async ({ where: { id } }: any) => {
+      const record = localEvents.get(id);
+      if (!record) {
+        const error: any = new Error('Record not found');
+        error.code = 'P2025';
+        throw error;
+      }
+      localEvents.delete(id);
+      return clone(record);
+    }),
+    deleteMany: jest.fn(async ({ where }: any = {}) => {
+      let count = 0;
+      for (const [id, record] of Array.from(localEvents.entries())) {
+        if (!where || matchesWhere(record, where)) {
+          localEvents.delete(id);
+          count += 1;
+        }
+      }
+      return { count };
+    }),
+  };
+
+  const userProfileModel = {
+    upsert: jest.fn(async ({ where: { userId }, create, update }: any) => {
+      const existing = userProfiles.get(userId);
+      if (existing) {
+        const updated = { ...existing, ...update };
+        userProfiles.set(userId, updated);
+        return clone(updated);
+      }
+      const record = { ...create };
+      userProfiles.set(userId, record);
+      return clone(record);
+    }),
+    deleteMany: jest.fn(async ({ where: { userId } }: any) => {
+      const hasProfile = userProfiles.has(userId);
+      userProfiles.delete(userId);
+      return { count: hasProfile ? 1 : 0 };
+    }),
+    findUnique: jest.fn(async ({ where: { userId } }: any) =>
+      clone(userProfiles.get(userId) ?? null),
+    ),
+  };
+
+  return {
+    prisma: {
+      local_event: localEventModel,
+      userProfile: userProfileModel,
+      $disconnect: jest.fn(async () => {
+        localEvents.clear();
+        userProfiles.clear();
+      }),
+    },
+  };
 });

@@ -1,20 +1,48 @@
 import { api } from "./apiClient";
-import type {
-  ProtectedResponse,
-  GetUserProfileBasicResponse,
-  UpdateUserProfileInput,
-  UpdateUserProfileResponse,
-  DeleteUserProfileResponse,
-  GetUserRatingsResponse,
-  GetUserCommentsResponse,
-} from "../types/apiTypes";
+import type { components } from "../types/api-generated";
+import { setLanguage } from "../il8n/_il8n";
+import type { LanguageCode } from "../il8n/_languages";
+
+
+type ProtectedResponse = components["schemas"]["ProtectedResponse"];
+type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"];
+type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
+type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"];
+type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
+type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
+type GetUserRatingsResponse = components["schemas"]["GetUserRatingsResponse"];
+type GetUserCommentsResponse = components["schemas"]["GetUserCommentsResponse"];
 
 export function getProtected() {
   return api.get<ProtectedResponse>(`/api/protected`);
 }
 
-export function getUserProfileBasic() {
-  return api.get<GetUserProfileBasicResponse>(`/api/user/profile`);
+export function getUserProfile() {
+  return api.get<GetUserProfileResponse>(`/api/user/profile`);
+}
+
+export async function getUserProfileBasic() {
+  const res = await getUserProfile();
+
+  const fallbackEmail =
+    res.userProfile.username && res.userProfile.username.length > 0
+      ? `${res.userProfile.username}@cinecircle.app`
+      : `${res.userProfile.userId}@cinecircle.app`;
+
+  const basicUser = res.user ?? {
+    id: res.userProfile.userId,
+    email: fallbackEmail,
+    role: 'USER',
+  };
+
+  const payload: GetUserProfileBasicResponse = {
+    message: res.message,
+    user: basicUser,
+    timestamp: res.timestamp,
+    endpoint: res.endpoint,
+  };
+
+  return payload;
 }
 
 export function updateUserProfile(payload: UpdateUserProfileInput) {
@@ -31,4 +59,24 @@ export function getUserRatings(userId: string) {
 
 export function getUserComments(userId: string) {
   return api.get<GetUserCommentsResponse>(`/api/user/comments`, { user_id: userId });
+}
+
+export async function fetchUserProfile() {
+  const res = await api.get<any>("/api/user/profile");
+  console.log("[user] raw profile response:", res);
+
+  // Your API is returning the envelope directly, so:
+  const profileEnvelope = res;
+  console.log("[user] parsed profile:", profileEnvelope);
+
+  const primaryLanguage = profileEnvelope?.userProfile?.primaryLanguage;
+  console.log("[user] primaryLanguage from envelope:", primaryLanguage);
+
+  if (primaryLanguage) {
+    setLanguage(primaryLanguage); // "Hindi" in your logs
+  } else {
+    console.log("[user] no primaryLanguage found, keeping default 'en'");
+  }
+
+  return profileEnvelope;
 }

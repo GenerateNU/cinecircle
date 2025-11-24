@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { makeJsonResponse } from "./setup";
-import { getUserProfileBasic, updateUserProfile, getUserRatings, getUserComments  } from "../services/userService";
+import { getUserProfile, updateUserProfile, getUserRatings, getUserComments  } from "../services/userService";
 
 describe("userService", async () => {
   const BASE = "http://svc.test";
@@ -9,18 +9,18 @@ describe("userService", async () => {
     vi.resetModules();
   });
 
-  it("getUserProfileBasic hits /api/user/profile", async () => {
+  it("getUserProfile hits /api/user/profile", async () => {
     (fetch as any).mockResolvedValueOnce(makeJsonResponse({
       message: "ok",
-      user: { id: "u1", email: "a@b.com", role: "user" },
+      userProfile: { userId: "u1", username: "testuser", onboardingCompleted: true },
     }));
 
-    const res = await getUserProfileBasic();
+    const res = await getUserProfile();
 
     const [url, init] = (fetch as any).mock.calls[0];
     expect(url).toBe(`${BASE}/api/user/profile`);
     expect(init.method).toBe("GET");
-    expect(res.user?.email).toBe("a@b.com");
+    expect(res.userProfile?.username).toBe("testuser");
   });
 
   it("updateUserProfile PUTs body", async () => {

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useNavigation } from '@react-navigation/native';
-import { getProtected, getUserProfileBasic } from '../services/userService';
+import { router } from 'expo-router';
+import { getProtected, getUserProfile } from '../services/userService';
 import { api } from '../services/apiClient';
-import type { DbTestResponse } from '../types/apiTypes';
-import Events from './Events';
+import type { components } from '../types/api-generated';
+
+type DbTestResponse = components['schemas']['DbTestResponse'];
 
 type Props = {
   user: any;
@@ -16,8 +18,6 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
   const navigation = useNavigation();
   const [backendMessage, setBackendMessage] = useState('');
   const [dbMessage, setDbMessage] = useState('');
-  const [showProfile, setShowProfile] = useState(false);
-  const [showEvents, setShowEventsPage] = useState(false);
 
   const callProtectedBackend = async () => {
     try {
@@ -28,10 +28,10 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     }
   };
 
-  const getUserProfile = async () => {
+  const fetchUserProfile = async () => {
     try {
-      const res = await getUserProfileBasic();
-      setBackendMessage(`Profile: ${JSON.stringify(res.user || res)}`);
+      const res = await getUserProfile();
+      setBackendMessage(`Profile: ${JSON.stringify(res.userProfile || res)}`);
     } catch (err: any) {
       setBackendMessage(`Failed: ${err.message || 'Connection error'}`);
     }
@@ -46,18 +46,6 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
     }
   };
 
-  if (showEvents) {
-    return (
-      <View style={{ flex: 1 }}>
-        <Button
-          title="← Back to Dashboard"
-          onPress={() => setShowEventsPage(false)}
-        />
-        <Events />
-      </View>
-    );
-  }
-
   return (
     <View>
       <Text style={{ marginBottom: 10 }}>
@@ -69,9 +57,9 @@ const UserDashboard = ({ user, onSignOut }: Props) => {
           onPress={() => navigation.navigate('MovieChosen' as never)}
         />
         <Button title="Call Protected Backend" onPress={callProtectedBackend} />
-        <Button title="Get User Profile" onPress={getUserProfile} />
+        <Button title="Get User Profile" onPress={fetchUserProfile} />
         <Button title="Test DB" onPress={testDatabase} />
-        <Button title="Events Page" onPress={() => setShowEventsPage(true)} />
+        <Button title="Events Page" onPress={() => router.push('/events')} />
       </View>
       {backendMessage ? (
         <Text style={styles.result}>{backendMessage}</Text>

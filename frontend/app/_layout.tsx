@@ -1,53 +1,48 @@
-// app/_layout.tsx
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AuthForm from '../components/AuthForm';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import BottomNavBar from '../components/BottomNavBar';
+import { View, Text, ActivityIndicator } from 'react-native';
+import tw from 'twrnc';
 
-function RootLayoutContent() {
-  const { user, loading } = useAuth();
+function RootNavigator() {
+  const { user, profile, loading, profileLoading } = useAuth();
 
-  // Splash while checking session
-  if (loading) {
+  // Show loading screen while checking auth
+  if (loading || profileLoading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
-        <Text style={styles.title}>CineCircle</Text>
-        <Text>Loading…</Text>
-        <StatusBar style="auto" />
+      <View style={tw`flex-1 justify-center items-center bg-white`}>
+        <Text style={tw`text-2xl font-bold mb-4`}>CineCircle</Text>
+        <ActivityIndicator size="large" color="#9A0169" />
       </View>
     );
   }
 
-  // Not logged in -> show Auth form
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>CineCircle Frontend</Text>
-        <AuthForm onAuthSuccess={() => {}} />
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
+  const isAuthenticated = !!user;
+  const needsOnboarding = isAuthenticated && profile !== null && !profile.onboardingCompleted;
+  const isFullyOnboarded = isAuthenticated && profile !== null && profile.onboardingCompleted === true;
 
-  // Logged in -> mount Router navigator
   return (
     <SafeAreaProvider>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-          name="profilePage/index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="profilePage/settings"
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
+        {/* Protected: Only accessible when NOT authenticated */}
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+
+        {/* Protected: Only accessible when authenticated but needs onboarding */}
+        <Stack.Protected guard={needsOnboarding}>
+          <Stack.Screen name="(onboarding)" />
+        </Stack.Protected>
+
+        {/* Protected: Only accessible when fully authenticated and onboarded */}
+        <Stack.Protected guard={isFullyOnboarded}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+
+        {/* Index is always accessible - it handles initial routing */}
+        <Stack.Screen name="index" />
       </Stack>
-      <BottomNavBar />
-      <StatusBar style="auto" />
     </SafeAreaProvider>
   );
 }
@@ -55,17 +50,8 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutContent />
+      <RootNavigator />
+      <StatusBar style="auto" />
     </AuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-});

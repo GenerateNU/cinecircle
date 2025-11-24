@@ -1,54 +1,47 @@
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TextInput } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import tw from 'twrnc';
 
+/**
+ * Tailwind-only search bar. `onSubmitEditing` fires on enter key
+ * and when the arrow icon is tapped, so caller logic stays centralized.
+ */
 type SearchBarProps = {
-    onBack?: () => void;
     placeholder?: string;
+    onChangeText?: (text: string) => void;
+    onSubmitEditing?: (text: string) => void;
+    value?: string;
 };
 
-export default function SearchBar({ onBack, placeholder = "Enter search text" }: SearchBarProps) {
+export default function SearchBar({ 
+    placeholder = "Search", 
+    onChangeText,
+    onSubmitEditing,
+    value 
+}: SearchBarProps) {
     return (
-        <View style={styles.container}>
-            {onBack && (
-                <TouchableOpacity style={styles.backButton} onPress={onBack}>
-                    <Text style={styles.backButtonText}>←</Text>
-                </TouchableOpacity>
-            )}
-            <TextInput
-                style={styles.searchInput}
-                placeholder={placeholder}
-                placeholderTextColor="#999"
-            />
-            <View style={styles.searchIcon}>
-                <Text>:mag:</Text>
+        <View style={tw`px-4 py-4 bg-white`}>
+            <View style={tw`flex-row items-center bg-white border-2 border-[#8B7FD6] rounded-lg px-3 h-12`}>
+                <Feather name="search" size={20} color="#999" style={tw`mr-2`} />
+                <TextInput
+                    style={tw`flex-1 text-base text-black`}
+                    placeholder={placeholder}
+                    placeholderTextColor="#999"
+                    onChangeText={onChangeText}
+                    value={value}
+                    returnKeyType="search"
+                    onSubmitEditing={(e) =>
+                        onSubmitEditing?.(e?.nativeEvent?.text ?? value ?? '')
+                    }
+                />
+                <Feather
+                    name="arrow-right-circle"
+                    size={22}
+                    color="#999"
+                    style={tw`ml-2`}
+                    onPress={() => onSubmitEditing?.(value ?? '')}
+                />
             </View>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: '#FFF',
-        paddingTop: 60,
-    },
-    backButton: {
-        marginRight: 12,
-    },
-    backButtonText: {
-        fontSize: 28,
-        color: '#000',
-    },
-    searchInput: {
-        flex: 1,
-        height: 40,
-        backgroundColor: '#F0F0F0',
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        fontSize: 14,
-    },
-    searchIcon: {
-        marginLeft: 8,
-    },
-});

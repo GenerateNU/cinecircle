@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import tw from 'twrnc';
-import { User } from '../types';
+import { User } from '../_types';
+import { Feather } from '@expo/vector-icons';
 
 type Props = {
   user: User;
@@ -38,11 +39,22 @@ const PostsList = ({ user }: Props) => {
           <View style={tw`flex-1`}>
             <Text style={tw`font-semibold`}>{user.name}</Text>
             <Text style={tw`text-[#333] my-1.5`}>{p.text}</Text>
-            <View style={tw`flex-row justify-between w-4/5`}>
-              <Text>❤️ {p.likes}</Text>
-              <Text>💬 {p.comments}</Text>
-              <Text>🔁 {p.shares}</Text>
-              <Text>📤</Text>
+            <View style={tw`flex-row justify-between w-4/5 mt-2`}>
+              <View style={tw`flex-row items-center`}>
+                <Feather name="heart" size={18} color="#111" />
+                <Text style={tw`ml-1 text-[12px] text-gray-600`}>{p.likes}</Text>
+              </View>
+              <View style={tw`flex-row items-center`}>
+                <Feather name="message-circle" size={18} color="#111" />
+                <Text style={tw`ml-1 text-[12px] text-gray-600`}>{p.comments}</Text>
+              </View>
+              <View style={tw`flex-row items-center`}>
+                <Feather name="repeat" size={18} color="#111" />
+                <Text style={tw`ml-1 text-[12px] text-gray-600`}>{p.shares}</Text>
+              </View>
+              <View style={tw`flex-row items-center`}>
+                <Feather name="send" size={18} color="#111" />
+              </View>
             </View>
           </View>
         </View>

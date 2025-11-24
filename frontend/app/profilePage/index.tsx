@@ -1,29 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  DeviceEventEmitter,
 } from 'react-native';
-import BottomNavBar from '../../components/BottomNavBar';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
-import { User, TabKey } from './types';
-import { formatCount } from './utils';
+import { User, TabKey } from './_types';
+import { formatCount } from './_utils';
 import MoviesGrid from './components/MoviesGrid';
 import PostsList from './components/PostsList';
 import EventsList from './components/EventsList';
 import BadgesGrid from './components/BadgesGrid';
-import { getUserProfileBasic } from '../../services/userService';
+import Avatar from '../../components/Avatar';
+import SectionHeader from '../../components/SectionHeader';
 import { getFollowers, getFollowing } from '../../services/followService';
-import type { UserProfileBasic } from '../../types/models';
+import type { components } from '../../types/api-generated';
+import { getUserProfile } from '../../services/userService';
+
+type UserProfile = components['schemas']['UserProfile'];
 
 type Props = {
   user?: User;
+  isMe?: boolean;
+  onFollow?: () => Promise<void> | void;
+  onUnfollow?: () => Promise<void> | void;
+  isFollowing?: boolean;
+  profileUserId?: string;
 };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -34,33 +42,41 @@ const AVATAR_RADIUS = AVATAR_SIZE / 2;
 // BottomNavBar height buffer
 const NAV_HEIGHT = 64;
 
-const ProfilePage = ({ user: userProp }: Props) => {
+const ACCENT_COLOR = '#D62E05';
+const BUTTON_COLOR = '#F7D5CD';
+const EDIT_BUTTON_ACCENT = '#DE5837';
+
+const ProfilePage = ({
+  user: userProp,
+  isMe = true,
+  onFollow,
+  onUnfollow,
+  isFollowing = false,
+  profileUserId,
+}: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
-  const [profile, setProfile] = useState<UserProfileBasic | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isMe);
   const [error, setError] = useState<string | null>(null);
+  const targetUserId = isMe ? profile?.userId : profileUserId;
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
-
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       // Fetch user profile (returns id, email, role)
-      const profileRes = await getUserProfileBasic();
-      if (profileRes.user?.id) {
-        setProfile(profileRes.user);
+      const profileRes = await getUserProfile();
+      if (profileRes.userProfile?.userId) {
+        setProfile(profileRes.userProfile);
 
         // Fetch followers and following counts in parallel
         try {
           const [followersRes, followingRes] = await Promise.all([
-            getFollowers(profileRes.user.id),
-            getFollowing(profileRes.user.id),
+            getFollowers(profileRes.userProfile.userId),
+            getFollowing(profileRes.userProfile.userId),
           ]);
           setFollowersCount(followersRes.followers?.length || 0);
           setFollowingCount(followingRes.following?.length || 0);
@@ -75,22 +91,74 @@ const ProfilePage = ({ user: userProp }: Props) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Build display user from real data + placeholders for missing fields
-  const displayUser: User = profile
+  useFocusEffect(
+    useCallback(() => {
+      if (isMe) {
+        fetchProfileData();
+      }
+    }, [fetchProfileData, isMe])
+  );
+
+  useEffect(() => {
+    if (!isMe) {
+      setLoading(false);
+      setError(null);
+    }
+  }, [isMe]);
+
+  useEffect(() => {
+    if (!isMe) return;
+    // When other screens emit follow status changes we refresh counts for the logged-in user.
+    const sub = DeviceEventEmitter.addListener('followStatusChanged', () => {
+      fetchProfileData();
+    });
+    return () => {
+      sub.remove();
+    };
+  }, [fetchProfileData, isMe]);
+
+  const resolvedUsername = isMe
+    ? profile?.username && profile.username.trim().length > 0
+      ? profile.username
+      : 'user'
+    : userProp?.username && userProp.username.trim().length > 0
+      ? userProp.username
+      : 'user';
+
+  const derivedBio = isMe
+    ? profile?.favoriteMovies?.[0]?.trim() || 'No Bio'
+    : userProp?.bio || 'No Bio';
+
+  const displayUser: User = isMe && profile
     ? {
-        // Use email as name/username since backend doesn't have these fields yet
-        name: profile.email?.split('@')[0] || 'User',
-        username: profile.email?.split('@')[0] || 'user',
-        bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field
+        name: resolvedUsername || 'User',
+        username: resolvedUsername || 'user',
+        bio: derivedBio,
         followers: followersCount,
         following: followingCount,
-        profilePic: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          profile.email || 'User'
-        )}&size=200&background=667eea&color=fff`, // Generated avatar
+        profilePic:
+          profile.profilePicture ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            resolvedUsername || 'User'
+          )}&size=200&background=667eea&color=fff`,
       }
-    : userProp || {
+    : userProp
+    ? {
+        ...userProp,
+        name: userProp.name || resolvedUsername || 'User',
+        username: resolvedUsername || 'user',
+        bio: derivedBio,
+        followers: userProp.followers ?? 0,
+        following: userProp.following ?? 0,
+        profilePic:
+          userProp.profilePic ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            resolvedUsername || 'User'
+          )}&size=200&background=667eea&color=fff`,
+      }
+    : {
         name: 'User',
         username: 'user',
         bio: 'Movie enthusiast',
@@ -137,32 +205,47 @@ const ProfilePage = ({ user: userProp }: Props) => {
           ]}
         >
           {/* Settings button top-right */}
-          <View style={tw`flex-row justify-end px-4 pt-3`}>
-            <TouchableOpacity
-              onPress={() => router.push('/profilePage/settings')}
-              style={tw`w-10 h-10 items-center justify-center rounded-full`}
-              accessibilityRole="button"
-              accessibilityLabel="Open settings"
-            >
-              <Ionicons name="settings-outline" size={24} color="#000" />
-            </TouchableOpacity>
-          </View>
+          {isMe && (
+            <View style={tw`flex-row justify-end px-4 pt-3`}>
+              <TouchableOpacity
+                onPress={() => router.push('/profilePage/settings')}
+                style={tw`w-10 h-10 items-center justify-center rounded-full`}
+                accessibilityRole="button"
+                accessibilityLabel="Open settings"
+              >
+                <View
+                  style={[
+                    tw`w-10 h-10 items-center justify-center rounded-xl`,
+                    {
+                      backgroundColor: BUTTON_COLOR,
+                      borderColor: ACCENT_COLOR,
+                      borderWidth: 1,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="settings-outline"
+                    size={22}
+                    color={ACCENT_COLOR}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Profile block (avatar overlaps the gray header) */}
         <View style={tw`px-5`}>
-          <Image
-            source={{ uri: u.profilePic }}
+          <View
             style={[
+              tw`self-start`,
               {
                 marginTop: -AVATAR_RADIUS,
-                width: AVATAR_SIZE,
-                height: AVATAR_SIZE,
-                borderRadius: AVATAR_RADIUS,
               },
-              tw`self-start`,
             ]}
-          />
+          >
+            <Avatar uri={u.profilePic} size={AVATAR_SIZE} />
+          </View>
 
           {/* Name & Username */}
           <Text style={tw`mt-3 text-[28px] font-extrabold text-black`}>
@@ -179,56 +262,151 @@ const ProfilePage = ({ user: userProp }: Props) => {
 
           {/* Stats row */}
           <View style={tw`mt-[14px] flex-row items-center`}>
-            <Text style={tw`flex-1`}>
-              {formatCount(u.followers)}{' '}
-              <Text style={tw`font-semibold`}>Followers</Text>
-            </Text>
-            <Text style={tw`flex-1 text-center`}>
-              {formatCount(u.following)}{' '}
-              <Text style={tw`font-semibold`}>Following</Text>
-            </Text>
+            {/* Followers tile routes to own list or the other user's list */}
+            <TouchableOpacity
+              style={tw`flex-1`}
+              accessibilityRole="button"
+              accessibilityLabel="View followers"
+              onPress={() => {
+                if (isMe) {
+                  router.push('/profilePage/followers');
+                } else if (targetUserId) {
+                  router.push({
+                    pathname: '/profilePage/user/[userId]/followers',
+                    params: {
+                      userId: targetUserId,
+                      username: displayUser.username,
+                      name: displayUser.name,
+                    },
+                  });
+                }
+              }}
+              disabled={!isMe && !targetUserId}
+            >
+              <Text>
+                {formatCount(u.followers)}{' '}
+                <Text style={tw`font-semibold`}>Followers</Text>
+              </Text>
+            </TouchableOpacity>
+            {/* Following tile follows same pattern (self vs other) */}
+            <TouchableOpacity
+              style={tw`flex-1`}
+              accessibilityRole="button"
+              accessibilityLabel="View people you follow"
+              onPress={() => {
+                if (isMe) {
+                  router.push('/profilePage/following');
+                } else if (targetUserId) {
+                  router.push({
+                    pathname: '/profilePage/user/[userId]/following',
+                    params: {
+                      userId: targetUserId,
+                      username: displayUser.username,
+                      name: displayUser.name,
+                    },
+                  });
+                }
+              }}
+              disabled={!isMe && !targetUserId}
+            >
+              <Text style={tw`text-center`}>
+                {formatCount(u.following)}{' '}
+                <Text style={tw`font-semibold`}>Following</Text>
+              </Text>
+            </TouchableOpacity>
             <View style={tw`flex-1 items-end`}>
               <Text style={tw`font-semibold`}>WhatsApp</Text>
             </View>
           </View>
 
-          {/* Buttons */}
-          <View style={tw`mt-3 self-center w-[88%] flex-row gap-3`}>
-            <TouchableOpacity
-              style={tw`flex-1 items-center justify-center border border-black bg-transparent px-[18px] py-[10px] rounded-none`}
-            >
-              <Text style={tw`text-black font-semibold text-center`}>
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={tw`flex-1 items-center justify-center border border-black bg-transparent px-[18px] py-[10px] rounded-none`}
-            >
-              <Text style={tw`text-black font-semibold text-center`}>
-                Share
-              </Text>
-            </TouchableOpacity>
+          {/* Primary action button */}
+          <View style={tw`mt-3 self-center w-[88%]`}>
+            {isMe ? (
+              // Logged-in user sees edit button
+              <TouchableOpacity
+                style={[
+                  tw`items-center justify-center px-[18px] py-[10px]`,
+                  {
+                    borderColor: EDIT_BUTTON_ACCENT,
+                    borderWidth: 1,
+                    backgroundColor: BUTTON_COLOR,
+                    borderRadius: 8,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    tw`font-semibold text-center`,
+                    { color: EDIT_BUTTON_ACCENT },
+                  ]}
+                >
+                  Edit Profile
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              // Viewing someone else: show follow/unfollow with disabled states when callbacks missing
+              <TouchableOpacity
+                disabled={
+                  (isFollowing && !onUnfollow) ||
+                  (!isFollowing && !onFollow)
+                }
+                onPress={() =>
+                  (isFollowing ? onUnfollow?.() : onFollow?.()) ?? undefined
+                }
+                style={[
+                  tw`items-center justify-center px-[18px] py-[10px]`,
+                  {
+                    borderColor: '#801C03',
+                    borderWidth: 1,
+                    backgroundColor: '#D62E05',
+                    borderRadius: 8,
+                    opacity:
+                      (isFollowing && !onUnfollow) ||
+                      (!isFollowing && !onFollow)
+                        ? 0.6
+                        : 1,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    tw`font-semibold text-center`,
+                    { color: '#F7D5CD' },
+                  ]}
+                >
+                  {isFollowing ? 'Unfollow' : 'Follow'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
+
+        </View>
+
+        {/* Activity header */}
+        <View style={tw`px-5 mt-6`}>
+          <SectionHeader title="Your Activity" size="small" />
         </View>
 
         {/* Tabs row */}
-        <View
-          style={tw`mt-[18px] flex-row justify-around border-y border-[#ddd] py-[10px]`}
-        >
+          <View
+            style={tw`mt-[18px] flex-row justify-around border-y border-[#ddd] py-[10px]`}
+          >
           <TouchableOpacity
             style={[
               tw`items-center pb-1.5 border-b-2`,
               activeTab === 'movies'
-                ? tw`border-black`
-                : tw`border-transparent`,
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('movies')}
           >
-            <MaterialIcons name="movie" size={20} />
+            <MaterialIcons name="movie" size={20} color={ACCENT_COLOR} />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'movies' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'movies' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Movies
             </Text>
@@ -237,15 +415,19 @@ const ProfilePage = ({ user: userProp }: Props) => {
           <TouchableOpacity
             style={[
               tw`items-center pb-1.5 border-b-2`,
-              activeTab === 'posts' ? tw`border-black` : tw`border-transparent`,
+              activeTab === 'posts'
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('posts')}
           >
-            <FontAwesome5 name="th-large" size={18} />
+            <FontAwesome5 name="th-large" size={18} color={ACCENT_COLOR} />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'posts' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'posts' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Posts
             </Text>
@@ -255,16 +437,22 @@ const ProfilePage = ({ user: userProp }: Props) => {
             style={[
               tw`items-center pb-1.5 border-b-2`,
               activeTab === 'events'
-                ? tw`border-black`
-                : tw`border-transparent`,
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('events')}
           >
-            <Ionicons name="calendar-outline" size={20} />
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color={ACCENT_COLOR}
+            />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'events' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'events' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Events
             </Text>
@@ -274,16 +462,22 @@ const ProfilePage = ({ user: userProp }: Props) => {
             style={[
               tw`items-center pb-1.5 border-b-2`,
               activeTab === 'badges'
-                ? tw`border-black`
-                : tw`border-transparent`,
+                ? { borderColor: ACCENT_COLOR }
+                : { borderColor: 'transparent' },
             ]}
             onPress={() => setActiveTab('badges')}
           >
-            <MaterialIcons name="emoji-events" size={20} />
+            <MaterialIcons
+              name="emoji-events"
+              size={20}
+              color={ACCENT_COLOR}
+            />
             <Text
-              style={tw`mt-0.5 text-[12px] ${
-                activeTab === 'badges' ? 'font-bold text-black' : 'text-[#333]'
-              }`}
+              style={[
+                tw`mt-0.5 text-[12px]`,
+                activeTab === 'badges' && tw`font-bold`,
+                { color: ACCENT_COLOR },
+              ]}
             >
               Badges
             </Text>
@@ -310,6 +504,7 @@ const ProfilePage = ({ user: userProp }: Props) => {
           </TouchableOpacity>
         )}
       </ScrollView>
+
     </View>
   );
 };

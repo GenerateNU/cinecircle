@@ -13,11 +13,11 @@ API client and service layer for connecting to the backend.
 ## Usage
 
 ```typescript
-import { getUserProfileBasic } from './services/userService';
+import { getUserProfile } from './services/userService';
 import { fetchAndSaveByTmdbId } from './services/moviesService';
 
 // All API calls automatically include auth token
-const profile = await getUserProfileBasic();
+const profile = await getUserProfile();
 const movie = await fetchAndSaveByTmdbId('123');
 ```
 

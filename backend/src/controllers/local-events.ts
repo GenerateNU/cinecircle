@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../services/db.js";
 import { PrismaClient } from "@prisma/client";
+import { reverseGeocode } from "../services/geocoding.js";
 
 type LocalEvent = {
   id: string;
@@ -23,15 +24,28 @@ export const getLocalEvent = async (req: Request, res: Response) => {
     const event = await prisma.local_event.findUnique({ where: { id } });
     if (!event) return res.status(404).json({ message: "Local event not found." });
 
-    const data: LocalEvent = {
+    const eventDate = event.time || new Date();
+    const date = eventDate.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    const time = eventDate.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit' 
+    });
+
+    const data = {
       id: event.id,
       title: event.title,
-      time: event.time,
-      description: event.description,
+      location: await reverseGeocode(event.lat, event.lon),
+      date,
+      time,
       genre: event.genre,
-      languages: event.languages,
-      occasion: event.occasion,
       cost: event.cost,
+      occasion: event.occasion,
+      description: event.description,
+      languages: event.languages,
       lat: event.lat,
       lon: event.lon,
     };
@@ -158,5 +172,49 @@ export const deleteLocalEvent = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Local event deleted successfully." });
   } catch (err) {
     res.status(404).json({ message: "Local event not found." });
+  }
+};
+
+
+export const getLocalEvents = async (req: Request, res: Response) => {
+  try {
+    const events = await prisma.local_event.findMany({
+      orderBy: { time: 'asc' }
+    });
+
+    const data = await Promise.all(events.map(async event => {
+      const eventDate = event.time || new Date();
+      const date = eventDate.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      const time = eventDate.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+      });
+      
+      return {
+        id: event.id,
+        title: event.title,
+        location: await reverseGeocode(event.lat, event.lon),
+        date,
+        time,
+        genre: event.genre,
+        cost: event.cost,
+        occasion: event.occasion,
+        description: event.description,
+        languages: event.languages,
+        lat: event.lat,
+        lon: event.lon,
+      };
+    }));
+
+    res.status(200).json({ message: "Local events retrieved.", data });
+  } catch (err) {
+    res.status(500).json({ 
+      message: "Failed to retrieve local events.",
+      error: err instanceof Error ? err.message : "Unknown error"
+    });
   }
 };
