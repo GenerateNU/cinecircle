@@ -419,7 +419,6 @@ model Post {
   content     String
   type        PostType
   votes       Int         @default(0)
-  images      String[]    @default([])
   createdAt   DateTime    @default(now())
   Comment     Comment[]
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
