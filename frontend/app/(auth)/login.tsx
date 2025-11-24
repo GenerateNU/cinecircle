@@ -3,8 +3,10 @@ import TextInputComponent from "../../components/TextInputComponent";
 import { useState } from 'react';
 import { Text, View, StyleSheet, Dimensions } from "react-native";
 import { supabase } from '../../lib/supabase';
+import BackButton from "../../components/BackButton";
+import { router } from "expo-router";
 
-const { height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const LoginForm = () => {
     const [email, setEmail] = useState('');
@@ -36,22 +38,21 @@ const LoginForm = () => {
 
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password,
+                email: email.trim(),
+                password,
             });
 
             if (error) {
-            console.error('Full error object:', JSON.stringify(error, null, 2));
-            console.error('Error name:', error.name);
-            console.error('Error status:', error.status);
-            setMessage(`Login error: ${error.message}`);
-            return;
+                console.error('Full error object:', JSON.stringify(error, null, 2));
+                console.error('Error name:', error.name);
+                console.error('Error status:', error.status);
+                setMessage(`Login error: ${error.message}`);
+                return;
             }
 
             if (data.user) {
-            console.log('Login successful:', data.user.id);
-            setMessage('Signed in successfully!');
-            // Navigate to next screen here
+                console.log('Login successful:', data.user.id);
+                setMessage('Signed in successfully!');
             }
         } catch (error) {
             console.error('Caught exception:', error);
@@ -60,8 +61,15 @@ const LoginForm = () => {
             setLoading(false);
         }
     };
+
     return (
         <View style={styles.container}>
+            {/* Back button positioned absolutely */}
+            <View style={styles.backButtonContainer}>
+                <BackButton onPress={() => router.back()}/>
+            </View>
+
+            {/* Original content - unaffected by back button */}
             <View style={styles.inputWrapper}>
                 <TextInputComponent 
                     title="Welcome Back"
@@ -98,6 +106,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         paddingHorizontal: 20,
+    },
+    backButtonContainer: {
+        position: 'absolute',
+        top: height * 0.06,
+        left: width * 0.05,
+        zIndex: 10,
     },
     inputWrapper: {
         width: '100%',

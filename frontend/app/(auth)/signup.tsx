@@ -4,6 +4,7 @@ import { router } from "expo-router"
 import { useState } from 'react';
 import { Text, View, StyleSheet, Dimensions } from "react-native";
 import { supabase } from '../../lib/supabase';
+import BackButton from "../../components/BackButton";
 
 const { width, height } = Dimensions.get('window');
 
@@ -142,6 +143,9 @@ const SignUp = () => {
 
     return (
         <View style={styles.container}>
+            <View style={styles.backButtonContainer}>
+                <BackButton onPress={() => router.back()}/>
+            </View>
             <View style={styles.inputWrapper}>
                 <TextInputComponent 
                     title="Create Your Account"
@@ -188,6 +192,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         paddingHorizontal: width * 0.05,
+    },
+    backButtonContainer: {
+        position: 'absolute',
+        top: height * 0.06,
+        left: width * 0.05,
+        zIndex: 10,
     },
     inputWrapper: {
         width: '100%',
