@@ -61,7 +61,7 @@ export default function RecByFriendsScreen() {
 
   const renderPost = (post: Post, index: number) => {
     const username = post.UserProfile?.username || 'Unknown';
-    const hasImage = post.imageUrl !== null;
+    const hasImage = post.imageUrls && post.imageUrls.length > 0;
 
     return (
       <React.Fragment key={post.id}>
