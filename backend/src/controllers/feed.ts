@@ -116,7 +116,7 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
           },
         },
       },
-      orderBy: { votes: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
