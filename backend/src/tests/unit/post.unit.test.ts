@@ -45,20 +45,22 @@ describe("Post Controller Unit Tests", () => {
       const mockPostData = {
         userId: mockUserId,
         content: "This is a test post",
-        postType: "SHORT_POST",
+        type: "SHORT",
       };
 
       mockRequest.body = mockPostData;
 
       const mockCreatedPost = {
-        postId: "post-123",
-        ...mockPostData,
+        id: "post-123",
+        userId: mockUserId,
+        content: "This is a test post",
+        type: "SHORT",
         votes: 0,
         parentPostId: null,
-        reviewId: null,
+        imageUrls: [],
         createdAt: new Date(),
         updatedAt: new Date(),
-        user: {
+        UserProfile: {
           userId: mockUserId,
           username: "testuser",
         },
@@ -80,14 +82,14 @@ describe("Post Controller Unit Tests", () => {
       mockRequest.body = {
         userId: "user-123",
         content: "Test",
-        postType: "INVALID_TYPE",
+        type: "INVALID_TYPE",
       };
 
       await createPost(mockRequest as Request, mockResponse as Response);
 
       expect(responseObject.status).toHaveBeenCalledWith(400);
       expect(responseObject.json).toHaveBeenCalledWith({
-        message: "Invalid postType. Must be LONG_POST or SHORT_POST",
+        message: "Invalid type. Must be LONG or SHORT",
       });
     });
   });
@@ -122,22 +124,22 @@ describe("Post Controller Unit Tests", () => {
       mockRequest.params = { postId: mockPostId };
 
       const mockPost = {
-        postId: mockPostId,
+        id: mockPostId,
         userId: "user-123",
         content: "Test post",
-        postType: "SHORT_POST",
+        type: "SHORT",
         votes: 5,
         parentPostId: null,
-        reviewId: null,
+        imageUrls: [],
         createdAt: new Date(),
         updatedAt: new Date(),
-        user: {
+        UserProfile: {
           userId: "user-123",
           username: "testuser",
         },
-        replies: [{ postId: "reply-1" }, { postId: "reply-2" }],
-        likes: [{ likeId: "like-1" }, { likeId: "like-2" }, { likeId: "like-3" }],
-        review: null,
+        Replies: [{ postId: "reply-1" }, { postId: "reply-2" }],
+        PostLike: [{ likeId: "like-1" }, { likeId: "like-2" }, { likeId: "like-3" }],
+        Comment: [],
       };
 
       jest.spyOn(prisma.post, "findUnique").mockResolvedValueOnce(mockPost as any);
@@ -148,7 +150,8 @@ describe("Post Controller Unit Tests", () => {
         message: "Post found successfully",
         data: {
           ...mockPost,
-          likeCount: 3,
+          likeCount: 5,
+          commentCount: 0,
           replyCount: 2,
         },
       });
@@ -174,16 +177,16 @@ describe("Post Controller Unit Tests", () => {
       mockRequest.body = { content: "Updated content" };
 
       const mockUpdatedPost = {
-        postId: mockPostId,
+        id: mockPostId,
         userId: "user-123",
         content: "Updated content",
-        postType: "SHORT_POST",
+        type: "SHORT",
         votes: 0,
         parentPostId: null,
-        reviewId: null,
+        imageUrls: [],
         createdAt: new Date(),
         updatedAt: new Date(),
-        user: {
+        UserProfile: {
           userId: "user-123",
           username: "testuser",
         },
@@ -231,7 +234,7 @@ describe("Post Controller Unit Tests", () => {
       await deletePost(mockRequest as Request, mockResponse as Response);
 
       expect(prisma.post.delete).toHaveBeenCalledWith({
-        where: { postId: "post-123" },
+        where: { id: "post-123" },
       });
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Post deleted successfully",

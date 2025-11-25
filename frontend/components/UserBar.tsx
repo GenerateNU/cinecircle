@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Avatar from './Avatar';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -10,24 +10,42 @@ type UserBarProps = {
     date?: string;
     avatarUri?: string;
     avatarSize?: number;
+    userId?: string;
 };
 
 export default function UserBar({
-                                    name,
-                                    username,
-                                    date,
-                                    avatarUri,
-                                    avatarSize = width * 0.1
-                                }: UserBarProps) {
+    name,
+    username,
+    date,
+    avatarUri,
+    avatarSize = width * 0.1,
+    userId,
+}: UserBarProps) {
+    const router = useRouter();
+
+    const handlePress = () => {
+        if (userId) {
+            router.push(`/profilePage?userId=${userId}`);
+        }
+    };
+
     return (
         <View style={styles.container}>
-            <Avatar uri={avatarUri} size={avatarSize} />
+            <Image
+                source={{
+                    uri: avatarUri || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=200&background=667eea&color=fff`,
+                }}
+                style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]}
+            />
             <View style={styles.textContainer}>
-                <Text style={styles.name}>{name}</Text>
-                {username && date && (
-                    <Text style={styles.metadata}>@{username} · {date}</Text>
+                <TouchableOpacity onPress={handlePress} disabled={!userId} activeOpacity={0.7}>
+                    <Text style={styles.name}>{name}</Text>
+                </TouchableOpacity>
+                {username && (
+                    <Text style={styles.username}>@{username}</Text>
                 )}
             </View>
+            {date && <Text style={styles.date}>{date}</Text>}
         </View>
     );
 }
@@ -36,9 +54,12 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
+        width: '100%',
+    },
+    avatar: {
+        marginRight: width * 0.03,
     },
     textContainer: {
-        marginLeft: width * 0.03,
         flex: 1,
     },
     name: {
@@ -46,9 +67,13 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#000',
     },
-    metadata: {
-        fontSize: width * 0.0325,
+    username: {
+        fontSize: width * 0.035,
         color: '#666',
-        marginTop: width * 0.005,
+        marginTop: 2,
+    },
+    date: {
+        fontSize: width * 0.035,
+        color: '#999',
     },
 });
