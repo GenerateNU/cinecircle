@@ -6,3 +6,4 @@ coverage/
 .DS_Store
 *.json
 *.md
+frontend/app/(onboarding)/complete.tsx
