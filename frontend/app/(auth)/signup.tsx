@@ -47,7 +47,6 @@ const SignUp = () => {
             }
 
             if (data.user) {
-                // OnboardingGuard will handle navigation
                 return { success: true };
             }
 
@@ -107,7 +106,6 @@ const SignUp = () => {
             
             if (signInResult.success) {
                 setMessage('Signed in successfully!');
-                // OnboardingGuard will redirect based on profile.onboardingCompleted
                 return;
             }
 
@@ -117,7 +115,6 @@ const SignUp = () => {
             if (signUpResult.success) {
                 if (signUpResult.emailConfirmed) {
                     setMessage('Account created successfully!');
-                    // OnboardingGuard will redirect to onboarding
                 } else {
                     // Need email confirmation
                     setMessage('Please check your email to confirm your account');
