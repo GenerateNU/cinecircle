@@ -30,7 +30,7 @@ export default function Complete() {
         username: data.username,
         primaryLanguage: data.primaryLanguage,
         secondaryLanguage: data.secondaryLanguage,
-        // profilePicture: data.profilePicture,
+        profilePicture: data.profilePicture,
         country: data.country,
         city: data.city,
         favoriteGenres: data.favoriteGenres,
