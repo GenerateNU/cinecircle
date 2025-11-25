@@ -2235,7 +2235,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/post": {
+    "/api/post": {
         parameters: {
             query?: never;
             header?: never;
@@ -2247,7 +2247,9 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -2259,11 +2261,11 @@ export interface paths {
                         /** @example any */
                         content?: unknown;
                         /** @example any */
-                        postType?: unknown;
+                        type?: unknown;
+                        /** @example any */
+                        imageUrls?: unknown;
                         /** @example any */
                         parentPostId?: unknown;
-                        /** @example any */
-                        reviewId?: unknown;
                     };
                 };
             };
@@ -2277,6 +2279,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2304,7 +2313,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/posts": {
+    "/api/posts": {
         parameters: {
             query?: never;
             header?: never;
@@ -2315,12 +2324,14 @@ export interface paths {
             parameters: {
                 query?: {
                     userId?: string;
-                    postType?: string;
+                    type?: string;
                     parentPostId?: string;
                     limit?: string;
                     offset?: string;
                 };
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -2328,6 +2339,13 @@ export interface paths {
             responses: {
                 /** @description OK */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2350,7 +2368,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/post/{postId}": {
+    "/api/post/{postId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2360,7 +2378,9 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path: {
                     postId: string;
                 };
@@ -2377,6 +2397,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2401,7 +2428,9 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path: {
                     postId: string;
                 };
@@ -2413,7 +2442,9 @@ export interface paths {
                         /** @example any */
                         content?: unknown;
                         /** @example any */
-                        postType?: unknown;
+                        type?: unknown;
+                        /** @example any */
+                        imageUrls?: unknown;
                     };
                 };
             };
@@ -2427,6 +2458,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2452,7 +2490,9 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path: {
                     postId: string;
                 };
@@ -2469,6 +2509,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2495,7 +2542,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/post/{postId}/like": {
+    "/api/post/{postId}/reaction": {
         parameters: {
             query?: never;
             header?: never;
@@ -2507,7 +2554,9 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path: {
                     postId: string;
                 };
@@ -2518,6 +2567,8 @@ export interface paths {
                     "application/json": {
                         /** @example any */
                         userId?: unknown;
+                        /** @example any */
+                        reactionType?: unknown;
                     };
                 };
             };
@@ -2531,6 +2582,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2558,7 +2616,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/post/{postId}/likes": {
+    "/api/post/{postId}/reactions": {
         parameters: {
             query?: never;
             header?: never;
@@ -2568,7 +2626,9 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path: {
                     postId: string;
                 };
@@ -2585,6 +2645,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2607,7 +2674,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/{postId}/replies": {
+    "/api/post/{postId}/replies": {
         parameters: {
             query?: never;
             header?: never;
@@ -2617,7 +2684,9 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    authorization?: string;
+                };
                 path: {
                     postId: string;
                 };
@@ -2634,6 +2703,13 @@ export interface paths {
                 };
                 /** @description Bad Request */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2971,7 +3047,6 @@ export interface components {
             timestamp?: string;
             endpoint?: string;
         };
-        /** @description Basic auth user info returned from /api/user/profile GET endpoint */
         UserProfileBasic: {
             id: string;
             email: string;
@@ -2985,7 +3060,6 @@ export interface components {
             timestamp?: string;
             endpoint?: string;
         };
-        /** @description Minimal user profile payloads used by your endpoints. */
         UserProfile: {
             userId: string;
             username?: string | null;
@@ -3004,13 +3078,12 @@ export interface components {
         };
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
-            username?: string | null;
+            username?: string;
             onboardingCompleted?: boolean;
             primaryLanguage?: string;
             secondaryLanguage?: string[];
-            profilePicture?: string | null;
-            country?: string | null;
-            city?: string | null;
+            country?: string;
+            city?: string;
             favoriteGenres?: string[];
             favoriteMovies?: string[];
         };
@@ -3026,7 +3099,6 @@ export interface components {
             message: string;
             ratings: components["schemas"]["Rating"][];
         };
-        /** @description Ratings & comments (shapes are flexible because you include relations). */
         Rating: {
             id: string;
             userId: string;
@@ -3036,6 +3108,10 @@ export interface components {
             tags: string[];
             date: string;
             votes: number;
+            UserProfile?: {
+                userId: string;
+                username: string | null;
+            };
             threadedComments?: unknown[];
         };
         GetUserCommentsResponse: {
@@ -3049,6 +3125,10 @@ export interface components {
             postId?: string | null;
             content: string;
             createdAt: string;
+            UserProfile?: {
+                userId: string;
+                username: string | null;
+            };
             rating?: unknown;
             post?: unknown;
         };
@@ -3081,7 +3161,6 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** @description Matches your `movie` controller responses (BigInt -> number already on server). */
         Movie: {
             movieId: string;
             title?: string | null;
@@ -3104,7 +3183,118 @@ export interface components {
         DeleteMovieResponse: {
             message: string;
         };
-        /** @description Local event */
+        /** @description -------- Posts -------- */
+        GetPostsResponse: {
+            message: string;
+            data: components["schemas"]["Post"][];
+            pagination: {
+                limit: number;
+                offset: number;
+                total: number;
+            };
+        };
+        Post: {
+            id: string;
+            userId: string;
+            content: string;
+            /** @enum {string} */
+            type: "SHORT" | "LONG";
+            createdAt: string;
+            imageUrls: string[];
+            parentPostId: string | null;
+            UserProfile?: {
+                userId: string;
+                username: string | null;
+            };
+            PostReaction?: {
+                id: string;
+                userId: string;
+                reactionType: components["schemas"]["ReactionType"];
+            }[];
+            Comment?: {
+                id: string;
+            }[];
+            Replies?: {
+                id: string;
+            }[];
+            commentCount?: number;
+            replyCount?: number;
+            reactionCount?: number;
+            reactionCounts?: {
+                SPICY: number;
+                STAR_STUDDED: number;
+                THOUGHT_PROVOKING: number;
+                BLOCKBUSTER: number;
+            };
+            userReactions?: components["schemas"]["ReactionType"][];
+        };
+        /** @enum {string} */
+        ReactionType: "SPICY" | "STAR_STUDDED" | "THOUGHT_PROVOKING" | "BLOCKBUSTER";
+        GetPostByIdResponse: {
+            message: string;
+            data: components["schemas"]["Post"];
+        };
+        CreatePostInput: {
+            userId: string;
+            content: string;
+            /** @enum {string} */
+            type?: "SHORT" | "LONG";
+            imageUrls?: string[];
+            parentPostId?: string;
+        };
+        CreatePostResponse: {
+            message: string;
+            data: components["schemas"]["Post"];
+        };
+        UpdatePostInput: {
+            content?: string;
+            /** @enum {string} */
+            type?: "SHORT" | "LONG";
+            imageUrls?: string[];
+        };
+        UpdatePostResponse: {
+            message: string;
+            data: components["schemas"]["Post"];
+        };
+        DeletePostResponse: {
+            message: string;
+        };
+        ToggleReactionInput: {
+            userId: string;
+            /** @enum {string} */
+            reactionType: "SPICY" | "STAR_STUDDED" | "THOUGHT_PROVOKING" | "BLOCKBUSTER";
+        };
+        ToggleReactionResponse: {
+            message: string;
+            reacted: boolean;
+            reactionType: string;
+        };
+        GetPostReactionsResponse: {
+            message: string;
+            data: {
+                id: string;
+                postId: string;
+                userId: string;
+                reactionType: string;
+                createdAt: string;
+                UserProfile: {
+                    userId: string;
+                    username: string | null;
+                };
+            }[];
+            counts: {
+                [key: string]: number;
+            };
+            total: number;
+        };
+        /** @description -------- Feed (Posts + Ratings combined) -------- */
+        FeedItem: {
+            /** @enum {string} */
+            itemType: "post" | "rating";
+            post?: components["schemas"]["Post"];
+            rating?: components["schemas"]["Rating"];
+            movie?: components["schemas"]["Movie"];
+        };
         LocalEvent: {
             id: string;
             title: string;
@@ -3126,6 +3316,17 @@ export interface components {
         GetLocalEventResponse: {
             message: string;
             data: components["schemas"]["LocalEvent"];
+        };
+        PostReaction: {
+            id: string;
+            postId: string;
+            userId: string;
+            reactionType: components["schemas"]["ReactionType"];
+            createdAt: string;
+            UserProfile?: {
+                userId: string;
+                username: string | null;
+            };
         };
     };
     responses: never;

@@ -95,12 +95,13 @@ export type GetLocalEventResponse = {
   data: LocalEvent;
 };
 
+export type ReactionType = 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER';
+
 export type Post = {
   id: string;
   userId: string;
   content: string;
   type: 'SHORT' | 'LONG';
-  votes: number;
   createdAt: string;
   imageUrls: string[];
   parentPostId: string | null;
@@ -108,18 +109,25 @@ export type Post = {
     userId: string;
     username: string | null;
   };
-  PostLike?: Array<{ id: string; userId: string }>;
+  PostReaction?: Array<{ id: string; userId: string; reactionType: ReactionType }>;
   Comment?: Array<{ id: string }>;
   Replies?: Array<{ id: string }>;
-  likeCount?: number;
+  // Computed fields
   commentCount?: number;
   replyCount?: number;
-  isLiked?: boolean;
+  reactionCount?: number;
+  reactionCounts?: Record<ReactionType, number>;
+  userReactions?: ReactionType[];
 };
 
-export type PostLike = {
+export type PostReaction = {
   id: string;
   postId: string;
   userId: string;
+  reactionType: ReactionType;
   createdAt: string;
+  UserProfile?: {
+    userId: string;
+    username: string | null;
+  };
 };
