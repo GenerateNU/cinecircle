@@ -121,25 +121,33 @@ export type DeletePostResponse = {
   message: string;
 };
 
-export type ToggleLikeResponse = {
-  message: string;
-  liked: boolean;
-  votes?: number;
+// Reaction types
+export type ToggleReactionInput = {
+  userId: string;
+  reactionType: 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER';
 };
 
-export type GetPostLikesResponse = {
+export type ToggleReactionResponse = {
+  message: string;
+  reacted: boolean;
+  reactionType: string;
+};
+
+export type GetPostReactionsResponse = {
   message: string;
   data: Array<{
     id: string;
     postId: string;
     userId: string;
+    reactionType: string;
     createdAt: string;
     UserProfile: {
       userId: string;
       username: string | null;
     };
   }>;
-  count: number;
+  counts: Record<string, number>;
+  total: number;
 };
 
 /** -------- Feed (Posts + Ratings combined) -------- */

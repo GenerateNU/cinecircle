@@ -22,8 +22,20 @@ export async function fetchHomeFeed(limit: number = 20): Promise<FeedResponse> {
 }
 
 /**
- * Toggle like on a post
+ * Toggle reaction on a post
+ * @param reactionType - One of: SPICY, STAR_STUDDED, THOUGHT_PROVOKING, BLOCKBUSTER
  */
-export async function togglePostLike(postId: string, userId: string) {
-  return api.post(`/post/${postId}/like`, { userId });
+export async function togglePostReaction(
+  postId: string, 
+  userId: string, 
+  reactionType: 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+) {
+  return api.post(`/api/post/${postId}/reaction`, { userId, reactionType });
+}
+
+/**
+ * Get all reactions for a post
+ */
+export async function getPostReactions(postId: string) {
+  return api.get(`/api/post/${postId}/reactions`);
 }

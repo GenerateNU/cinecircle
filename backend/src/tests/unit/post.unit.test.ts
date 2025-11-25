@@ -138,7 +138,11 @@ describe("Post Controller Unit Tests", () => {
           username: "testuser",
         },
         Replies: [{ postId: "reply-1" }, { postId: "reply-2" }],
-        PostLike: [{ likeId: "like-1" }, { likeId: "like-2" }, { likeId: "like-3" }],
+        PostReaction: [
+          { id: "reaction-1", reactionType: "SPICY" }, 
+          { id: "reaction-2", reactionType: "BLOCKBUSTER" }, 
+          { id: "reaction-3", reactionType: "STAR_STUDDED" }
+        ],
         Comment: [],
       };
 
