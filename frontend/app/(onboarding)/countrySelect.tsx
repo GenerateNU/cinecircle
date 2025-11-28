@@ -1,7 +1,8 @@
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import NextButton from '../../components/NextButton';
+import BackButton from '../../components/BackButton';
 import DropdownSelect from '../../components/dropdownSelect';
 import { useOnboarding } from './_layout';
 
@@ -24,6 +25,9 @@ export default function CountrySelect() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButtonContainer}>
+        <BackButton onPress={() => router.back()}/>
+      </TouchableOpacity>
       <View style={styles.inputWrapper}>
         <DropdownSelect 
           title="Where are you from?"
@@ -54,6 +58,12 @@ const styles = StyleSheet.create({
   inputWrapper: {
     width: '100%',
     flex: 1,
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    top: height * 0.06,
+    left: width * 0.05,
+    zIndex: 10,
   },
   buttonContainer: {
     width: '100%',
