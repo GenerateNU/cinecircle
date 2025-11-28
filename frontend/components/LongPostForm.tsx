@@ -1,7 +1,16 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import StarRating from './StarRating';
-import CreatePostToolBar from './CreatePostToolBar';
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+} from "react";
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+} from "react-native";
+import StarRating from "./StarRating";
+import CreatePostToolBar from "./CreatePostToolBar";
 
 export interface LongPostFormRef {
   submit: () => void;
@@ -11,179 +20,105 @@ interface LongPostFormProps {
   showTextBox: boolean;
   showStars: boolean;
   onToolbarAction: (action: string) => void;
-  onSubmit: (data: { content: string; rating?: number; title?: string; subtitle?: string; tags?: string[] }) => void;
+  onSubmit: (data: {
+    title: string;
+    subtitle?: string;
+    content: string;
+    rating?: number;
+  }) => void;
 }
 
 const LongPostForm = forwardRef<LongPostFormRef, LongPostFormProps>(
-  ({ showTextBox, showStars, onToolbarAction, onSubmit }, ref) => {
-    const [content, setContent] = useState('');
-    const [rating, setRating] = useState<number>(0);
-    const [title, setTitle] = useState('');
-    const [subtitle, setSubtitle] = useState('');
-    const [tags, setTags] = useState<string[]>([]);
-    const [tagInput, setTagInput] = useState('');
-    const [showTagInput, setShowTagInput] = useState(false);
+({ showTextBox, showStars, onToolbarAction, onSubmit }, ref) => {
 
-    useImperativeHandle(ref, () => ({
-      submit() {
-        onSubmit({
-          content,
-          rating: rating || undefined,
-          title,
-          subtitle,
-          tags
-        });
-      }
-    }));
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [content, setContent] = useState("");
+  const [rating, setRating] = useState<number>(0);
 
-    const addTag = () => {
-      const cleaned = tagInput.trim();
-      if (cleaned && !tags.includes(cleaned)) {
-        setTags([...tags, cleaned]);
-      }
-      setTagInput('');
-      setShowTagInput(false);
-    };
+  useImperativeHandle(ref, () => ({
+    submit() {
+      onSubmit({
+        title,
+        subtitle: subtitle || undefined,
+        content,
+        rating: rating || undefined,
+      });
+    },
+  }));
 
-    return (
-      <View style={styles.container}>
+  return (
+    <View style={styles.container}>
+
+      {showStars && (
+        <View style={styles.starContainer}>
+          <StarRating rating={rating} onRatingChange={setRating} />
+        </View>
+      )}
+
+      {/* TITLE INPUT */}
+      <TextInput
+        style={styles.titleInput}
+        placeholder="Title"
+        placeholderTextColor="#A3A3A3"
+        value={title}
+        onChangeText={setTitle}
+      />
+
+      {/* SUBTITLE INPUT */}
+      <TextInput
+        style={styles.subtitleInput}
+        placeholder="Subtitle (optional)"
+        placeholderTextColor="#A3A3A3"
+        value={subtitle}
+        onChangeText={setSubtitle}
+      />
+
+      {/* MAIN CONTENT BOX */}
+      {showTextBox && (
         <TextInput
-          style={styles.title}
-          placeholder="Add a title..."
-          placeholderTextColor="#C4C4C4"
-          value={title}
-          onChangeText={setTitle}
+          style={styles.contentInput}
+          multiline
+          placeholder="Write your thoughts..."
+          placeholderTextColor="#A3A3A3"
+          value={content}
+          onChangeText={setContent}
         />
+      )}
 
-        {showStars && (
-          <View style={styles.starContainer}>
-            <StarRating
-              rating={rating}
-              onRatingChange={setRating}
-            />
-          </View>
-        )}
-
-        <TextInput
-          style={styles.subtitle}
-          placeholder="Add a subtitle..."
-          placeholderTextColor="#C4C4C4"
-          value={subtitle}
-          onChangeText={setSubtitle}
-        />
-
-        {showTextBox && (
-          <TextInput
-            style={styles.body}
-            multiline
-            placeholder="Start sharing your thoughts..."
-            placeholderTextColor="#C4C4C4"
-            value={content}
-            onChangeText={setContent}
-          />
-        )}
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tagsContainer}
-          contentContainerStyle={{ alignItems: 'center' }}
-        >
-          {tags.map((tag, idx) => (
-            <View key={idx} style={styles.tagPill}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-          <TouchableOpacity
-            style={styles.tagAddPill}
-            onPress={() => setShowTagInput(true)}
-          >
-            <Text style={styles.addTagText}>+ Tag</Text>
-          </TouchableOpacity>
-        </ScrollView>
-
-        {showTagInput && (
-          <TextInput
-            style={styles.tagInput}
-            placeholder="Enter tag..."
-            value={tagInput}
-            onChangeText={setTagInput}
-            onSubmitEditing={addTag}
-            returnKeyType="done"
-            autoFocus
-            onBlur={() => setShowTagInput(false)}
-          />
-        )}
-
-        <CreatePostToolBar onToolbarAction={onToolbarAction}/>
-      </View>
-    );
-  }
-);
-
+      <CreatePostToolBar onToolbarAction={onToolbarAction} />
+    </View>
+  );
+});
 
 export default LongPostForm;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  body: {
-    fontSize: 16,
-    minHeight: 200,
-    textAlignVertical: 'top',
-    marginBottom: 8,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 50,
   },
   starContainer: {
-    alignItems: 'flex-start',
     marginBottom: 12,
+    alignItems: "flex-start",
   },
-  tagsContainer: {
-    minHeight: 48,
-    flexDirection: 'row',
-    marginVertical: 12,
-    flexWrap: 'nowrap',
+  titleInput: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: "#000",
   },
-  tagPill: {
-    backgroundColor: '#E5F2F7',
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  tagText: {
-    fontSize: 15,
-    color: '#458EA6',
-  },
-  tagAddPill: {
-    borderWidth: 1,
-    borderColor: '#458EA6',
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  addTagText: {
-    fontSize: 15,
-    color: '#458EA6',
-  },
-  tagInput: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#CCC',
+  subtitleInput: {
     fontSize: 16,
-    marginVertical: 4,
-    width: '70%',
-    alignSelf: 'flex-start',
+    marginBottom: 12,
+    color: "#333",
+  },
+  contentInput: {
+    minHeight: 200,
+    fontSize: 16,
+    textAlignVertical: "top",
+    color: "#000",
+    paddingTop: 8,
   },
 });

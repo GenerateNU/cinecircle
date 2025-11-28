@@ -4,72 +4,41 @@ import { Prisma } from "@prisma/client";
 
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
-    try {
-      const { userId, content, postType, parentPostId, reviewId } = req.body;
-  
-      // Validation
-      if (!userId || !content) {
-        return res.status(400).json({ 
-          message: "userId and content are required" 
-        });
-      }
-  
-      if (postType && !["LONG_POST", "SHORT_POST"].includes(postType)) {
-        return res.status(400).json({ 
-          message: "Invalid postType. Must be LONG_POST or SHORT_POST" 
-        });
-      }
-  
-      // If it's a reply, verify parent post exists
-      if (parentPostId) {
-        const parentPost = await prisma.post.findUnique({
-          where: { postId: parentPostId },
-        });
-        if (!parentPost) {
-          return res.status(404).json({ message: "Parent post not found" });
-        }
-      }
-  
-      // If linked to review, verify review exists
-      if (reviewId) {
-        const review = await prisma.review.findUnique({
-          where: { reviewId },
-        });
-        if (!review) {
-          return res.status(404).json({ message: "Review not found" });
-        }
-      }
-  
-      const newPost = await prisma.post.create({
-        data: {
-          userId,
-          content,
-          postType: postType || "SHORT_POST",
-          parentPostId,
-          reviewId,
-        },
-        include: {
-          user: {
-            select: {
-              userId: true,
-              username: true,
-            },
-          },
-        },
-      });
-  
-      res.status(201).json({
-        message: "Post created successfully",
-        data: newPost,
-      });
-    } catch (err) {
-      console.error("createPost error:", err);
-      res.status(500).json({
-        message: "Failed to create post",
-        error: err instanceof Error ? err.message : "Unknown error",
+  try {
+    const { userId, content, type } = req.body;
+
+    if (!userId || !content) {
+      return res.status(400).json({ message: "userId and content are required" });
+    }
+
+    if (type && !["LONG_POST", "SHORT_POST"].includes(type)) {
+      return res.status(400).json({
+        message: "Invalid type. Must be LONG_POST or SHORT_POST"
       });
     }
-  };
+
+    const newPost = await prisma.post.create({
+      data: {
+        userId,
+        content,
+        type: type || "SHORT_POST",
+      },
+    });
+
+    res.status(201).json({
+      message: "Post created successfully",
+      data: newPost,
+    });
+    
+  } catch (err) {
+    console.error("createPost error:", err);
+    res.status(500).json({
+      message: "Failed to create post",
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+};
+
 
 // GET POST BY ID
 export const getPostById = async (req: Request, res: Response) => {

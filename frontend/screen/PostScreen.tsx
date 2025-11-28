@@ -4,6 +4,16 @@ import CreatePostBar from '../components/CreatePostBar';
 import PostTypeSelector from '../components/PostTypeSelector';
 import ShortPostForm from '../components/ShortPostForm';
 import LongPostForm from '../components/LongPostForm';
+import { createPost } from "../services/postService";
+import { useAuth } from '../context/AuthContext';
+
+export interface PostFormData {
+  content: string;
+  rating?: number;
+  title?: string;
+  subtitle?: string;
+  tags?: string[];
+}
 
 export default function PostScreen() {
   const [postType, setPostType] = useState<'long' | 'short' | 'rating' | null>(null);
@@ -12,12 +22,26 @@ export default function PostScreen() {
   const longFormRef = useRef<any>(null);
   const shortFormRef = useRef<any>(null);
 
-  // Handles creating post (fetch/axios logic goes here)
-  const handleFormSubmit = () => {
-    // implement your fetch call here
-    // fetch('/post', {body: JSON.stringify(formData), ... })
-    //console.log("Form submitted data:", formData);
-  };
+  const { user } = useAuth();
+
+const handleFormSubmit = async (formData: PostFormData) => {
+  try {
+    const payload = {
+      ...formData,
+      userId: user.id,
+      postType: postType === "long" ? "LONG_POST" : "SHORT_POST",
+    };
+     console.log("Payload I'm sending:", payload);
+    const post = await createPost(payload);
+
+    console.log("Post created:", post);
+
+    setPostType(null);
+  } catch (err) {
+    console.error("createPost error:", JSON.stringify(err, null, 2));
+  }
+};
+
 
   const handleSubmitButton = () => {
     if (postType === 'long') {

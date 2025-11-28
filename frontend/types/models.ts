@@ -76,3 +76,27 @@ export type FollowEdge = {
   follower?: UserProfile;
   following?: UserProfile;
 };
+
+export type PostFormData = {
+  content: string;
+  rating?: number;
+  title?: string;
+  subtitle?: string;
+  tags?: string[];
+};
+
+export type PostModel = {
+  id: string;
+  userId: string;
+  content: string;
+  type: "short" | "long" | "rating";
+  rating?: number | null;
+  title?: string | null;
+  subtitle?: string | null;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+
+
