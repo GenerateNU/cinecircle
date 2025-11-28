@@ -1,66 +1,87 @@
-import React, {
-  forwardRef,
-  useImperativeHandle
-} from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import {
   View,
-  TextInput,
   Text,
+  TextInput,
   StyleSheet,
-} from 'react-native';
-import StarRating from './StarRating';
-import CreatePostToolBar from './CreatePostToolBar';
+  TouchableOpacity,
+  Switch,
+} from "react-native";
 
-export interface ShortPostFormRef {
-  submit: () => void;
+interface Props {
+  onSubmit: (data: any) => void;
 }
 
-interface ShortPostFormProps {
-  showTextBox: boolean;
-  showStars: boolean;
-  onToolbarAction: (action: string) => void;
-  onSubmit: (data: { content: string; rating?: number }) => void;
-}
+const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
+  const [movie, setMovie] = useState<string | null>(null);
+  const [spoiler, setSpoiler] = useState(false);
+  const [content, setContent] = useState("");
 
-const ShortPostForm = forwardRef<ShortPostFormRef, ShortPostFormProps>(
-({ showTextBox, showStars, onToolbarAction, onSubmit }, ref) => {
-  const [content, setContent] = React.useState('');
-  const [rating, setRating] = React.useState<number>(0);
+  const CHAR_LIMIT = 280;
 
   useImperativeHandle(ref, () => ({
     submit() {
+      if (!movie) {
+        alert("Please select a movie.");
+        return;
+      }
+      if (content.trim().length === 0) {
+        alert("Please enter content.");
+        return;
+      }
+
       onSubmit({
+        movieId: movie,
+        spoiler,
         content,
-        rating: rating || undefined,
       });
     },
   }));
 
   return (
     <View style={styles.container}>
-      {showStars && (
-        <View style={styles.starContainer}>
-          <StarRating
-            rating={rating}
-            onRatingChange={setRating}
-          />
-        </View>
-      )}
+      <TouchableOpacity
+        style={styles.dropdown}
+        onPress={() => {
+          // Replace with your real movie selector navigation
+          alert("Open movie selector");
+        }}
+      >
+        <Text style={styles.dropdownText}>
+          {movie ? movie : "Select Movie"}
+        </Text>
+      </TouchableOpacity>
 
-      {showTextBox && (
-        <TextInput
-          style={styles.textBox}
-          multiline
-          placeholder="Start sharing your thoughts..."
-          placeholderTextColor="#A3A3A3"
-          value={content}
-          onChangeText={setContent}
-          maxLength={280} 
+      <View style={styles.spoilerRow}>
+        <Text style={styles.spoilerLabel}>Spoiler</Text>
+        <Switch
+          value={spoiler}
+          onValueChange={setSpoiler}
+          trackColor={{ true: "#e8856d", false: "#e8856d" }}
+          thumbColor='white'
         />
-      )}
+      </View>
 
-      <Text style={styles.charCount}>{content.length}/280</Text>
-      <CreatePostToolBar onToolbarAction={onToolbarAction}/>
+      <TextInput
+        style={styles.input}
+        multiline
+        placeholder="Start sharing your thoughts..."
+        placeholderTextColor="#aaa"
+        value={content}
+        onChangeText={(text) => {
+          if (text.length <= CHAR_LIMIT) setContent(text);
+        }}
+      />
+
+      <Text style={styles.charCount}>
+        {content.length}/{CHAR_LIMIT}
+      </Text>
+
+      <View style={styles.toolbar}>
+        <Text style={styles.toolbarItem}>Photo and Video</Text>
+        <Text style={styles.toolbarItem}>GIF</Text>
+        <Text style={styles.toolbarItem}>Keyboard Down</Text>
+      </View>
     </View>
   );
 });
@@ -69,25 +90,61 @@ export default ShortPostForm;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 50,
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
-  starContainer: {
-    marginBottom: 12,
-    alignItems: 'flex-start',
+
+  dropdown: {
+    borderWidth: 1.4,
+    borderColor: "#e66a4e",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    alignSelf: "flex-start",
   },
-  textBox: {
-    minHeight: 140,
-    fontSize: 16,
-    textAlignVertical: 'top',
-    paddingTop: 8,
-    color: '#000',
+  dropdownText: {
+    fontFamily: "Figtree_500Medium",
+    fontSize: 15,
+    color: "#e66a4e",
   },
+
+  spoilerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 18,
+  },
+  spoilerLabel: {
+    fontFamily: "Figtree_500Medium",
+    fontSize: 14,
+    color: "#444",
+    marginRight: 10,
+  },
+
+  input: {
+    marginTop: 18,
+    minHeight: 160,
+    fontFamily: "Figtree_400Regular",
+    fontSize: 15,
+    color: "#333",
+  },
+
   charCount: {
-    textAlign: 'right',
+    textAlign: "right",
     marginTop: 4,
+    fontFamily: "Figtree_400Regular",
+    color: "#aaa",
     fontSize: 12,
-    color: '#A3A3A3',
+  },
+
+  toolbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    paddingHorizontal: 4,
+  },
+  toolbarItem: {
+    fontFamily: "Figtree_500Medium",
+    fontSize: 12,
+    color: "#777",
   },
 });
