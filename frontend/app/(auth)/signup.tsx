@@ -118,7 +118,6 @@ const SignUp = () => {
                 } else {
                     // Need email confirmation
                     setMessage('Please check your email to confirm your account');
-                    router.replace("/(auth)/confirmEmail");
                 }
             } else {
                 // Sign up failed
@@ -152,8 +151,8 @@ const SignUp = () => {
                     onChangeText={setEmail}
                     value={email}
                     keyboardType="email-address"
-                    autoComplete="email"
-                    textContentType="emailAddress"
+                    autoComplete="off"
+                    textContentType="none"
                 />
                 <TextInputComponent
                     field="Password"
@@ -162,8 +161,8 @@ const SignUp = () => {
                     onChangeText={setPassword}
                     value={password}
                     secureTextEntry={true}
-                    autoComplete="new-password"
-                    textContentType="newPassword"
+                    autoComplete="off"
+                    textContentType="none"
                 />
                 <TextInputComponent
                     field="Confirm Password"
@@ -172,8 +171,8 @@ const SignUp = () => {
                     onChangeText={setConfirmPassword}
                     value={confirmPassword}
                     secureTextEntry={true}
-                    autoComplete="new-password"
-                    textContentType="newPassword"
+                    autoComplete="off"
+                    textContentType="none"
                 />
                 <Text style={styles.message}>{'*'+ message|| ' '}</Text>
             </View>
