@@ -1,90 +1,209 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Pressable,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-interface Props {
-  value: 'long' | 'short' | 'rating' | null;
-  onChange: (value: 'long' | 'short' | 'rating') => void;
+const { height: WINDOW_HEIGHT } = Dimensions.get("window");
+
+export type PostTypeKey = "short" | "review";
+
+interface CreatePostModalProps {
+  visible: boolean;
+  onClose: () => void;
 }
 
-const PostTypeSelector: React.FC<Props> = ({ value, onChange }) => {
-  const options = [
-    { key: 'short', label: 'Short Post', desc: 'Quick thoughts or updates' },
-    { key: 'long', label: 'Long Post', desc: 'Share a detailed story' },
-  ];
+export default function CreatePostModal({ visible, onClose }: CreatePostModalProps) {
+  const navigation = useNavigation<any>(); 
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const [selected, setSelected] = useState<PostTypeKey | null>(null);
+
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: visible ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+
+    if (!visible) setSelected(null);
+  }, [visible]);
+
+  const translateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [WINDOW_HEIGHT, WINDOW_HEIGHT * 0.18],
+  });
+
+  const backdropOpacity = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.5],
+  });
+
+  const handleSelect = (type: PostTypeKey) => {
+    setSelected(type);
+
+    setTimeout(() => {
+      navigation.navigate("CreatePost", {
+        mode: type === "short" ? "SHORT_POST" : "LONG_POST",
+      });
+      onClose();
+    }, 220);
+  };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Create a new post</Text>
-      <Text style={styles.subtitle}>Choose what kind of post you want to make:</Text>
-      <View style={styles.optionContainer}>
-        {options.map((opt) => (
-          <TouchableOpacity
-            key={opt.key}
-            style={[
-              styles.option,
-              value === opt.key && styles.optionSelected,
-            ]}
-            activeOpacity={0.8}
-            onPress={() => onChange(opt.key as 'long' | 'short')}
-          >
-            <Text style={styles.optionLabel}>{opt.label}</Text>
-            <Text style={styles.optionDesc}>{opt.desc}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
+    <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
+      {/* BACKDROP */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
+        <Animated.View
+          style={[
+            styles.backdrop,
+            { opacity: backdropOpacity },
+          ]}
+        />
+      </Pressable>
+
+      {/* PANEL */}
+      <Animated.View style={[styles.panel, { transform: [{ translateY }] }]}>
+        <View style={styles.handle} />
+
+        <Text style={styles.heading}>Create</Text>
+
+        <View style={styles.row}>
+          <Ticket
+            label="Short Take"
+            footer="Take"
+            isSelected={selected === "short"}
+            onPress={() => handleSelect("short")}
+          />
+
+          <Ticket
+            label="Review"
+            footer="Review"
+            isSelected={selected === "review"}
+            onPress={() => handleSelect("review")}
+          />
+        </View>
+      </Animated.View>
+    </Modal>
   );
-};
+}
+
+/* Ticket component */
+function Ticket({
+  label,
+  footer,
+  isSelected,
+  onPress,
+}: {
+  label: string;
+  footer: string;
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  const ani = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(ani, {
+      toValue: isSelected ? 1 : 0,
+      friction: 7,
+      tension: 120,
+      useNativeDriver: false,
+    }).start();
+  }, [isSelected]);
+
+  const rotate = ani.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "-8deg"],
+  });
+
+  const translateY = ani.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -12],
+  });
+
+  const scale = ani.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.06],
+  });
+
+  return (
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.ticketWrapper}>
+      <Animated.View
+        style={[
+          styles.ticket,
+          {
+            transform: [{ translateY }, { rotate }, { scale }],
+          },
+        ]}
+      >
+        <Text style={styles.ticketText}>{label}</Text>
+      </Animated.View>
+      <Text style={styles.footer}>{footer}</Text>
+    </TouchableOpacity>
+  );
+}
 
 const styles = StyleSheet.create({
-  card: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  panel: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    backgroundColor: "#fff",
   },
-  title: {
+  handle: {
+    width: 48,
+    height: 4,
+    borderRadius: 4,
+    backgroundColor: "#E6E6E6",
+    alignSelf: "center",
+    marginBottom: 12,
+  },
+  heading: {
     fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#1C1C1E',
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#111",
   },
-  subtitle: {
-    textAlign: 'center',
-    color: '#6C757D',
-    marginBottom: 16,
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 16,
   },
-  optionContainer: {
-    gap: 12,
+  ticketWrapper: {
+    alignItems: "center",
+    flex: 1,
   },
-  option: {
-    backgroundColor: '#F1F3F5',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+  ticket: {
+    width: 150,
+    height: 92,
+    backgroundColor: "#FBEFEA",
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: "#F2B7AB",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  optionSelected: {
-    backgroundColor: '#E0F2FE',
-    borderWidth: 1.5,
-    borderColor: '#38BDF8',
-  },
-  optionLabel: {
+  ticketText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1C1C1E',
+    fontWeight: "700",
+    color: "#B44A38",
   },
-  optionDesc: {
-    fontSize: 13,
-    color: '#6C757D',
-    marginTop: 2,
+  footer: {
+    marginTop: 12,
+    color: "#888",
+    fontSize: 14,
   },
 });
-
-export default PostTypeSelector;
