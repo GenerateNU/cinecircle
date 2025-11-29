@@ -20,6 +20,7 @@ export const createRating = async (req: AuthenticatedRequest, res: Response) => 
       tags: req.body.tags || [],
       date: new Date(),
       votes: 0,
+      spoiler: req.body.spoiler || false,
     };
     const newRating = await prisma.rating.create({ data: newRatingData });
     return res.status(201).json({
@@ -185,6 +186,7 @@ export async function getMovieRatings(req: Request, res: Response) {
       tags: r.tags as string[] | null, // if tags is JSON
       date: r.date, // or r.createdAt
       votes: r.votes,
+      spoiler: r.spoiler,
     }));
 
     return res.status(200).json({ ratings });

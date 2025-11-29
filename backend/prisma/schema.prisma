@@ -111,20 +111,21 @@ model mfa_challenges {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model mfa_factors {
-  id                   String           @id @db.Uuid
-  user_id              String           @db.Uuid
-  friendly_name        String?
-  factor_type          factor_type
-  status               factor_status
-  created_at           DateTime         @db.Timestamptz(6)
-  updated_at           DateTime         @db.Timestamptz(6)
-  secret               String?
-  phone                String?
-  last_challenged_at   DateTime?        @unique @db.Timestamptz(6)
-  web_authn_credential Json?
-  web_authn_aaguid     String?          @db.Uuid
-  mfa_challenges       mfa_challenges[]
-  users                auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                           String           @id @db.Uuid
+  user_id                      String           @db.Uuid
+  friendly_name                String?
+  factor_type                  factor_type
+  status                       factor_status
+  created_at                   DateTime         @db.Timestamptz(6)
+  updated_at                   DateTime         @db.Timestamptz(6)
+  secret                       String?
+  phone                        String?
+  last_challenged_at           DateTime?        @unique @db.Timestamptz(6)
+  web_authn_credential         Json?
+  web_authn_aaguid             String?          @db.Uuid
+  last_webauthn_challenge_data Json?
+  mfa_challenges               mfa_challenges[]
+  users                        auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, phone], map: "unique_phone_factor_per_user")
   @@index([user_id, created_at], map: "factor_id_created_at_idx")
@@ -150,6 +151,7 @@ model oauth_authorizations {
   created_at            DateTime                   @default(now()) @db.Timestamptz(6)
   expires_at            DateTime                   @default(dbgenerated("(now() + '00:03:00'::interval)")) @db.Timestamptz(6)
   approved_at           DateTime?                  @db.Timestamptz(6)
+  nonce                 String?
   oauth_clients         oauth_clients              @relation(fields: [client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                 auth_users?                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -282,25 +284,29 @@ model schema_migrations {
   @@schema("auth")
 }
 
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model sessions {
-  id              String           @id @db.Uuid
-  user_id         String           @db.Uuid
-  created_at      DateTime?        @db.Timestamptz(6)
-  updated_at      DateTime?        @db.Timestamptz(6)
-  factor_id       String?          @db.Uuid
-  aal             aal_level?
-  not_after       DateTime?        @db.Timestamptz(6)
-  refreshed_at    DateTime?        @db.Timestamp(6)
-  user_agent      String?
-  ip              String?          @db.Inet
-  tag             String?
-  oauth_client_id String?          @db.Uuid
-  mfa_amr_claims  mfa_amr_claims[]
-  refresh_tokens  refresh_tokens[]
-  oauth_clients   oauth_clients?   @relation(fields: [oauth_client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users           auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                     String           @id @db.Uuid
+  user_id                String           @db.Uuid
+  created_at             DateTime?        @db.Timestamptz(6)
+  updated_at             DateTime?        @db.Timestamptz(6)
+  factor_id              String?          @db.Uuid
+  aal                    aal_level?
+  not_after              DateTime?        @db.Timestamptz(6)
+  refreshed_at           DateTime?        @db.Timestamp(6)
+  user_agent             String?
+  ip                     String?          @db.Inet
+  tag                    String?
+  oauth_client_id        String?          @db.Uuid
+  refresh_token_hmac_key String?
+  refresh_token_counter  BigInt?
+  scopes                 String?
+  mfa_amr_claims         mfa_amr_claims[]
+  refresh_tokens         refresh_tokens[]
+  oauth_clients          oauth_clients?   @relation(fields: [oauth_client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                  auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([not_after(sort: Desc)])
   @@index([oauth_client_id])
@@ -397,54 +403,38 @@ model auth_users {
 }
 
 model Comment {
-  id              String      @id @default(uuid())
-  userId          String      @db.Uuid
-  ratingId        String?
-  postId          String?
-  content         String
-  createdAt       DateTime    @default(now())
-  parentId        String?
-  parent_comment  Comment?    @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
-  child_comment   Comment[]   @relation("CommentToComment")
-  Post            Post?       @relation(fields: [postId], references: [id])
-  Rating          Rating?     @relation(fields: [ratingId], references: [id])
-  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
+  id            String      @id
+  userId        String      @db.Uuid
+  ratingId      String?
+  postId        String?
+  content       String
+  createdAt     DateTime    @default(now())
+  parentId      String?
+  spoiler       Boolean     @default(false)
+  Comment       Comment?    @relation("CommentToComment", fields: [parentId], references: [id])
+  other_Comment Comment[]   @relation("CommentToComment")
+  Post          Post?       @relation(fields: [postId], references: [id])
+  Rating        Rating?     @relation(fields: [ratingId], references: [id])
+  UserProfile   UserProfile @relation(fields: [userId], references: [userId])
 
   @@schema("public")
 }
 
 model Post {
-  id              String      @id @default(uuid())
-  userId          String      @db.Uuid
-  content         String
-  type            PostType
-  votes           Int         @default(0)
-  createdAt       DateTime    @default(now())
-  imageUrls       String[]    @default([])
-  parentPostId    String?     // For threading/replies
-  Comment         Comment[]
-  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
-  PostLike        PostLike[]  // Track individual likes
-  ParentPost      Post?       @relation("PostReplies", fields: [parentPostId], references: [id], onDelete: SetNull)
-  Replies         Post[]      @relation("PostReplies")
-
-  @@schema("public")
-}
-
-model PostLike {
-  id        String      @id @default(uuid())
-  postId    String
-  userId    String      @db.Uuid
-  createdAt DateTime    @default(now())
-  Post      Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id          String      @id
+  userId      String      @db.Uuid
+  content     String
+  type        PostType
+  votes       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  Comment     Comment[]
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
 
-  @@unique([postId, userId])
   @@schema("public")
 }
 
 model Rating {
-  id          String      @id @default(uuid())
+  id          String      @id
   userId      String      @db.Uuid
   movieId     String
   stars       Int
@@ -452,6 +442,7 @@ model Rating {
   tags        String[]    @default([])
   date        DateTime
   votes       Int         @default(0)
+  spoiler     Boolean     @default(false)
   Comment     Comment[]
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
 
@@ -472,19 +463,19 @@ model UserFollow {
 model UserProfile {
   userId                                         String       @id @db.Uuid
   username                                       String?
-  onboardingCompleted                            Boolean      @default(false)
-  primaryLanguage                                String       @default("English")
-  secondaryLanguage                              String[]     @default([])
-  profilePicture                                 String?
-  country                                        String?
-  city                                           String?
-  favoriteGenres                                 String[]     @default([])
   favoriteMovies                                 String[]     @default([])
   createdAt                                      DateTime     @default(now())
-  updatedAt                                      DateTime     @updatedAt
+  updatedAt                                      DateTime
+  city                                           String?
+  country                                        String?
+  favoriteGenres                                 String[]     @default([])
+  onboardingCompleted                            Boolean      @default(false)
+  primaryLanguage                                String       @default("English")
+  profilePicture                                 String?
+  secondaryLanguage                              String[]     @default([])
+  spoiler                                        Boolean      @default(false)
   Comment                                        Comment[]
   Post                                           Post[]
-  PostLike                                       PostLike[]
   Rating                                         Rating[]
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[] @relation("UserFollow_followerIdToUserProfile")
   UserFollow_UserFollow_followingIdToUserProfile UserFollow[] @relation("UserFollow_followingIdToUserProfile")
@@ -502,7 +493,7 @@ model bootcamp {
 }
 
 model local_event {
-  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
+  id          String    @id(map: "local_events_pkey") @db.Uuid
   title       String
   time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
   description String

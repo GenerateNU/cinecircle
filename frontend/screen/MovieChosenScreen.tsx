@@ -12,6 +12,7 @@ import RatingRow from '../components/RatingRow';
 import TagList from '../components/TagList';
 import ActionButtons from '../components/ActionButtons';
 import ReviewCard from '../components/ReviewCard';
+import CommentCard from '../components/CommentCard';
 import {
   getMovieRatings,
   getMovieComments,
@@ -21,6 +22,8 @@ import {
 import type { components } from '../types/api-generated';
 import { t } from '../il8n/_il8n';
 import { UiTextKey } from '../il8n/_keys';
+import { getUserProfile } from '../services/userService';
+type UserProfile = components['schemas']['UserProfile'];
 
 type MovieChosenScreenProps = {
   movieId: string;
@@ -37,12 +40,17 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   // const [summary, setSummary] = useState<Summary | null>(null);
   // const [summaryLoading, setSummaryLoading] = useState(false);
   // const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const [movieEnvelope, setMovieEnvelope] = useState<Movie | null>(null);
+
+  const hideSpoilersForUser = userProfile?.spoiler === true;
+
+  console.log('UserProfile spoiler value:', userProfile?.spoiler);
+  console.log('hideSpoilersForUser:', hideSpoilersForUser);
 
   useEffect(() => {
     const fetchMovieData = async () => {
@@ -52,9 +60,17 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
         setLoading(true);
         setError(null);
-        // setSummaryError(null);
 
-        // Optional: fetch movie meta (title, description, etc.)
+        // 1) Fetch user profile (so spoiler preferences are ready)
+        try {
+          const res = await getUserProfile();
+          setUserProfile(res?.userProfile ?? null);
+          console.log('Loaded user profile:', res?.userProfile);
+        } catch (profileErr) {
+          console.log('Failed to load user profile (non-fatal):', profileErr);
+        }
+
+        // 2) Optional: fetch movie meta (title, description, etc.)
         try {
           const movieRes = await getMovieByCinecircleId(movieId);
           console.log('Movie envelope:', JSON.stringify(movieRes, null, 2));
@@ -64,29 +80,19 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           console.log('Failed to fetch movie meta (non-fatal):', metaErr);
         }
 
+        // 3) Ratings + comments
         const ratingsResponse = await getMovieRatings(movieId);
         const commentsResponse = await getMovieComments(movieId);
 
         setRatings(ratingsResponse.ratings || []);
         setComments(commentsResponse.comments || []);
-
-        // setSummaryLoading(true);
-        // try {
-        //   const summaryResponse = await getMovieSummary(movieId);
-        //   // setSummary(summaryResponse);
-        // } catch (summaryErr: any) {
-        //   console.error('Error fetching AI summary:', summaryErr?.message);
-        //   // setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
-        // }
       } catch (err: any) {
         console.error('=== FETCH MOVIE DATA ERROR ===');
         console.error('Error type:', err?.constructor?.name);
         console.error('Error message:', err?.message);
         setError(t(UiTextKey.FailedToLoadMovieData));
-        // setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
       } finally {
         setLoading(false);
-        // setSummaryLoading(false);
         console.log('=== FETCH MOVIE DATA END ===');
       }
     };
@@ -272,7 +278,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         ) : activeTab === 'reviews' ? (
           ratings.length > 0 ? (
             ratings.map(rating => (
-              <ReviewCard key={rating.id} /* rating={rating} */ />
+              <ReviewCard
+                key={rating.id}
+                rating={rating}
+                hideSpoilersForUser={hideSpoilersForUser}
+              />
             ))
           ) : (
             <Text style={styles.placeholderText}>
@@ -281,12 +291,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           )
         ) : comments.length > 0 ? (
           comments.map(comment => (
-            <View key={comment.id} style={styles.commentCard}>
-              <Text style={styles.commentText}>{comment.content}</Text>
-              <Text style={styles.commentMeta}>
-                {new Date(comment.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
+            <CommentCard
+              key={comment.id}
+              comment={comment}
+              hideSpoilersForUser={hideSpoilersForUser}
+            />
           ))
         ) : (
           <Text style={styles.placeholderText}>
@@ -297,6 +306,8 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     </ScrollView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },

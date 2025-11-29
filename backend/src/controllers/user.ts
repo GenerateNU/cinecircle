@@ -19,6 +19,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     favoriteGenres,
     favoriteMovies,
     updatedAt,
+    spoiler,
   } = (req.body ?? {}) as Partial<UserProfile>;
 
   try {
@@ -33,6 +34,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
       favoriteGenres,
       favoriteMovies,
       updatedAt,
+      spoiler,
     });
 
     const updated = await prisma.userProfile.update({
@@ -88,6 +90,7 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           city: null,
           primaryLanguage: 'English',
           updatedAt: new Date(),
+          spoiler: false,
         },
       });
     }
@@ -149,6 +152,7 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
         : [],
       createdAt: userProfile.createdAt,
       updatedAt: userProfile.updatedAt,
+      spoiler: userProfile.spoiler,
     });
     
     const basicUser = req.user
@@ -221,6 +225,7 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
           : [],
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
+        spoiler: userProfile.spoiler,
       });
     }
 
@@ -277,6 +282,7 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
           : [],
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
+        spoiler: userProfile.spoiler,
       });
     }
 
@@ -308,6 +314,7 @@ export function mapUserProfileDbToApi(row: {
   favoriteMovies: string[];
   createdAt: Date;
   updatedAt: Date;
+  spoiler: boolean;
 }): UserProfile {
   return {
     userId: row.userId,
@@ -322,13 +329,14 @@ export function mapUserProfileDbToApi(row: {
     favoriteMovies: row.favoriteMovies ?? [],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    spoiler: row.spoiler,
   };
 }
 
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt"
+    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt" | "spoiler"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
@@ -359,6 +367,9 @@ export function mapUserProfilePatchToUpdateData(
   }
   if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
     data.favoriteMovies = patch.favoriteMovies ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "spoiler")) {
+    data.spoiler = patch.spoiler;
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one

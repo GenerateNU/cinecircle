@@ -7,6 +7,7 @@ export type Movie = {
   localRating?: number | string | null; 
   numRatings?: number | string | null;  
   imageUrl?: string | null;
+  spoiler: boolean;
 };
 
 export type UserProfileBasic = {
@@ -28,6 +29,7 @@ export type UserProfile = {
   favoriteMovies: string[];
   createdAt: Date;
   updatedAt: Date;
+  spoiler: boolean;
 };
 
 export type Rating = {
@@ -44,6 +46,7 @@ export type Rating = {
     username: string | null;
   };
   threadedComments?: unknown[];
+  spoiler: boolean;
 };
 
 export type Comment = {
@@ -59,6 +62,7 @@ export type Comment = {
   };
   rating?: unknown;
   post?: unknown;
+  spoiler: boolean;
 };
 
 export type FollowEdge = {
