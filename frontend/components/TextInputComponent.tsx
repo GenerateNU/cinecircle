@@ -3,6 +3,7 @@ import { styles } from '../styles/TextInputComponent.styles';
 
 type TextInputProps = {
     title?: string;
+    subtitle?: string;
     field?: string;
     placeholder?: string;
     subtext?: string;
@@ -14,6 +15,7 @@ type TextInputProps = {
 
 export default function TextInputComponent({ 
     title, 
+    subtitle,
     field, 
     placeholder, 
     subtext,
@@ -24,7 +26,13 @@ export default function TextInputComponent({
 } : TextInputProps) {
     return (
     <View>
-        {title && <Text style={styles.title}>{title}</Text>}
+        {title &&
+             <View style={styles.titleWrapper}>
+                <Text style={styles.title}>{title}</Text>
+                {subtitle && <Text style={styles.subtext}>{subtitle}</Text>}
+            </View>
+        }
+
         {field && <Text style={styles.field}>{field}</Text>}
         <TextInput 
             style={styles.input} 

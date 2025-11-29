@@ -87,7 +87,7 @@ else
   echo "☝️😳 Skipping production sync (SYNC_FROM_PRODUCTION=false)"
   # Just ensure the database is migrated and seeded
   echo "Ensuring database is up to date..."
-  DATABASE_URL="$LOCAL_DATABASE_URL" DIRECT_URL="$LOCAL_DIRECT_URL" npx prisma db push
+  DATABASE_URL="$LOCAL_DATABASE_URL" DIRECT_URL="$LOCAL_DIRECT_URL" npx prisma db push --accept-data-loss
   npx prisma generate
 fi
 

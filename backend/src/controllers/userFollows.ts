@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import crypto from 'node:crypto';
 import { prisma } from '../services/db';
 import type { Prisma } from "@prisma/client";
 import type { AuthenticatedRequest } from '../middleware/auth';
@@ -12,15 +13,32 @@ export const followUser = async (req: AuthenticatedRequest, res: Response) => {
   if (!followerId || !followingId) {
     return res.status(400).json({ message: 'Missing follower or following ID' });
   }
+  if (followerId === followingId) {
+    return res.status(400).json({ message: 'You cannot follow yourself' });
+  }
 
   try {
+    const targetProfile = await prisma.userProfile.findUnique({
+      where: { userId: followingId },
+    });
+    if (!targetProfile) {
+      return res.status(404).json({ message: 'User to follow not found' });
+    }
+
     await prisma.userFollow.create({
-      data: { followerId, followingId },
+      data: {
+        id: crypto.randomUUID(),
+        followerId,
+        followingId,
+      },
     });
     res.status(201).json({ message: `You are now following ${followingId}` });
   } catch (error) {
     if ((error as any).code === 'P2002') {
       return res.status(409).json({ message: 'Already following this user' });
+    }
+    if ((error as any).code === 'P2003') {
+      return res.status(404).json({ message: 'User to follow not found' });
     }
     console.error('followUser error:', error);
     res.status(500).json({ message: 'Failed to follow user' });
@@ -36,6 +54,13 @@ export const unfollowUser = async (req: AuthenticatedRequest, res: Response) => 
   }
 
   try {
+    const targetProfile = await prisma.userProfile.findUnique({
+      where: { userId: followingId },
+    });
+    if (!targetProfile) {
+      return res.status(404).json({ message: 'User to unfollow not found' });
+    }
+
     await prisma.userFollow.delete({
       where: {
         followerId_followingId: { followerId, followingId },
@@ -43,6 +68,9 @@ export const unfollowUser = async (req: AuthenticatedRequest, res: Response) => 
     });
     res.json({ message: `Unfollowed user ${followingId}` });
   } catch (error) {
+    if ((error as any).code === 'P2025') {
+      return res.status(404).json({ message: 'Follow relationship not found' });
+    }
     console.error('unfollowUser error:', error);
     res.status(500).json({ message: 'Failed to unfollow user' });
   }
@@ -54,9 +82,9 @@ export const getFollowers = async (req: Request, res: Response) => {
   try {
     const followers = await prisma.userFollow.findMany({
       where: { followingId: userId },
-      include: { 
-        follower: true,
-        following: true 
+      include: {
+        UserProfile_UserFollow_followerIdToUserProfile: true,
+        UserProfile_UserFollow_followingIdToUserProfile: true,
       },
     });
 
@@ -75,9 +103,9 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const following = await prisma.userFollow.findMany({
       where: { followerId: userId },
-      include: { 
-        follower: true,
-        following: true 
+      include: {
+        UserProfile_UserFollow_followerIdToUserProfile: true,
+        UserProfile_UserFollow_followingIdToUserProfile: true,
       },
     });
 
@@ -91,7 +119,10 @@ export const getFollowing = async (req: Request, res: Response) => {
 };
 
 type UserFollowWithProfiles = Prisma.UserFollowGetPayload<{
-  include: { follower: true; following: true };
+  include: {
+    UserProfile_UserFollow_followerIdToUserProfile: true;
+    UserProfile_UserFollow_followingIdToUserProfile: true;
+  };
 }>;
 
 export function mapUserFollowDbToApi(row: UserFollowWithProfiles): FollowEdge {
@@ -99,8 +130,12 @@ export function mapUserFollowDbToApi(row: UserFollowWithProfiles): FollowEdge {
     id: row.id,
     followerId: row.followerId,
     followingId: row.followingId,
-    follower: row.follower ? mapUserProfileDbToApi(row.follower) : undefined,
-    following: row.following ? mapUserProfileDbToApi(row.following) : undefined,
+    follower: row.UserProfile_UserFollow_followerIdToUserProfile
+      ? mapUserProfileDbToApi(row.UserProfile_UserFollow_followerIdToUserProfile)
+      : undefined,
+    following: row.UserProfile_UserFollow_followingIdToUserProfile
+      ? mapUserProfileDbToApi(row.UserProfile_UserFollow_followingIdToUserProfile)
+      : undefined,
   };
 }
 

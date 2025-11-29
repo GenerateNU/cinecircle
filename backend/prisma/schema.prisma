@@ -403,41 +403,54 @@ model auth_users {
 }
 
 model Comment {
-  id            String      @id
-  userId        String      @db.Uuid
-  ratingId      String?
-  postId        String?
-  content       String
-  createdAt     DateTime    @default(now())
-  parentId      String?
-  Comment       Comment?    @relation("CommentToComment", fields: [parentId], references: [id])
-  other_Comment Comment[]   @relation("CommentToComment")
-  Post          Post?       @relation(fields: [postId], references: [id])
-  Rating        Rating?     @relation(fields: [ratingId], references: [id])
-  UserProfile   UserProfile @relation(fields: [userId], references: [userId])
+  id              String      @id @default(uuid())
+  userId          String      @db.Uuid
+  ratingId        String?
+  postId          String?
+  content         String
+  createdAt       DateTime    @default(now())
+  parentId        String?
+  parent_comment  Comment?    @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
+  child_comment   Comment[]   @relation("CommentToComment")
+  Post            Post?       @relation(fields: [postId], references: [id])
+  Rating          Rating?     @relation(fields: [ratingId], references: [id])
+  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
 
   @@schema("public")
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  userId    String    @db.Uuid
-  title     String?
-  subtitle  String?
-  content   String
-  rating    Int?
-  type      PostType
-  votes     Int      @default(0)
-  Comment     Comment[]
-  createdAt DateTime @default(now())
-
-  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+  id              String      @id @default(uuid())
+  userId          String      @db.Uuid
+  content         String
+  type            PostType
+  votes           Int         @default(0)
+  createdAt       DateTime    @default(now())
+  imageUrls       String[]    @default([])
+  parentPostId    String?     // For threading/replies
+  Comment         Comment[]
+  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
+  PostLike        PostLike[]  // Track individual likes
+  ParentPost      Post?       @relation("PostReplies", fields: [parentPostId], references: [id], onDelete: SetNull)
+  Replies         Post[]      @relation("PostReplies")
 
   @@schema("public")
 }
 
+model PostLike {
+  id        String      @id @default(uuid())
+  postId    String
+  userId    String      @db.Uuid
+  createdAt DateTime    @default(now())
+  Post      Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+
+  @@unique([postId, userId])
+  @@schema("public")
+}
+
 model Rating {
-  id          String      @id
+  id          String      @id @default(uuid())
   userId      String      @db.Uuid
   movieId     String
   stars       Int
@@ -465,18 +478,19 @@ model UserFollow {
 model UserProfile {
   userId                                         String       @id @db.Uuid
   username                                       String?
-  favoriteMovies                                 String[]     @default([])
-  createdAt                                      DateTime     @default(now())
-  updatedAt                                      DateTime
-  city                                           String?
-  country                                        String?
-  favoriteGenres                                 String[]     @default([])
   onboardingCompleted                            Boolean      @default(false)
   primaryLanguage                                String       @default("English")
-  profilePicture                                 String?
   secondaryLanguage                              String[]     @default([])
+  profilePicture                                 String?
+  country                                        String?
+  city                                           String?
+  favoriteGenres                                 String[]     @default([])
+  favoriteMovies                                 String[]     @default([])
+  createdAt                                      DateTime     @default(now())
+  updatedAt                                      DateTime     @updatedAt
   Comment                                        Comment[]
   Post                                           Post[]
+  PostLike                                       PostLike[]
   Rating                                         Rating[]
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[] @relation("UserFollow_followerIdToUserProfile")
   UserFollow_UserFollow_followingIdToUserProfile UserFollow[] @relation("UserFollow_followingIdToUserProfile")
@@ -494,7 +508,7 @@ model bootcamp {
 }
 
 model local_event {
-  id          String    @id(map: "local_events_pkey") @db.Uuid
+  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
   title       String
   time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
   description String

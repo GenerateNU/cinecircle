@@ -1,4 +1,3 @@
-import React from "react";
 import { View, TouchableOpacity } from "react-native";
 import { router, usePathname } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -15,8 +14,8 @@ export default function BottomNavBar() {
         <MaterialIcons name="home" style={active("/") ? styles.activeIcon : styles.icon} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.item} onPress={() => go("/movies")}>
-        <MaterialIcons name="confirmation-number" style={active("/movies") ? styles.activeIcon : styles.icon} />
+      <TouchableOpacity style={styles.item} onPress={() => go("/(tabs)/movies")}>
+        <MaterialIcons name="confirmation-number" style={active("/(tabs)/movies") ? styles.activeIcon : styles.icon} />
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.item} onPress={() => go("/createPost")}>

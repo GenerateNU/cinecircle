@@ -4,40 +4,62 @@ import { Prisma } from "@prisma/client";
 
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
-  try {
-    const { userId, content, type } = req.body;
+    try {
+      const { userId, content, type, imageUrls, parentPostId } = req.body;
+  
+      // Validation
+      if (!userId || !content) {
+        return res.status(400).json({ 
+          message: "userId and content are required" 
+        });
+      }
+  
+      if (type && !["LONG", "SHORT"].includes(type)) {
+        return res.status(400).json({ 
+          message: "Invalid type. Must be LONG or SHORT" 
+        });
+      }
 
-    if (!userId || !content) {
-      return res.status(400).json({ message: "userId and content are required" });
-    }
-
-    if (type && !["LONG_POST", "SHORT_POST"].includes(type)) {
-      return res.status(400).json({
-        message: "Invalid type. Must be LONG_POST or SHORT_POST"
+      // If it's a reply, verify parent post exists
+      if (parentPostId) {
+        const parentPost = await prisma.post.findUnique({
+          where: { id: parentPostId },
+        });
+        if (!parentPost) {
+          return res.status(404).json({ message: "Parent post not found" });
+        }
+      }
+  
+      const newPost = await prisma.post.create({
+        data: {
+          userId,
+          content,
+          type: type || "SHORT_POST",
+          imageUrls: imageUrls || [],
+          parentPostId,
+        },
+        include: {
+          UserProfile: {
+            select: {
+              userId: true,
+              username: true,
+            },
+          },
+        },
+      });
+  
+      res.status(201).json({
+        message: "Post created successfully",
+        data: newPost,
+      });
+    } catch (err) {
+      console.error("createPost error:", err);
+      res.status(500).json({
+        message: "Failed to create post",
+        error: err instanceof Error ? err.message : "Unknown error",
       });
     }
-
-    const newPost = await prisma.post.create({
-      data: {
-        userId,
-        content,
-        type: type || "SHORT_POST",
-      },
-    });
-
-    res.status(201).json({
-      message: "Post created successfully",
-      data: newPost,
-    });
-    
-  } catch (err) {
-    console.error("createPost error:", err);
-    res.status(500).json({
-      message: "Failed to create post",
-      error: err instanceof Error ? err.message : "Unknown error",
-    });
-  }
-};
+  };
 
 
 // GET POST BY ID
@@ -50,17 +72,17 @@ export const getPostById = async (req: Request, res: Response) => {
       }
   
       const post = await prisma.post.findUnique({
-        where: { postId },
+        where: { id: postId },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
             },
           },
-          replies: {
+          Comment: {
             include: {
-              user: {
+              UserProfile: {
                 select: {
                   userId: true,
                   username: true,
@@ -71,8 +93,20 @@ export const getPostById = async (req: Request, res: Response) => {
               createdAt: "desc",
             },
           },
-          likes: true,
-          review: true,
+          PostLike: true,
+          Replies: {
+            include: {
+              UserProfile: {
+                select: {
+                  userId: true,
+                  username: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
         },
       });
   
@@ -84,8 +118,9 @@ export const getPostById = async (req: Request, res: Response) => {
         message: "Post found successfully",
         data: {
           ...post,
-          likeCount: post.likes.length,
-          replyCount: post.replies.length,
+          likeCount: post.votes,
+          commentCount: post.Comment.length,
+          replyCount: post.Replies.length,
         },
       });
     } catch (err) {
@@ -98,12 +133,12 @@ export const getPostById = async (req: Request, res: Response) => {
   };
   
 
-// GET POST (with filters)
+// GET POSTS (with filters)
 export const getPosts = async (req: Request, res: Response) => {
     try {
       const { 
         userId, 
-        postType, 
+        type,
         parentPostId, 
         limit = "20", 
         offset = "0" 
@@ -112,7 +147,7 @@ export const getPosts = async (req: Request, res: Response) => {
       const where: Prisma.PostWhereInput = {};
       
       if (userId) where.userId = userId as string;
-      if (postType) where.postType = postType as "LONG_POST" | "SHORT_POST";
+      if (type) where.type = type as "LONG" | "SHORT";
       if (parentPostId === "null") {
         where.parentPostId = null; // Top-level posts only
       } else if (parentPostId) {
@@ -122,16 +157,21 @@ export const getPosts = async (req: Request, res: Response) => {
       const posts = await prisma.post.findMany({
         where,
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
             },
           },
-          likes: true,
-          replies: {
+          PostLike: true,
+          Comment: {
             select: {
-              postId: true,
+              id: true,
+            },
+          },
+          Replies: {
+            select: {
+              id: true,
             },
           },
         },
@@ -144,8 +184,9 @@ export const getPosts = async (req: Request, res: Response) => {
   
       const postsWithCounts = posts.map((post) => ({
         ...post,
-        likeCount: post.likes.length,
-        replyCount: post.replies.length,
+        likeCount: post.votes,
+        commentCount: post.Comment.length,
+        replyCount: post.Replies.length,
       }));
   
       res.json({
@@ -170,7 +211,7 @@ export const getPosts = async (req: Request, res: Response) => {
 export const updatePost = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
-      const { content, postType } = req.body;
+      const { content, type, imageUrls } = req.body;
   
       if (!postId) {
         return res.status(400).json({ message: "Post ID is required" });
@@ -179,24 +220,25 @@ export const updatePost = async (req: Request, res: Response) => {
       const updateData: Prisma.PostUpdateInput = {};
       
       if (content !== undefined) updateData.content = content;
-      if (postType !== undefined) {
-        if (!["LONG_POST", "SHORT_POST"].includes(postType)) {
+      if (type !== undefined) {
+        if (!["LONG", "SHORT"].includes(type)) {
           return res.status(400).json({ 
-            message: "Invalid postType" 
+            message: "Invalid type" 
           });
         }
-        updateData.postType = postType;
+        updateData.type = type;
       }
+      if (imageUrls !== undefined) updateData.imageUrls = imageUrls;
   
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({ message: "No fields to update" });
       }
   
       const updatedPost = await prisma.post.update({
-        where: { postId },
+        where: { id: postId },
         data: updateData,
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
@@ -236,7 +278,7 @@ export const deletePost = async (req: Request, res: Response) => {
       }
   
       await prisma.post.delete({
-        where: { postId },
+        where: { id: postId },
       });
   
       res.json({
@@ -259,7 +301,7 @@ export const deletePost = async (req: Request, res: Response) => {
     }
   };
 
-// LIKE / UNLIKE POST
+// TOGGLE LIKE POST
 export const toggleLikePost = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
@@ -273,7 +315,7 @@ export const toggleLikePost = async (req: Request, res: Response) => {
   
       // Check if post exists
       const post = await prisma.post.findUnique({
-        where: { postId },
+        where: { id: postId },
       });
   
       if (!post) {
@@ -294,7 +336,17 @@ export const toggleLikePost = async (req: Request, res: Response) => {
         // Unlike
         await prisma.postLike.delete({
           where: {
-            likeId: existingLike.likeId,
+            id: existingLike.id,
+          },
+        });
+  
+        // Decrement vote count
+        await prisma.post.update({
+          where: { id: postId },
+          data: {
+            votes: {
+              decrement: 1,
+            },
           },
         });
   
@@ -308,6 +360,16 @@ export const toggleLikePost = async (req: Request, res: Response) => {
           data: {
             postId,
             userId,
+          },
+        });
+
+        // Increment vote count
+        await prisma.post.update({
+          where: { id: postId },
+          data: {
+            votes: {
+              increment: 1,
+            },
           },
         });
   
@@ -337,7 +399,7 @@ export const getPostLikes = async (req: Request, res: Response) => {
       const likes = await prisma.postLike.findMany({
         where: { postId },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
@@ -375,16 +437,16 @@ export const getPostReplies = async (req: Request, res: Response) => {
       const replies = await prisma.post.findMany({
         where: { parentPostId: postId },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
             },
           },
-          likes: true,
-          replies: {
+          PostLike: true,
+          Replies: {
             select: {
-              postId: true,
+              id: true,
             },
           },
         },
@@ -395,8 +457,8 @@ export const getPostReplies = async (req: Request, res: Response) => {
   
       const repliesWithCounts = replies.map((reply) => ({
         ...reply,
-        likeCount: reply.likes.length,
-        replyCount: reply.replies.length,
+        likeCount: reply.votes,
+        replyCount: reply.Replies.length,
       }));
   
       res.json({
@@ -412,6 +474,3 @@ export const getPostReplies = async (req: Request, res: Response) => {
       });
     }
   };
-
-  
-

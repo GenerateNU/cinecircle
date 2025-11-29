@@ -1,15 +1,7 @@
 // src/types/models.ts
-
-/** Matches your `movie` controller responses (BigInt -> number already on server). */
-export type Movie = {
-  movieId: string;
-  title?: string | null;
-  description?: string | null;
-  languages?: string[] | null;     // controller sends array for updates
-  imdbRating?: number | null;      // converted to number in controller
-  localRating?: number | string | null; // schema is String, controller may coerce Number
-  numRatings?: number | string | null;  // same note as above
-};
+//
+// UI-specific types only. API types are auto-generated in api-generated.ts
+// Components should import API types from "./api-generated"
 
 export type User = {
   name: string;

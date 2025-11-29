@@ -18,6 +18,22 @@ jest.mock('../../services/db.js', () => ({
       delete: jest.fn(),
       findMany: jest.fn(),
     },
+    userProfile: {
+      findUnique: jest.fn().mockResolvedValue({
+        userId: 'following-id',
+        username: 'following-user',
+        onboardingCompleted: false,
+        primaryLanguage: 'English',
+        secondaryLanguage: [],
+        profilePicture: null,
+        country: null,
+        city: null,
+        favoriteGenres: [],
+        favoriteMovies: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    },
   },
 }));
 
