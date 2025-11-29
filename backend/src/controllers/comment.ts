@@ -96,6 +96,7 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
         postId: postId ?? null,
         parentId: parentId ?? null,
         content: content,
+        spoiler: req.body.spoiler || false,
       },
     });
 
@@ -277,6 +278,7 @@ export async function getMovieComments(req: Request, res: Response) {
       text: c.content,                 // frontend uses comment.text
       date: c.createdAt.toISOString(), // frontend uses comment.date
       parentId: c.parentId,
+      spoiler: c.spoiler,
     }));
 
     return res.status(200).json({ comments });

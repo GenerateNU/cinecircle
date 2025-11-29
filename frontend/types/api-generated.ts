@@ -3001,6 +3001,7 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            spoiler: boolean;
         };
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
@@ -3037,6 +3038,7 @@ export interface components {
             date: string;
             votes: number;
             threadedComments?: unknown[];
+            spoiler: boolean;
         };
         GetUserCommentsResponse: {
             message: string;
@@ -3051,6 +3053,7 @@ export interface components {
             createdAt: string;
             rating?: unknown;
             post?: unknown;
+            spoiler: boolean;
         };
         /** @description -------- Follows -------- */
         FollowBody: {
