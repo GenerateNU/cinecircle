@@ -34,8 +34,13 @@ export function deleteMovie(movieId: string) {
 // 👉 movie list for New Releases
 export async function getAllMovies(): Promise<Movie[]> {
   const res = await api.get<{ movies: Movie[] }>("/movies");
-  return res.movies;
+
+  return res.movies.map((m) => ({
+    ...m,
+    title: m.title ?? "", // ensure title is always a string
+  }));
 }
+
 
 export async function getMovieRatings(
   movieId: string

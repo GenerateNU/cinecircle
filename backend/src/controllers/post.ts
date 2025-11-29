@@ -34,7 +34,7 @@ export const createPost = async (req: Request, res: Response) => {
         data: {
           userId,
           content,
-          type: type || "SHORT",
+          type: type || "SHORT_POST",
           imageUrls: imageUrls || [],
           parentPostId,
         },
@@ -60,6 +60,7 @@ export const createPost = async (req: Request, res: Response) => {
       });
     }
   };
+
 
 // GET POST BY ID
 export const getPostById = async (req: Request, res: Response) => {
