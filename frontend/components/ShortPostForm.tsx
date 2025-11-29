@@ -8,14 +8,22 @@ import {
   Switch,
 } from "react-native";
 
+import MovieSelectorModal from "./MovieSelectorModal";
+
 interface Props {
   onSubmit: (data: any) => void;
 }
 
+interface Movie {
+  id: string;
+  title: string;
+}
+
 const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
-  const [movie, setMovie] = useState<string | null>(null);
+  const [movie, setMovie] = useState<Movie | null>(null);
   const [spoiler, setSpoiler] = useState(false);
   const [content, setContent] = useState("");
+  const [movieModalVisible, setMovieModalVisible] = useState(false);
 
   const CHAR_LIMIT = 280;
 
@@ -31,7 +39,7 @@ const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
       }
 
       onSubmit({
-        movieId: movie,
+        movieId: movie.id,
         spoiler,
         content,
       });
@@ -43,12 +51,11 @@ const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
       <TouchableOpacity
         style={styles.dropdown}
         onPress={() => {
-          // Replace with your real movie selector navigation
-          alert("Open movie selector");
+          setMovieModalVisible(true)
         }}
       >
         <Text style={styles.dropdownText}>
-          {movie ? movie : "Select Movie"}
+          {movie ? movie.title : "Select Movie"}
         </Text>
       </TouchableOpacity>
 
@@ -82,6 +89,13 @@ const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
         <Text style={styles.toolbarItem}>GIF</Text>
         <Text style={styles.toolbarItem}>Keyboard Down</Text>
       </View>
+      <MovieSelectorModal
+        visible={movieModalVisible}
+        onClose={() => setMovieModalVisible(false)}
+        onSelect={(selectedMovie) => {
+          setMovie(selectedMovie);
+        }}
+      />
     </View>
   );
 });
