@@ -8,7 +8,9 @@ import {
   ActivityIndicator,
   Modal
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { CircleDollarSign, MapPin, Calendar } from 'lucide-react-native';
 import Entypo from '@expo/vector-icons/Entypo';
 import Rsvp from '../../components/Rsvp';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -133,7 +135,7 @@ export default function EventDetailScreen() {
             {/* Date & Time */}
             <View style={styles.infoRow}>
               <View style={styles.iconCircle}>
-              <MaterialIcons name="event" size={20} color="#A82411" />
+              <MaterialCommunityIcons name="calendar-range-outline" size={19} color="#A82411" />
               </View>
               <Text style={styles.infoText}>
                 {event.date} at {event.time}
@@ -144,7 +146,7 @@ export default function EventDetailScreen() {
             {event.cost !== null && (
               <View style={styles.infoRow}>
                 <View style={styles.iconCircle}>
-                <MaterialIcons name="attach-money" size={20} color="#A82411" />
+                <CircleDollarSign size={20} color="#A82411" />
                 </View>
                 <Text style={styles.infoText}>
                   {event.cost === 0
