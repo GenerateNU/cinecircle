@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Modal
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import Entypo from '@expo/vector-icons/Entypo';
 import Rsvp from '../../components/Rsvp';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getLocalEvent, type LocalEvent } from '../../services/eventsService';
@@ -42,12 +44,12 @@ export default function EventDetailScreen() {
   };
 
   const handleRSVP = () => {
-    setShowRsvpModal(true);  // Just show the modal!
+    setShowRsvpModal(true);  // just showing modal for now
   };
 
   const handleRsvpComplete = (response: 'yes' | 'maybe' | 'no' | null) => {
     console.log('RSVP Response:', response, 'for event:', eventId);
-    setShowRsvpModal(false);  // Close the modal
+    setShowRsvpModal(false);  // just close the modal for now - need to figure out backend integration
     // TODO: Save to backend later
   };
 
@@ -100,14 +102,14 @@ export default function EventDetailScreen() {
               style={styles.backButton}
               onPress={() => router.back()}
             >
-              <Text style={styles.backButtonText}>←</Text>
+              <MaterialIcons name="arrow-back" size={24} color="#A82411" />
             </TouchableOpacity>
             <View style={styles.rightActions}>
               <TouchableOpacity style={styles.iconButton}>
-                <Text style={styles.iconText}>↗</Text>
+              <MaterialIcons name="ios-share" size={20} color="#A82411" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton}>
-                <Text style={styles.iconText}>🔖</Text>
+              <MaterialIcons name="bookmark-border" size={20} color="#A82411" />
               </TouchableOpacity>
             </View>
           </View>
@@ -123,7 +125,7 @@ export default function EventDetailScreen() {
             {/* Location */}
             <View style={styles.infoRow}>
               <View style={styles.iconCircle}>
-                <Text style={styles.infoIcon}>📍</Text>
+              <Entypo name="location" size={24} color="#A82411" />
               </View>
               <Text style={styles.infoText}>{event.location}</Text>
             </View>
@@ -131,7 +133,7 @@ export default function EventDetailScreen() {
             {/* Date & Time */}
             <View style={styles.infoRow}>
               <View style={styles.iconCircle}>
-                <Text style={styles.infoIcon}>📅</Text>
+              <MaterialIcons name="event" size={20} color="#A82411" />
               </View>
               <Text style={styles.infoText}>
                 {event.date} at {event.time}
@@ -142,7 +144,7 @@ export default function EventDetailScreen() {
             {event.cost !== null && (
               <View style={styles.infoRow}>
                 <View style={styles.iconCircle}>
-                  <Text style={styles.infoIcon}>💲</Text>
+                <MaterialIcons name="attach-money" size={20} color="#A82411" />
                 </View>
                 <Text style={styles.infoText}>
                   {event.cost === 0
@@ -316,22 +318,25 @@ const styles = StyleSheet.create({
   },
   heroImageContainer: {
     width: '100%',
-    height: 300,
-    position: 'relative',
+    paddingHorizontal: 20,  // Add horizontal padding
+    paddingTop: 30,         // Add top padding
+    paddingBottom: 10,      // Small bottom padding
+    backgroundColor: '#fff',
   },
   heroImage: {
     width: '100%',
-    height: '100%',
+    height: 300,            // Fixed height instead of percentage
     backgroundColor: '#e0e0e0',
+    borderRadius: 20,       // Add rounded corners
+    overflow: 'hidden',    
   },
   headerActions: {
     position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
+    top: 40,                // Adjust to account for padding
+    left: 30,               // Adjust for horizontal padding
+    right: 30,              // Adjust for horizontal padding
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
   },
   backButton: {
     width: 40,
@@ -381,7 +386,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -421,7 +425,6 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    //backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
     shadowColor: '#000',
