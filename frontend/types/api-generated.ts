@@ -3002,6 +3002,21 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+
+        Summary:  {
+            movieId: string;
+            overall: string;        
+            pros: string[];        
+            cons: string[];         
+            stats: {
+                positive: number;
+                neutral: number;
+                negative: number;
+                total: number;
+            };
+            quotes: string[];      
+        };
+
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
             username?: string | null;

@@ -186,12 +186,14 @@ export default function MoviesScreen() {
       style={styles.movieCard}
       onPress={() => handleMoviePress(movie.id)}
     >
+    
+      <Image source={{ uri: movie.image }} style={styles.movieImage} />
       <Text
         style={{
           position: 'absolute',
           bottom: 8,
           left: 8,
-          color: '#fff',
+          color: '#a41f1fff',
           fontWeight: '600',
           textShadowColor: '#000',
           textShadowOffset: { width: 0, height: 0 },
@@ -202,7 +204,6 @@ export default function MoviesScreen() {
         {'\n'}
         {movie.id}
       </Text>
-      <Image source={{ uri: movie.image }} style={styles.movieImage} />
       {movie.badge && (
         <View
           style={[

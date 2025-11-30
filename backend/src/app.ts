@@ -29,6 +29,8 @@ export function createApp() {
   // Register routes
   app.use(routes);
 
+  
+
   // 404 Handler
   app.use((_req, res) => {
     res.status(404).json({
