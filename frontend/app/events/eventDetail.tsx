@@ -6,7 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal
 } from 'react-native';
+import Rsvp from '../../components/Rsvp';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getLocalEvent, type LocalEvent } from '../../services/eventsService';
 import LocationSection from '../../components/LocationSection';
@@ -17,6 +19,7 @@ export default function EventDetailScreen() {
   const [event, setEvent] = useState<LocalEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showRsvpModal, setShowRsvpModal] = useState(false);
 
   useEffect(() => {
     if (eventId) loadEventDetails();
@@ -36,6 +39,16 @@ export default function EventDetailScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRSVP = () => {
+    setShowRsvpModal(true);  // Just show the modal!
+  };
+
+  const handleRsvpComplete = (response: 'yes' | 'maybe' | 'no' | null) => {
+    console.log('RSVP Response:', response, 'for event:', eventId);
+    setShowRsvpModal(false);  // Close the modal
+    // TODO: Save to backend later
   };
 
   if (loading) {
@@ -75,7 +88,8 @@ export default function EventDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}>
         {/* Hero Image */}
         <View style={styles.heroImageContainer}>
           <View style={styles.heroImage} />
@@ -241,6 +255,29 @@ export default function EventDetailScreen() {
           />
         </View>
       </ScrollView>
+
+      {/* Floating RSVP Button */}
+      <View style={styles.floatingButtonContainer}>
+        <TouchableOpacity 
+          style={styles.rsvpButton}
+          onPress={handleRSVP}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.rsvpButtonText}>RSVP</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+      visible={showRsvpModal}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setShowRsvpModal(false)}
+    >
+      <Rsvp 
+        eventId={eventId} 
+        onContinue={handleRsvpComplete}
+      />
+    </Modal>
     </View>
   );
 }
@@ -377,6 +414,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 8,
   },
+  floatingButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    //backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  rsvpButton: {
+    backgroundColor: '#A82411',
+    borderRadius: 12,
+    paddingVertical: 16,
+    elevation: 8,
+    shadowOpacity: 0.4,
+    shadowColor: '#A82411',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rsvpButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
   metadataSection: {
     flexDirection: 'row',
     marginBottom: 12,
@@ -438,4 +510,7 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  scrollContent: {
+    paddingBottom: 60, // to stop hiding behind button ?
+  }
 });
