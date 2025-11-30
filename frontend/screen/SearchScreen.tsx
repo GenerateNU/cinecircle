@@ -13,6 +13,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SearchToggle from '../components/SearchToggle';
+import SearchBar from '../components/SearchBar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -60,39 +61,20 @@ export default function SearchScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        {/* Header with back button */}
-        <View style={styles.header}>
+        {/* Back button in top-left corner
+        <View style={styles.backButtonContainer}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={width * 0.06} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Search</Text>
-          <View style={styles.placeholder} />
-        </View>
+        </View> */}
 
-        {/* Search Input */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputWrapper}>
-            <Ionicons 
-              name="search" 
-              size={width * 0.05} 
-              color="#999" 
-              style={styles.searchIcon} 
-            />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={`Search ${selectedCategory}...`}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              returnKeyType="search"
-              autoFocus
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={width * 0.05} color="#999" />
-              </TouchableOpacity>
-            )}
-          </View>
+        <View style={styles.searchBarWrapper}>
+          <SearchBar
+            placeholder={`Search ${selectedCategory}...`}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            editable={true}
+          />
         </View>
 
         {/* Search Category Toggle */}
@@ -109,7 +91,7 @@ export default function SearchScreen() {
           <Ionicons name="search" size={width * 0.16} color="#DDD" />
           <Text style={styles.emptyText}>
             {searchQuery.trim()
-              ? 'Press search to find results'
+              ? 'Press enter to search'
               : `Search for ${selectedCategory}`}
           </Text>
         </View>
@@ -126,43 +108,16 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  backButtonContainer: {
     paddingHorizontal: width * 0.04,
-    paddingVertical: height * 0.015,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    paddingTop: height * 0.01,
   },
   backButton: {
     padding: width * 0.01,
+    alignSelf: 'flex-start',
   },
-  headerTitle: {
-    fontSize: width * 0.045,
-    fontWeight: '600',
-  },
-  placeholder: {
-    width: width * 0.08,
-  },
-  searchContainer: {
-    padding: width * 0.04,
-  },
-  searchInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: width * 0.03,
-    paddingHorizontal: width * 0.03,
-    paddingVertical: height * 0.012,
-  },
-  searchIcon: {
-    marginRight: width * 0.02,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: width * 0.04,
-    color: '#000',
+  searchBarWrapper: {
+    // No extra styling - SearchBar has its own container padding
   },
   toggleContainer: {
     paddingHorizontal: width * 0.04,

@@ -272,7 +272,10 @@ export default function MoviesScreen() {
         placeholder="Enter search text"
         value={searchText}
         onChangeText={setSearchText}
-        onSubmitEditing={handleSearchSubmit}
+        onPress={() => router.push({
+          pathname: '/search',
+          params: { origin: 'movies', defaultCategory: 'movies' }
+        })}
       />
 
       <View style={styles.tabsContainer}>

@@ -6,14 +6,12 @@ import {
   TouchableOpacity,
   ImageBackground,
   Dimensions,
-  Animated,
-  Pressable,
+  SafeAreaView,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import tw from 'twrnc';
-
-import HomeSearchBar from '../components/HomeSearchBar';
+import SearchBar from '../components/SearchBar';
 import TabToggle from '../components/TabToggle';
 import SectionHeader from '../components/SectionHeader';
 
@@ -47,50 +45,22 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
     },
   ];
   const [activeNav, setActiveNav] = React.useState(navOptions[0]);
-  const [showSearchBar, setShowSearchBar] = React.useState(false);
-  const iconOpacity = React.useRef(new Animated.Value(1)).current;
-  const searchOpacity = React.useRef(new Animated.Value(0)).current;
-
-  const handleToggleSearch = () => {
-    if (!showSearchBar) {
-      Animated.timing(iconOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        setShowSearchBar(true);
-        searchOpacity.setValue(0);
-        Animated.timing(searchOpacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      });
-    } else {
-      Animated.timing(searchOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        setShowSearchBar(false);
-        iconOpacity.setValue(0);
-        Animated.timing(iconOpacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      });
-    }
-  };
 
   return (
-    <View style={tw`flex-1 bg-white`}>
+    <SafeAreaView style={tw`flex-1 bg-white`}>
+      <SearchBar
+        placeholder="Search movies, posts, events..."
+        onPress={() => router.push({
+          pathname: '/search',
+          params: { origin: 'home', defaultCategory: 'posts' }
+        })}
+      />
       <ScrollView
         style={tw`flex-1`}
         contentContainerStyle={[tw`pb-28`]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero image with search affordance */}
+        {/* Hero image */}
         <View style={{ paddingBottom: 16 }}>
           <View style={{ position: 'relative' }}>
             <ImageBackground
@@ -104,37 +74,6 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
                 style={[tw`flex-1`, { backgroundColor: 'rgba(0,0,0,0.25)' }]}
               />
             </ImageBackground>
-            <Animated.View
-              style={{
-                position: 'absolute',
-                top: 20,
-                right: 20,
-                opacity: iconOpacity,
-              }}
-              pointerEvents={showSearchBar ? 'none' : 'auto'}
-            >
-              <TouchableOpacity onPress={handleToggleSearch} activeOpacity={0.7}>
-                <Feather name='search' size={22} color='#FFFFFF' />
-              </TouchableOpacity>
-            </Animated.View>
-            {showSearchBar && (
-              <View
-                style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
-              >
-                <Pressable style={{ flex: 1 }} onPress={handleToggleSearch} />
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    left: 16,
-                    right: 16,
-                    top: 64,
-                    opacity: searchOpacity,
-                  }}
-                >
-                  <HomeSearchBar placeholder='Search movies, events, people...' />
-                </Animated.View>
-              </View>
-            )}
           </View>
         </View>
 
@@ -185,6 +124,6 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
           </TouchableOpacity>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

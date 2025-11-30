@@ -23,7 +23,7 @@ export default function SearchToggle<T extends string>({
   onOptionChange,
   activeColor = '#f03535ff', 
   inactiveColor = 'transparent',
-  backgroundColor = '#ffc8c8ff',
+  backgroundColor = '#f8d9d9ff',
   textActiveColor = '#FFF',
   textInactiveColor = '#f03535ff',
 }: SearchToggleProps<T>) {
