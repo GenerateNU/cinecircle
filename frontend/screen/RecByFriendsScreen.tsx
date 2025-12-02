@@ -8,11 +8,13 @@ import {
   Text,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { fetchHomeFeed, togglePostLike } from '../services/feedService';
+import { fetchHomeFeed, togglePostReaction } from '../services/feedService';
+import { getMoviePosterUrl } from '../services/imageService';
 import TextPost from '../components/TextPost';
 import PicturePost from '../components/PicturePost';
 import ReviewPost from '../components/ReviewPost';
 import InteractionBar from '../components/InteractionBar';
+import UserBar from '../components/UserBar';
 import type { components } from '../types/api-generated';
 
 type Post = components['schemas']['Post'];
@@ -63,6 +65,94 @@ export default function RecByFriendsScreen() {
     const username = post.UserProfile?.username || 'Unknown';
     const hasImage = post.imageUrls && post.imageUrls.length > 0;
 
+    // Map backend reaction data to InteractionBar format
+    const reactions = [
+      {
+        emoji: '🌶️',
+        count: post.reactionCounts?.SPICY || 0,
+        selected: post.userReactions?.includes('SPICY') || false,
+      },
+      {
+        emoji: '✨',
+        count: post.reactionCounts?.STAR_STUDDED || 0,
+        selected: post.userReactions?.includes('STAR_STUDDED') || false,
+      },
+      {
+        emoji: '🧠',
+        count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
+        selected: post.userReactions?.includes('THOUGHT_PROVOKING') || false,
+      },
+      {
+        emoji: '🧨',
+        count: post.reactionCounts?.BLOCKBUSTER || 0,
+        selected: post.userReactions?.includes('BLOCKBUSTER') || false,
+      },
+    ];
+
+    const handleReaction = async (reactionIndex: number) => {
+      if (!user?.id) return;
+
+      const reactionTypes: Array<
+        'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+      > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
+      const reactionType = reactionTypes[reactionIndex];
+
+      try {
+        // Optimistically update UI
+        setFeedItems(prevItems =>
+          prevItems.map(item => {
+            if (
+              (item.type === 'post' || item.type === 'trending_post') &&
+              (item.data as Post).id === post.id
+            ) {
+              const currentPost = item.data as Post;
+              const wasSelected =
+                currentPost.userReactions?.includes(reactionType) || false;
+
+              // Update reaction counts
+              const newReactionCounts = { ...currentPost.reactionCounts };
+              if (wasSelected) {
+                newReactionCounts[reactionType] = Math.max(
+                  0,
+                  (newReactionCounts[reactionType] || 0) - 1
+                );
+              } else {
+                newReactionCounts[reactionType] =
+                  (newReactionCounts[reactionType] || 0) + 1;
+              }
+
+              // Update user reactions
+              let newUserReactions = [...(currentPost.userReactions || [])];
+              if (wasSelected) {
+                newUserReactions = newUserReactions.filter(
+                  r => r !== reactionType
+                );
+              } else {
+                newUserReactions.push(reactionType);
+              }
+
+              return {
+                ...item,
+                data: {
+                  ...currentPost,
+                  reactionCounts: newReactionCounts,
+                  userReactions: newUserReactions,
+                } as Post,
+              };
+            }
+            return item;
+          })
+        );
+
+        // Call API in background
+        await togglePostReaction(post.id, user.id, reactionType);
+      } catch (err) {
+        console.error('Error toggling reaction:', err);
+        // Optionally: revert optimistic update on error
+        await loadFeed(); // Reload to get correct state
+      }
+    };
+
     return (
       <React.Fragment key={post.id}>
         <View style={styles.postContainer}>
@@ -86,11 +176,10 @@ export default function RecByFriendsScreen() {
           )}
           <View style={styles.interactionWrapper}>
             <InteractionBar
-              initialLikes={post.likeCount || post.votes}
               initialComments={post.commentCount || 0}
-              isLiked={post.isLiked || false}
-              onLikePress={() => handlePostLike(post.id, post.isLiked || false)}
+              reactions={reactions}
               onCommentPress={() => handleComment(post.id)}
+              onReactionPress={handleReaction}
             />
           </View>
         </View>
@@ -101,11 +190,24 @@ export default function RecByFriendsScreen() {
 
   const renderRating = (rating: Rating, index: number) => {
     const username = rating.UserProfile?.username || 'Unknown';
-    const movieTitle = `Movie #${rating.movieId}`;
+    const movieTitle =
+      (rating as any).movie?.title || `Movie #${rating.movieId}`;
+    const movieImagePath = (rating as any).movie?.imageUrl;
+    const moviePosterUrl = getMoviePosterUrl(movieImagePath);
+
+    const handleReviewPress = () => {
+      // TODO: Navigate to review detail page
+      console.log('Review pressed:', rating.id, 'Movie:', rating.movieId);
+      // navigation.navigate('ReviewDetail', { reviewId: rating.id, movieId: rating.movieId });
+    };
 
     return (
       <React.Fragment key={rating.id}>
-        <View style={styles.postContainer}>
+        <View style={styles.ratingContainer}>
+          <UserBar name={username} username={username} userId={rating.userId} />
+          <Text style={styles.shareText}>
+            Check out this new review that I just dropped!
+          </Text>
           <ReviewPost
             userName={username}
             username={username}
@@ -115,16 +217,9 @@ export default function RecByFriendsScreen() {
             rating={rating.stars}
             userId={rating.userId}
             reviewerUserId={rating.userId}
+            movieImageUrl={moviePosterUrl}
+            onPress={handleReviewPress}
           />
-          <View style={styles.interactionWrapper}>
-            <InteractionBar
-              initialLikes={rating.votes}
-              initialComments={0}
-              isLiked={false}
-              onLikePress={() => console.log('Rating like')}
-              onCommentPress={() => console.log('Rating comment')}
-            />
-          </View>
         </View>
         {index < feedItems.length - 1 && <View style={styles.divider} />}
       </React.Fragment>
@@ -134,62 +229,6 @@ export default function RecByFriendsScreen() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  const handlePostLike = async (postId: string, currentlyLiked: boolean) => {
-    if (!user?.id) return;
-
-    try {
-      // Optimistically update UI
-      setFeedItems(prevItems =>
-        prevItems.map(item => {
-          if (item.type === 'post' || item.type === 'trending_post') {
-            const post = item.data as Post;
-            if (post.id === postId) {
-              return {
-                ...item,
-                data: {
-                  ...post,
-                  isLiked: !currentlyLiked,
-                  likeCount: currentlyLiked
-                    ? (post.likeCount || 0) - 1
-                    : (post.likeCount || 0) + 1,
-                  votes: currentlyLiked ? post.votes - 1 : post.votes + 1,
-                },
-              };
-            }
-          }
-          return item;
-        })
-      );
-
-      // Call API in background
-      await togglePostLike(postId, user.id);
-    } catch (err) {
-      console.error('Error liking post:', err);
-      // Revert optimistic update on error
-      setFeedItems(prevItems =>
-        prevItems.map(item => {
-          if (item.type === 'post' || item.type === 'trending_post') {
-            const post = item.data as Post;
-            if (post.id === postId) {
-              return {
-                ...item,
-                data: {
-                  ...post,
-                  isLiked: currentlyLiked,
-                  likeCount: currentlyLiked
-                    ? (post.likeCount || 0) + 1
-                    : (post.likeCount || 0) - 1,
-                  votes: currentlyLiked ? post.votes + 1 : post.votes - 1,
-                },
-              };
-            }
-          }
-          return item;
-        })
-      );
-    }
   };
 
   const handleComment = (itemId: string) => {
@@ -242,6 +281,18 @@ const styles = StyleSheet.create({
   postContainer: {
     backgroundColor: '#FFF',
     paddingTop: width * 0.04,
+  },
+  ratingContainer: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: width * 0.04,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.04,
+  },
+  shareText: {
+    fontSize: width * 0.04,
+    color: '#000',
+    marginTop: width * 0.03,
+    marginBottom: width * 0.04,
   },
   interactionWrapper: {
     paddingHorizontal: width * 0.04,
