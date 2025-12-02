@@ -209,7 +209,10 @@ const ProfilePage = ({
   return (
       <View style={tw`flex-1 bg-white`}>
         {/* All content scrolls, including the gray header */}
-        <ScrollView contentContainerStyle={{ paddingBottom: scrollBottomPadding }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: scrollBottomPadding }}
+          nestedScrollEnabled
+        >
         {/* Scrollable gray header band */}
         <View
           style={[
@@ -538,7 +541,7 @@ const ProfilePage = ({
         {/* Tab-specific content */}
         <View style={tw`px-4 pt-3`}>
           {activeTab === 'movies' && <MoviesGrid userId={targetUserId ?? null} />}
-          {activeTab === 'posts' && <PostsList user={u} />}
+          {activeTab === 'posts' && <PostsList user={u} userId={targetUserId ?? null} />}
           {activeTab === 'events' && <EventsList />}
           {activeTab === 'badges' && <BadgesGrid />}
         </View>

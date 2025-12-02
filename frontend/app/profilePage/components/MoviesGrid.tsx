@@ -200,7 +200,13 @@ const MoviesGrid = ({ userId }: Props) => {
           keyExtractor={(item) => item.id}
           renderItem={renderMovie}
           scrollEnabled={false}
+          removeClippedSubviews={false}
+          initialNumToRender={movies.length || 10}
+          maxToRenderPerBatch={movies.length || 10}
+          windowSize={Math.max(5, movies.length || 5)}
+          showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={tw`h-0`} />}
+          ListFooterComponent={<View style={tw`h-2`} />}
         />
       )}
     </View>
