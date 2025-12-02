@@ -1,104 +1,109 @@
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useState,
-} from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import {
   View,
-  TextInput,
   Text,
-  TouchableOpacity,
+  TextInput,
   StyleSheet,
+  TouchableOpacity,
+  Switch,
 } from "react-native";
+
+import MovieSelectorModal from "./MovieSelectorModal";
 import StarRating from "./StarRating";
 import CreatePostToolBar from "./CreatePostToolBar";
+import TagModal from './TagSelectorModal'
 
-export interface LongPostFormRef {
-  submit: () => void;
-}
-
-interface Props {
-  showTextBox: boolean;
-  showStars: boolean;
-  selectedMovie: { movieId: string; title: string } | null;
-  selectedTags: string[];
-  onSelectMovie: () => void;
-  onSelectTags: () => void;
+interface LongPostFormProps {
   onSubmit: (data: any) => void;
   onToolbarAction: (action: string) => void;
 }
 
-const LongPostForm = forwardRef<LongPostFormRef, Props>(
-(
-  { showTextBox, showStars, selectedMovie, onSelectMovie, onSelectTags, onSubmit, onToolbarAction },
-  ref
-) => {
+interface Movie {
+  id: string;
+  title?: string | null;
+}
+
+const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProps, ref) => {
+  const [movie, setMovie] = useState<Movie | null>(null);
+  const [spoiler, setSpoiler] = useState(false);
   const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
   const [content, setContent] = useState("");
-  const [rating, setRating] = useState<number>(0);
+  const [movieModalVisible, setMovieModalVisible] = useState(false);
+  const [tagModalVisible, setTagModalVisible] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [rating, setRating] = useState<number>(0);
+
+  const CHAR_LIMIT = 280;
 
   useImperativeHandle(ref, () => ({
     submit() {
+      if (!movie) {
+        alert("Please select a movie.");
+        return;
+      }
+      if (content.trim().length === 0) {
+        alert("Please enter content.");
+        return;
+      }
+
       onSubmit({
-        title,
-        subtitle: subtitle || undefined,
+        movieId: movie.id,
+        spoiler,
         content,
-        rating: rating || undefined,
       });
     },
   }));
 
   return (
     <View style={styles.container}>
-      {/* STARS */}
-      {showStars && (
-        <View style={styles.starContainer}>
-          <StarRating rating={rating} onRatingChange={setRating} />
-        </View>
-      )}
-
-      {/* MOVIE SELECT DISPLAY */}
-      <TouchableOpacity onPress={onSelectMovie} style={styles.selectorBtn}>
-        <Text style={styles.selectorText}>
-          {selectedMovie ? selectedMovie.title : "Select Movie"}
+      <TouchableOpacity
+        style={styles.dropdown}
+        onPress={() => {
+          setMovieModalVisible(true)
+        }}
+      >
+        <Text style={styles.dropdownText}>
+          {movie ? movie.title : "Select Movie"}
         </Text>
       </TouchableOpacity>
 
-      {/* TITLE */}
-      <TextInput
-        style={styles.titleInput}
-        placeholder="Title"
-        placeholderTextColor="#A3A3A3"
-        value={title}
-        onChangeText={setTitle}
-      />
-
-      {/* SUBTITLE */}
-      <TextInput
-        style={styles.subtitleInput}
-        placeholder="Subtitle (optional)"
-        placeholderTextColor="#A3A3A3"
-        value={subtitle}
-        onChangeText={setSubtitle}
-      />
-
-      {/* CONTENT */}
-      {showTextBox && (
-        <TextInput
-          style={styles.contentInput}
-          multiline
-          placeholder="Write your thoughts..."
-          placeholderTextColor="#A3A3A3"
-          value={content}
-          onChangeText={setContent}
+      <View style={styles.spoilerRow}>
+        <Text style={styles.spoilerLabel}>Spoiler</Text>
+        <Switch
+          value={spoiler}
+          onValueChange={setSpoiler}
+          trackColor={{ true: "#e8856d", false: "#e8856d" }}
+          thumbColor='white'
         />
-      )}
+      </View>
 
-      {/* TAGS SECTION */}
-      <TouchableOpacity onPress={onSelectTags} style={styles.selectorBtn}>
-        <Text style={styles.selectorText}>Add Tags</Text>
+        <TextInput
+        style={styles.titleInput}
+         placeholder="Add a title..."
+        placeholderTextColor="#B7B7B7"
+         value={title}
+         onChangeText={setTitle}
+       />
+
+        <View style={styles.starContainer}>
+          <StarRating rating={rating} onRatingChange={setRating} />
+        </View>
+
+      <TextInput
+        style={styles.input}
+        multiline
+        placeholder="Start sharing your thoughts..."
+        placeholderTextColor="#aaa"
+        value={content}
+        onChangeText={(text) => {
+          if (text.length <= CHAR_LIMIT) setContent(text);
+        }}
+      />
+
+      <TouchableOpacity onPress={() => {
+          setTagModalVisible(true)
+        }} style={styles.dropdown}>
+        <Text style={styles.dropdownText}>Add Tags</Text>
       </TouchableOpacity>
 
       <View style={styles.tagRow}>
@@ -109,7 +114,26 @@ const LongPostForm = forwardRef<LongPostFormRef, Props>(
         ))}
       </View>
 
-      <CreatePostToolBar onToolbarAction={onToolbarAction} />
+       <CreatePostToolBar onToolbarAction={onToolbarAction} />
+
+      <MovieSelectorModal
+        visible={movieModalVisible}
+        onClose={() => setMovieModalVisible(false)}
+        onSelect={(selectedMovie) => {
+          setMovie({
+                id: selectedMovie.movieId,
+                title: selectedMovie.title,
+            });
+        }}
+      />
+
+      <TagModal
+        visible={tagModalVisible}
+        onClose={() => setMovieModalVisible(false)}
+        onSelect={(selectedMovie) => {
+          setMovie(selectedMovie);
+        }}
+      />
     </View>
   );
 });
@@ -118,45 +142,57 @@ export default LongPostForm;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 50,
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
-  starContainer: {
-    marginBottom: 12,
-    alignItems: "flex-start",
+
+  dropdown: {
+    borderWidth: 1.4,
+    borderColor: "#e66a4e",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    alignSelf: "flex-start",
   },
-  selectorBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#E66A4E",
-    marginBottom: 12,
-  },
-  selectorText: {
+  dropdownText: {
     fontFamily: "Figtree_500Medium",
-    color: "#E66A4E",
+    fontSize: 15,
+    color: "#e66a4e",
   },
+
+  spoilerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 18,
+  },
+
   titleInput: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#000",
+     fontSize: 22,
+     fontFamily: "Figtree_600SemiBold",
+     marginBottom: 12,
+     color: "#000",
+   },
+
+  spoilerLabel: {
+    fontFamily: "Figtree_500Medium",
+    fontSize: 14,
+    color: "#444",
+    marginRight: 10,
   },
-  subtitleInput: {
-    fontSize: 16,
-    marginBottom: 12,
+
+  input: {
+    marginTop: 18,
+    minHeight: 160,
+    fontFamily: "Figtree_400Regular",
+    fontSize: 15,
     color: "#333",
   },
-  contentInput: {
-    minHeight: 200,
-    fontSize: 16,
-    textAlignVertical: "top",
-    color: "#000",
-    paddingTop: 8,
-    marginBottom: 16,
+
+ starContainer: {
+     marginBottom: 16,
+    alignItems: "flex-start",
   },
+
   tagRow: {
     flexDirection: "row",
     flexWrap: "wrap",
