@@ -18,7 +18,7 @@ export default function BottomNavBar() {
         <MaterialIcons name="confirmation-number" style={active("/(tabs)/movies") ? styles.activeIcon : styles.icon} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.item} onPress={() => go("/createPost")}>
+      <TouchableOpacity style={styles.item} onPress={() => go("/post")}>
         <MaterialIcons name="add-circle" style={styles.postButton}/>
       </TouchableOpacity>
 

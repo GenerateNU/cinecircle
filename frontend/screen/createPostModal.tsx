@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, Animated, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Animated, StyleSheet, Image } from "react-native";
+import Review from "../assets/review.png"
+import shortPost from "../assets/short-take.png"
 
 interface Props {
   onSelect: (type: "short" | "long") => void;
@@ -27,7 +29,6 @@ export default function CreatePostModal({ onSelect, onClose }: Props) {
 
   return (
     <View style={styles.overlay}>
-      {/* Tap outside to close */}
       <TouchableOpacity style={styles.backdrop} onPress={onClose} />
 
       <Animated.View
@@ -39,18 +40,19 @@ export default function CreatePostModal({ onSelect, onClose }: Props) {
         <Text style={styles.title}>Create</Text>
 
         <View style={styles.row}>
-          {/* SHORT TAKE BUTTON */}
-          <TouchableOpacity style={styles.ticket} onPress={() => onSelect("short")}>
-            <Text style={styles.ticketText}>Short Take</Text>
+          <TouchableOpacity onPress={() => onSelect("short")}>
+            <Image 
+              source={shortPost}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
-
-          {/* REVIEW BUTTON */}
-          <TouchableOpacity style={styles.ticket} onPress={() => onSelect("long")}>
-            <Text style={styles.ticketText}>Review</Text>
+          <TouchableOpacity onPress={() => onSelect("long")}>
+            <Image 
+              source={Review}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </View>
-
-        {/* Bottom Labels */}
         <View style={styles.row}>
           <Text style={styles.label}>Take</Text>
           <Text style={styles.label}>Review</Text>
@@ -92,16 +94,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     width: "100%",
     marginBottom: 18,
-  },
-  ticket: {
-    width: 140,
-    height: 85,
-    backgroundColor: "#ffd8d2", // light coral
-    borderWidth: 2,
-    borderColor: "#e08a78",
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
   },
   ticketText: {
     fontSize: 16,
