@@ -20,7 +20,7 @@ export default function CreatePostBar({ title, onBack, onSubmit }: CreatePostBar
       </View>
 
       <TouchableOpacity onPress={onSubmit} style={styles.postButton}>
-        <Text style={styles.postButtonText}>Post →</Text>
+        <Text style={styles.postButtonText}>Post </Text>
       </TouchableOpacity>
 
     </View>
@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E05B4E',
-    backgroundColor: "#F7D5CD",
+    borderColor: '#D8D8D8',
+    backgroundColor: "#D8D8D8",
   },
 
   postButtonText: {
-    color: '#E05B4E',
-    fontWeight: '600',
+    color: '##979797',
+    fontWeight: '400',
   },
 });
