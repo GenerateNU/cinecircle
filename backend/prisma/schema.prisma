@@ -454,6 +454,7 @@ model Rating {
   votes       Int         @default(0)
   Comment     Comment[]
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
+  movie       movie        @relation(fields: [movieId], references: [movieId])
 
   @@schema("public")
 }
@@ -517,7 +518,7 @@ model local_event {
 }
 
 model movie {
-  movieId     String  @id
+  movieId     String   @id
   localRating String?
   imdbRating  BigInt?
   languages   Json?
@@ -525,6 +526,7 @@ model movie {
   description String?
   numRatings  String?
   imageUrl    String?
+  Rating      Rating[]
 
   @@schema("public")
 }
