@@ -9,7 +9,8 @@ import {
   DeviceEventEmitter,
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { User, TabKey } from './_types';
 import { formatCount } from './_utils';
@@ -61,6 +62,16 @@ const ProfilePage = ({
   const [loading, setLoading] = useState(isMe);
   const [error, setError] = useState<string | null>(null);
   const targetUserId = isMe ? profile?.userId : profileUserId;
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+
+  const handleBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      router.push('/(tabs)/home');
+    }
+  }, [navigation]);
 
   const fetchProfileData = useCallback(async () => {
     try {
@@ -204,9 +215,45 @@ const ProfilePage = ({
             { height: HEADER_HEIGHT, backgroundColor: '#E9EBEF' },
           ]}
         >
-          {/* Settings button top-right */}
-          {isMe && (
-            <View style={tw`flex-row justify-end px-4 pt-3`}>
+          <View
+            style={[
+              tw`flex-row justify-between px-4`,
+              { paddingTop: Math.max(insets.top, 12) },
+            ]}
+          >
+            {/* Back button for visiting another user's profile */}
+            {!isMe ? (
+              <TouchableOpacity
+                onPress={handleBack}
+                style={[
+                  tw`flex-row items-center rounded-xl`,
+                  {
+                    paddingHorizontal: 10,
+                    paddingVertical: 8,
+                    backgroundColor: BUTTON_COLOR,
+                    borderColor: ACCENT_COLOR,
+                    borderWidth: 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Ionicons name="chevron-back" size={20} color={ACCENT_COLOR} />
+                <Text
+                  style={[
+                    tw`ml-1 font-semibold`,
+                    { color: ACCENT_COLOR },
+                  ]}
+                >
+                  Back
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={tw`w-10 h-10`} />
+            )}
+
+            {/* Settings button top-right */}
+            {isMe ? (
               <TouchableOpacity
                 onPress={() => router.push('/profilePage/settings')}
                 style={tw`w-10 h-10 items-center justify-center rounded-full`}
@@ -230,8 +277,10 @@ const ProfilePage = ({
                   />
                 </View>
               </TouchableOpacity>
-            </View>
-          )}
+            ) : (
+              <View style={tw`w-10 h-10`} />
+            )}
+          </View>
         </View>
 
         {/* Profile block (avatar overlaps the gray header) */}
@@ -486,7 +535,7 @@ const ProfilePage = ({
 
         {/* Tab-specific content */}
         <View style={tw`px-4 pt-3`}>
-          {activeTab === 'movies' && <MoviesGrid />}
+          {activeTab === 'movies' && <MoviesGrid userId={targetUserId ?? null} />}
           {activeTab === 'posts' && <PostsList user={u} />}
           {activeTab === 'events' && <EventsList />}
           {activeTab === 'badges' && <BadgesGrid />}
