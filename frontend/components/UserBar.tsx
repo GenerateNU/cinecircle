@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import Avatar from './Avatar';
 
 const { width } = Dimensions.get('window');
 
@@ -44,21 +45,15 @@ export default function UserBar({
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{
-          uri:
+      <View style={styles.avatar}>
+        <Avatar
+          uri={
             avatarUri ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=200&background=667eea&color=fff`,
-        }}
-        style={[
-          styles.avatar,
-          {
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: avatarSize / 2,
-          },
-        ]}
-      />
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=200&background=667eea&color=fff`
+          }
+          size={24}
+        />
+      </View>
       <View style={styles.textContainer}>
         <TouchableOpacity
           onPress={handlePress}
@@ -89,13 +84,16 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.02,
   },
   name: {
-    fontSize: width * 0.04,
+    fontSize: 12,
     fontWeight: '600',
   },
   username: {
-    fontSize: width * 0.035,
+    fontSize: 12,
     marginTop: 2,
   },
   date: {
