@@ -4,7 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Image
 } from 'react-native';
+
+import ImagePic from '../assets/image.png'
+import Gif from '../assets/gif.png'
+import Keyboard from '../assets/keyboard-down.png'
 
 interface CreatePostToolBarProps {
   onToolbarAction: (action: string) => void;
@@ -14,31 +19,33 @@ export default function CreatePostToolBar({ onToolbarAction }: CreatePostToolBar
   return (
     <View style={styles.toolbar}>
       <TouchableOpacity
-        onPress={() => onToolbarAction("rating")}
-        style={styles.toolbarItem}
-      >
-        <Text style={styles.toolbarText}>Rating</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
         onPress={() => onToolbarAction("video")}
         style={styles.toolbarItem}
       >
-        <Text style={styles.toolbarText}>Video</Text>
+        <View>
+            <Image source ={ImagePic} resizeMode="contain"></Image>
+            <Text style={styles.toolbarText}>Photo and Video</Text>
+        </View>
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => onToolbarAction("gif")}
         style={styles.toolbarItem}
       >
-        <Text style={styles.toolbarText}>GIF</Text>
+         <View>
+            <Image source ={Gif} resizeMode="contain"></Image>
+            <Text style={styles.toolbarText}>GIF</Text>
+        </View>
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => onToolbarAction("photo")}
         style={styles.toolbarItem}
       >
-        <Text style={styles.toolbarText}>Photo</Text>
+         <View>
+            <Image source ={Keyboard} resizeMode="contain"></Image>
+            <Text style={styles.toolbarText}>Keyboard Down</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
