@@ -69,24 +69,32 @@ describe("GET /api/feed", () => {
         },
       });
   
-      await prisma.userFollow.create({
-        data: {
-          id: "follow-1",
-          followerId: TEST_USER_ID,
-          followingId: FOLLOWED_USER_ID,
-        },
-      });
-  
-      // create a rating and post from followed user
-      await prisma.rating.create({
-        data: {
-          id: "rating-feed-1",
-          userId: FOLLOWED_USER_ID,
-          movieId: "movie-10",
-          stars: 5,
-          date: new Date(),
-        },
-      });
+    await prisma.userFollow.create({
+      data: {
+        id: "follow-1",
+        followerId: TEST_USER_ID,
+        followingId: FOLLOWED_USER_ID,
+      },
+    });
+
+    // create a movie for the rating
+    await prisma.movie.create({
+      data: {
+        movieId: "movie-10",
+        title: "Test Movie",
+      },
+    });
+
+    // create a rating and post from followed user
+    await prisma.rating.create({
+      data: {
+        id: "rating-feed-1",
+        userId: FOLLOWED_USER_ID,
+        movieId: "movie-10",
+        stars: 5,
+        date: new Date(),
+      },
+    });
   
       await prisma.post.create({
         data: {
@@ -99,17 +107,18 @@ describe("GET /api/feed", () => {
       });
     });
   
-    afterAll(async () => {
-      await prisma.comment.deleteMany({ where: { userId: TEST_USER_ID } });
-      await prisma.post.deleteMany({ where: { userId: FOLLOWED_USER_ID } });
-      await prisma.rating.deleteMany({ where: { userId: FOLLOWED_USER_ID } });
-      await prisma.userFollow.deleteMany({ where: { followerId: TEST_USER_ID } });
-      await prisma.userProfile.deleteMany({
-        where: {
-          userId: { in: [FOLLOWED_USER_ID, TEST_USER_ID] },
-        },
-      });
+  afterAll(async () => {
+    await prisma.comment.deleteMany({ where: { userId: TEST_USER_ID } });
+    await prisma.post.deleteMany({ where: { userId: FOLLOWED_USER_ID } });
+    await prisma.rating.deleteMany({ where: { userId: FOLLOWED_USER_ID } });
+    await prisma.movie.deleteMany({ where: { movieId: "movie-10" } });
+    await prisma.userFollow.deleteMany({ where: { followerId: TEST_USER_ID } });
+    await prisma.userProfile.deleteMany({
+      where: {
+        userId: { in: [FOLLOWED_USER_ID, TEST_USER_ID] },
+      },
     });
+  });
   
     it("should return personalized feed", async () => {
       const res = await request(app)

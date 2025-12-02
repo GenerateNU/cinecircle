@@ -44,6 +44,13 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             username: true,
           },
         },
+        movie: {
+          select: {
+            movieId: true,
+            title: true,
+            imageUrl: true,
+          },
+        },
       },
       orderBy: { date: 'desc' },
       take: limit,
@@ -86,6 +93,13 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
           select: {
             userId: true,
             username: true,
+          },
+        },
+        movie: {
+          select: {
+            movieId: true,
+            title: true,
+            imageUrl: true,
           },
         },
       },
