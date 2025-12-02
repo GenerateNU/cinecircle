@@ -1,123 +1,320 @@
-import { View, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  View,
+  Text,
+} from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { fetchHomeFeed, togglePostReaction } from '../services/feedService';
+import { getMoviePosterUrl } from '../services/imageService';
 import TextPost from '../components/TextPost';
 import PicturePost from '../components/PicturePost';
 import ReviewPost from '../components/ReviewPost';
 import InteractionBar from '../components/InteractionBar';
+import UserBar from '../components/UserBar';
+import type { components } from '../types/api-generated';
+
+type Post = components['schemas']['Post'];
+type Rating = components['schemas']['Rating'];
 
 const { width } = Dimensions.get('window');
 
+type FeedItem = {
+  type: 'post' | 'rating' | 'trending_post' | 'trending_rating';
+  data: Post | Rating;
+};
+
 export default function RecByFriendsScreen() {
+  const { user } = useAuth();
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadFeed();
+  }, []);
+
+  const loadFeed = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchHomeFeed(50);
+      setFeedItems(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error loading feed:', err);
+      setError('Failed to load feed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderFeedItem = (item: FeedItem, index: number) => {
+    const isPost = item.type === 'post' || item.type === 'trending_post';
+
+    if (isPost) {
+      return renderPost(item.data as Post, index);
+    } else {
+      return renderRating(item.data as Rating, index);
+    }
+  };
+
+  const renderPost = (post: Post, index: number) => {
+    const username = post.UserProfile?.username || 'Unknown';
+    const hasImage = post.imageUrls && post.imageUrls.length > 0;
+
+    // Map backend reaction data to InteractionBar format
+    const reactions = [
+      {
+        emoji: '🌶️',
+        count: post.reactionCounts?.SPICY || 0,
+        selected: post.userReactions?.includes('SPICY') || false,
+      },
+      {
+        emoji: '✨',
+        count: post.reactionCounts?.STAR_STUDDED || 0,
+        selected: post.userReactions?.includes('STAR_STUDDED') || false,
+      },
+      {
+        emoji: '🧠',
+        count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
+        selected: post.userReactions?.includes('THOUGHT_PROVOKING') || false,
+      },
+      {
+        emoji: '🧨',
+        count: post.reactionCounts?.BLOCKBUSTER || 0,
+        selected: post.userReactions?.includes('BLOCKBUSTER') || false,
+      },
+    ];
+
+    const handleReaction = async (reactionIndex: number) => {
+      if (!user?.id) return;
+
+      const reactionTypes: Array<
+        'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+      > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
+      const reactionType = reactionTypes[reactionIndex];
+
+      try {
+        // Optimistically update UI
+        setFeedItems(prevItems =>
+          prevItems.map(item => {
+            if (
+              (item.type === 'post' || item.type === 'trending_post') &&
+              (item.data as Post).id === post.id
+            ) {
+              const currentPost = item.data as Post;
+              const wasSelected =
+                currentPost.userReactions?.includes(reactionType) || false;
+
+              // Update reaction counts
+              const newReactionCounts = { ...currentPost.reactionCounts };
+              if (wasSelected) {
+                newReactionCounts[reactionType] = Math.max(
+                  0,
+                  (newReactionCounts[reactionType] || 0) - 1
+                );
+              } else {
+                newReactionCounts[reactionType] =
+                  (newReactionCounts[reactionType] || 0) + 1;
+              }
+
+              // Update user reactions
+              let newUserReactions = [...(currentPost.userReactions || [])];
+              if (wasSelected) {
+                newUserReactions = newUserReactions.filter(
+                  r => r !== reactionType
+                );
+              } else {
+                newUserReactions.push(reactionType);
+              }
+
+              return {
+                ...item,
+                data: {
+                  ...currentPost,
+                  reactionCounts: newReactionCounts,
+                  userReactions: newUserReactions,
+                } as Post,
+              };
+            }
+            return item;
+          })
+        );
+
+        // Call API in background
+        await togglePostReaction(post.id, user.id, reactionType);
+      } catch (err) {
+        console.error('Error toggling reaction:', err);
+        // Optionally: revert optimistic update on error
+        await loadFeed(); // Reload to get correct state
+      }
+    };
+
     return (
-        <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-        >
-            {/* Picture Post - Kaamil's SRK post */}
-            <View style={styles.postContainer}>
-                <PicturePost
-                    userName="Kaamil Thobani"
-                    username="kaa"
-                    date="Sept 16"
-                    content="SRK in his lover era again and I'm not surviving this one chat"
-                />
-                <View style={styles.interactionWrapper}>
-                    <InteractionBar 
-                        initialLikes={1230}
-                        initialComments={1230}
-                        isLiked={false}
-                        onLikePress={() => console.log('Liked Kaamil post')}
-                        onCommentPress={() => console.log('Comment on Kaamil post')}
-                    />
-                </View>
-            </View>
-            <View style={styles.divider} />
-
-            {/* Text Post - Emily's Tamasha post */}
-            <View style={styles.postContainer}>
-                <TextPost
-                    userName="Emily Choi"
-                    username="emmy"
-                    date="Sept 12"
-                    content="Tamasha hits different now that I'm old enough to realize I'm the villain and the main character."
-                />
-                <View style={styles.interactionWrapper}>
-                    <InteractionBar 
-                        initialLikes={1230}
-                        initialComments={1230}
-                        isLiked={false}
-                        onLikePress={() => console.log('Liked Emily post')}
-                        onCommentPress={() => console.log('Comment on Emily post')}
-                    />
-                </View>
-            </View>
-            <View style={styles.divider} />
-
-            {/* Review Post - Tony's Dangal review */}
-            <View style={styles.postContainer}>
-                <ReviewPost
-                    userName="Tony Giech"
-                    username="tonyg"
-                    date="Sept 10"
-                    reviewerName="Rowen Latif"
-                    movieTitle="Dangal"
-                    rating={5}
-                />
-                <View style={styles.interactionWrapper}>
-                    <InteractionBar 
-                        initialLikes={1230}
-                        initialComments={1230}
-                        isLiked={false}
-                        onLikePress={() => console.log('Liked Tony post')}
-                        onCommentPress={() => console.log('Comment on Tony post')}
-                    />
-                </View>
-            </View>
-            <View style={styles.divider} />
-
-            {/* Review Post - Amogh's Saiyaara review */}
-            <View style={styles.postContainer}>
-                <ReviewPost
-                    userName="Amogh"
-                    username="aamogh16"
-                    date="October 10"
-                    reviewerName="Kaamil Thobani"
-                    movieTitle="Saiyaara"
-                    rating={4}
-                />
-                <View style={styles.interactionWrapper}>
-                    <InteractionBar 
-                        initialLikes={1230}
-                        initialComments={1230}
-                        isLiked={false}
-                        onLikePress={() => console.log('Liked Amogh post')}
-                        onCommentPress={() => console.log('Comment on Amogh post')}
-                    />
-                </View>
-            </View>
-        </ScrollView>
+      <React.Fragment key={post.id}>
+        <View style={styles.postContainer}>
+          {hasImage ? (
+            <PicturePost
+              userName={username}
+              username={username}
+              date={formatDate(post.createdAt)}
+              content={post.content}
+              imageUrls={post.imageUrls || []}
+              userId={post.userId}
+            />
+          ) : (
+            <TextPost
+              userName={username}
+              username={username}
+              date={formatDate(post.createdAt)}
+              content={post.content}
+              userId={post.userId}
+            />
+          )}
+          <View style={styles.interactionWrapper}>
+            <InteractionBar
+              initialComments={post.commentCount || 0}
+              reactions={reactions}
+              onCommentPress={() => handleComment(post.id)}
+              onReactionPress={handleReaction}
+            />
+          </View>
+        </View>
+        {index < feedItems.length - 1 && <View style={styles.divider} />}
+      </React.Fragment>
     );
+  };
+
+  const renderRating = (rating: Rating, index: number) => {
+    const username = rating.UserProfile?.username || 'Unknown';
+    const movieTitle =
+      (rating as any).movie?.title || `Movie #${rating.movieId}`;
+    const movieImagePath = (rating as any).movie?.imageUrl;
+    const moviePosterUrl = getMoviePosterUrl(movieImagePath);
+
+    const handleReviewPress = () => {
+      // TODO: Navigate to review detail page
+      console.log('Review pressed:', rating.id, 'Movie:', rating.movieId);
+      // navigation.navigate('ReviewDetail', { reviewId: rating.id, movieId: rating.movieId });
+    };
+
+    return (
+      <React.Fragment key={rating.id}>
+        <View style={styles.ratingContainer}>
+          <UserBar name={username} username={username} userId={rating.userId} />
+          <Text style={styles.shareText}>
+            Check out this new review that I just dropped!
+          </Text>
+          <ReviewPost
+            userName={username}
+            username={username}
+            date={formatDate(rating.date)}
+            reviewerName={username}
+            movieTitle={movieTitle}
+            rating={rating.stars}
+            userId={rating.userId}
+            reviewerUserId={rating.userId}
+            movieImageUrl={moviePosterUrl}
+            onPress={handleReviewPress}
+          />
+        </View>
+        {index < feedItems.length - 1 && <View style={styles.divider} />}
+      </React.Fragment>
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const handleComment = (itemId: string) => {
+    console.log('Navigate to comments:', itemId);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#8B7FD6" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (feedItems.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.emptyText}>No posts from friends yet</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      {feedItems.map((item, index) => renderFeedItem(item, index))}
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
-    scrollView: {
-        flex: 1,
-        backgroundColor: '#F5F5F5',
-    },
-    scrollContent: {
-        paddingBottom: width * 0.08,
-    },
-    postContainer: {
-        backgroundColor: '#FFF',
-        paddingTop: width * 0.04,
-    },
-    interactionWrapper: {
-        paddingHorizontal: width * 0.04,
-        paddingBottom: width * 0.04,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#E0E0E0',
-        marginVertical: 0,
-    },
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  scrollContent: {
+    paddingBottom: width * 0.08,
+  },
+  postContainer: {
+    backgroundColor: '#FFF',
+    paddingTop: width * 0.04,
+  },
+  ratingContainer: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: width * 0.04,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.04,
+  },
+  shareText: {
+    fontSize: width * 0.04,
+    color: '#000',
+    marginTop: width * 0.03,
+    marginBottom: width * 0.04,
+  },
+  interactionWrapper: {
+    paddingHorizontal: width * 0.04,
+    paddingBottom: width * 0.04,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 0,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF0000',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+  },
 });

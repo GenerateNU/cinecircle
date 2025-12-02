@@ -10,6 +10,10 @@ services:
       - DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
       - DIRECT_URL=postgresql://devuser:devpassword@postgres:5432/devdb
       - SYNC_FROM_PRODUCTION=false
+      - AWS_ACCESS_KEY_ID=dummy-access-key-id-for-ci-tests
+      - AWS_SECRET_ACCESS_KEY=dummy-secret-access-key-for-ci-tests
+      - AWS_REGION=dummy-region-for-ci-tests
+      - AWS_BUCKET_NAME=dummy-bucket-name-for-ci-tests
     depends_on:
       postgres:
         condition: service_healthy

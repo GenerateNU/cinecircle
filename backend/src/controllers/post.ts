@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
     try {
-      const { userId, content, postType, parentPostId, reviewId } = req.body;
+      const { userId, content, type, imageUrls, parentPostId } = req.body;
   
       // Validation
       if (!userId || !content) {
@@ -14,29 +14,19 @@ export const createPost = async (req: Request, res: Response) => {
         });
       }
   
-      if (postType && !["LONG_POST", "SHORT_POST"].includes(postType)) {
+      if (type && !["LONG", "SHORT"].includes(type)) {
         return res.status(400).json({ 
-          message: "Invalid postType. Must be LONG_POST or SHORT_POST" 
+          message: "Invalid type. Must be LONG or SHORT" 
         });
       }
-  
+
       // If it's a reply, verify parent post exists
       if (parentPostId) {
         const parentPost = await prisma.post.findUnique({
-          where: { postId: parentPostId },
+          where: { id: parentPostId },
         });
         if (!parentPost) {
           return res.status(404).json({ message: "Parent post not found" });
-        }
-      }
-  
-      // If linked to review, verify review exists
-      if (reviewId) {
-        const review = await prisma.review.findUnique({
-          where: { reviewId },
-        });
-        if (!review) {
-          return res.status(404).json({ message: "Review not found" });
         }
       }
   
@@ -44,12 +34,12 @@ export const createPost = async (req: Request, res: Response) => {
         data: {
           userId,
           content,
-          postType: postType || "SHORT_POST",
+          type: type || "SHORT",
+          imageUrls: imageUrls || [],
           parentPostId,
-          reviewId,
         },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
@@ -81,17 +71,17 @@ export const getPostById = async (req: Request, res: Response) => {
       }
   
       const post = await prisma.post.findUnique({
-        where: { postId },
+        where: { id: postId },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
             },
           },
-          replies: {
+          Comment: {
             include: {
-              user: {
+              UserProfile: {
                 select: {
                   userId: true,
                   username: true,
@@ -102,8 +92,20 @@ export const getPostById = async (req: Request, res: Response) => {
               createdAt: "desc",
             },
           },
-          likes: true,
-          review: true,
+          PostReaction: true,
+          Replies: {
+            include: {
+              UserProfile: {
+                select: {
+                  userId: true,
+                  username: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
         },
       });
   
@@ -115,8 +117,9 @@ export const getPostById = async (req: Request, res: Response) => {
         message: "Post found successfully",
         data: {
           ...post,
-          likeCount: post.likes.length,
-          replyCount: post.replies.length,
+          likeCount: post.votes,
+          commentCount: post.Comment.length,
+          replyCount: post.Replies.length,
         },
       });
     } catch (err) {
@@ -129,12 +132,12 @@ export const getPostById = async (req: Request, res: Response) => {
   };
   
 
-// GET POST (with filters)
+// GET POSTS (with filters)
 export const getPosts = async (req: Request, res: Response) => {
     try {
       const { 
         userId, 
-        postType, 
+        type,
         parentPostId, 
         limit = "20", 
         offset = "0" 
@@ -143,7 +146,7 @@ export const getPosts = async (req: Request, res: Response) => {
       const where: Prisma.PostWhereInput = {};
       
       if (userId) where.userId = userId as string;
-      if (postType) where.postType = postType as "LONG_POST" | "SHORT_POST";
+      if (type) where.type = type as "LONG" | "SHORT";
       if (parentPostId === "null") {
         where.parentPostId = null; // Top-level posts only
       } else if (parentPostId) {
@@ -153,16 +156,21 @@ export const getPosts = async (req: Request, res: Response) => {
       const posts = await prisma.post.findMany({
         where,
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
             },
           },
-          likes: true,
-          replies: {
+          PostReaction: true,
+          Comment: {
             select: {
-              postId: true,
+              id: true,
+            },
+          },
+          Replies: {
+            select: {
+              id: true,
             },
           },
         },
@@ -175,8 +183,9 @@ export const getPosts = async (req: Request, res: Response) => {
   
       const postsWithCounts = posts.map((post) => ({
         ...post,
-        likeCount: post.likes.length,
-        replyCount: post.replies.length,
+        likeCount: post.votes,
+        commentCount: post.Comment.length,
+        replyCount: post.Replies.length,
       }));
   
       res.json({
@@ -201,7 +210,7 @@ export const getPosts = async (req: Request, res: Response) => {
 export const updatePost = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
-      const { content, postType } = req.body;
+      const { content, type, imageUrls } = req.body;
   
       if (!postId) {
         return res.status(400).json({ message: "Post ID is required" });
@@ -210,24 +219,25 @@ export const updatePost = async (req: Request, res: Response) => {
       const updateData: Prisma.PostUpdateInput = {};
       
       if (content !== undefined) updateData.content = content;
-      if (postType !== undefined) {
-        if (!["LONG_POST", "SHORT_POST"].includes(postType)) {
+      if (type !== undefined) {
+        if (!["LONG", "SHORT"].includes(type)) {
           return res.status(400).json({ 
-            message: "Invalid postType" 
+            message: "Invalid type" 
           });
         }
-        updateData.postType = postType;
+        updateData.type = type;
       }
+      if (imageUrls !== undefined) updateData.imageUrls = imageUrls;
   
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({ message: "No fields to update" });
       }
   
       const updatedPost = await prisma.post.update({
-        where: { postId },
+        where: { id: postId },
         data: updateData,
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
@@ -267,7 +277,7 @@ export const deletePost = async (req: Request, res: Response) => {
       }
   
       await prisma.post.delete({
-        where: { postId },
+        where: { id: postId },
       });
   
       res.json({
@@ -290,74 +300,85 @@ export const deletePost = async (req: Request, res: Response) => {
     }
   };
 
-// LIKE / UNLIKE POST
-export const toggleLikePost = async (req: Request, res: Response) => {
+// TOGGLE REACTION ON POST
+export const toggleReaction = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
-      const { userId } = req.body;
+      const { userId, reactionType } = req.body;
   
-      if (!postId || !userId) {
+      if (!postId || !userId || !reactionType) {
         return res.status(400).json({ 
-          message: "postId and userId are required" 
+          message: "postId, userId, and reactionType are required" 
+        });
+      }
+
+      const validReactions = ["SPICY", "STAR_STUDDED", "THOUGHT_PROVOKING", "BLOCKBUSTER"];
+      if (!validReactions.includes(reactionType)) {
+        return res.status(400).json({ 
+          message: "Invalid reactionType. Must be one of: SPICY, STAR_STUDDED, THOUGHT_PROVOKING, BLOCKBUSTER" 
         });
       }
   
       // Check if post exists
       const post = await prisma.post.findUnique({
-        where: { postId },
+        where: { id: postId },
       });
   
       if (!post) {
         return res.status(404).json({ message: "Post not found" });
       }
   
-      // Check if like already exists
-      const existingLike = await prisma.postLike.findUnique({
+      // Check if this exact reaction already exists
+      const existingReaction = await prisma.postReaction.findUnique({
         where: {
-          postId_userId: {
+          postId_userId_reactionType: {
             postId,
             userId,
+            reactionType,
           },
         },
       });
   
-      if (existingLike) {
-        // Unlike
-        await prisma.postLike.delete({
+      if (existingReaction) {
+        // Remove reaction
+        await prisma.postReaction.delete({
           where: {
-            likeId: existingLike.likeId,
+            id: existingReaction.id,
           },
         });
   
         return res.json({
-          message: "Post unliked successfully",
-          liked: false,
+          message: "Reaction removed successfully",
+          reacted: false,
+          reactionType,
         });
       } else {
-        // Like
-        await prisma.postLike.create({
+        // Add reaction
+        await prisma.postReaction.create({
           data: {
             postId,
             userId,
+            reactionType,
           },
         });
   
         return res.json({
-          message: "Post liked successfully",
-          liked: true,
+          message: "Reaction added successfully",
+          reacted: true,
+          reactionType,
         });
       }
     } catch (err) {
-      console.error("toggleLikePost error:", err);
+      console.error("toggleReaction error:", err);
       res.status(500).json({
-        message: "Failed to toggle like",
+        message: "Failed to toggle reaction",
         error: err instanceof Error ? err.message : "Unknown error",
       });
     }
   };
 
-// GET POST LIKES
-export const getPostLikes = async (req: Request, res: Response) => {
+// GET POST REACTIONS
+export const getPostReactions = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
   
@@ -365,10 +386,10 @@ export const getPostLikes = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Post ID is required" });
       }
   
-      const likes = await prisma.postLike.findMany({
+      const reactions = await prisma.postReaction.findMany({
         where: { postId },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
@@ -379,16 +400,23 @@ export const getPostLikes = async (req: Request, res: Response) => {
           createdAt: "desc",
         },
       });
+
+      // Group by reaction type with counts
+      const reactionCounts = reactions.reduce((acc: Record<string, number>, reaction) => {
+        acc[reaction.reactionType] = (acc[reaction.reactionType] || 0) + 1;
+        return acc;
+      }, {});
   
       res.json({
-        message: "Likes retrieved successfully",
-        data: likes,
-        count: likes.length,
+        message: "Reactions retrieved successfully",
+        data: reactions,
+        counts: reactionCounts,
+        total: reactions.length,
       });
     } catch (err) {
-      console.error("getPostLikes error:", err);
+      console.error("getPostReactions error:", err);
       res.status(500).json({
-        message: "Failed to retrieve likes",
+        message: "Failed to retrieve reactions",
         error: err instanceof Error ? err.message : "Unknown error",
       });
     }
@@ -406,16 +434,16 @@ export const getPostReplies = async (req: Request, res: Response) => {
       const replies = await prisma.post.findMany({
         where: { parentPostId: postId },
         include: {
-          user: {
+          UserProfile: {
             select: {
               userId: true,
               username: true,
             },
           },
-          likes: true,
-          replies: {
+          PostReaction: true,
+          Replies: {
             select: {
-              postId: true,
+              id: true,
             },
           },
         },
@@ -426,8 +454,8 @@ export const getPostReplies = async (req: Request, res: Response) => {
   
       const repliesWithCounts = replies.map((reply) => ({
         ...reply,
-        likeCount: reply.likes.length,
-        replyCount: reply.replies.length,
+        likeCount: reply.votes,
+        replyCount: reply.Replies.length,
       }));
   
       res.json({
@@ -443,6 +471,3 @@ export const getPostReplies = async (req: Request, res: Response) => {
       });
     }
   };
-
-  
-

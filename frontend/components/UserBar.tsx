@@ -1,54 +1,102 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import { useRouter } from 'expo-router';
 import Avatar from './Avatar';
 
 const { width } = Dimensions.get('window');
 
 type UserBarProps = {
-    name: string;
-    username?: string;
-    date?: string;
-    avatarUri?: string;
-    avatarSize?: number;
+  name: string;
+  username?: string;
+  date?: string;
+  avatarUri?: string;
+  avatarSize?: number;
+  userId?: string;
+  nameColor?: string;
+  usernameColor?: string;
+  dateColor?: string;
 };
 
 export default function UserBar({
-                                    name,
-                                    username,
-                                    date,
-                                    avatarUri,
-                                    avatarSize = width * 0.1
-                                }: UserBarProps) {
-    return (
-        <View style={styles.container}>
-            <Avatar uri={avatarUri} size={avatarSize} />
-            <View style={styles.textContainer}>
-                <Text style={styles.name}>{name}</Text>
-                {username && date && (
-                    <Text style={styles.metadata}>@{username} · {date}</Text>
-                )}
-            </View>
-        </View>
-    );
+  name,
+  username,
+  date,
+  avatarUri,
+  avatarSize = width * 0.1,
+  userId,
+  nameColor = '#000',
+  usernameColor = '#666',
+  dateColor = '#999',
+}: UserBarProps) {
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (userId) {
+      router.push(`/profilePage?userId=${userId}`);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.avatar}>
+        <Avatar
+          uri={
+            avatarUri ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=200&background=667eea&color=fff`
+          }
+          size={24}
+        />
+      </View>
+      <View style={styles.textContainer}>
+        <TouchableOpacity
+          onPress={handlePress}
+          disabled={!userId}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.name, { color: nameColor }]}>{name}</Text>
+        </TouchableOpacity>
+        {username && (
+          <Text style={[styles.username, { color: usernameColor }]}>
+            @{username}
+          </Text>
+        )}
+      </View>
+      {date && <Text style={[styles.date, { color: dateColor }]}>{date}</Text>}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    textContainer: {
-        marginLeft: width * 0.03,
-        flex: 1,
-    },
-    name: {
-        fontSize: width * 0.04,
-        fontWeight: '600',
-        color: '#000',
-    },
-    metadata: {
-        fontSize: width * 0.0325,
-        color: '#666',
-        marginTop: width * 0.005,
-    },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  avatar: {
+    marginRight: width * 0.03,
+  },
+  textContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.02,
+  },
+  name: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  username: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  date: {
+    fontSize: width * 0.035,
+  },
 });
