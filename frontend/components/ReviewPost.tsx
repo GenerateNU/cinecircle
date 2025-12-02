@@ -75,10 +75,10 @@ export default function ReviewPost({
           <View style={styles.contentContainer}>
             <UserBar
               name={reviewerName}
-              username={username}
               avatarUri={reviewerAvatarUri}
               avatarSize={width * 0.08}
               userId={reviewerUserId}
+              nameColor="#FFFFFF"
             />
             <Text style={styles.movieTitle}>{movieTitle}</Text>
             <View style={styles.ratingContainer}>
