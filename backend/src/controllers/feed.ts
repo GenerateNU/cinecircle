@@ -19,12 +19,19 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
     });
     const followingIds = following.map((f) => f.followingId);
 
-    // Get all posts liked by the current user
-    const likedPosts = await prisma.postLike.findMany({
+    // Get all reactions by the current user
+    const userReactions = await prisma.postReaction.findMany({
       where: { userId: user.id },
-      select: { postId: true },
+      select: { postId: true, reactionType: true },
     });
-    const likedPostIds = new Set(likedPosts.map((like: { postId: string }) => like.postId));
+    
+    // Map postId to user's reaction types
+    const userReactionsByPost = new Map<string, string[]>();
+    userReactions.forEach(reaction => {
+      const existing = userReactionsByPost.get(reaction.postId) || [];
+      existing.push(reaction.reactionType);
+      userReactionsByPost.set(reaction.postId, existing);
+    });
 
     const recentRatings = await prisma.rating.findMany({
       where: {
@@ -35,6 +42,13 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
           select: {
             userId: true,
             username: true,
+          },
+        },
+        movie: {
+          select: {
+            movieId: true,
+            title: true,
+            imageUrl: true,
           },
         },
       },
@@ -53,9 +67,15 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             username: true,
           },
         },
+        PostReaction: {
+          select: {
+            reactionType: true,
+          },
+        },
         _count: {
           select: {
             Comment: true,
+            PostReaction: true,
           },
         },
       },
@@ -75,6 +95,13 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             username: true,
           },
         },
+        movie: {
+          select: {
+            movieId: true,
+            title: true,
+            imageUrl: true,
+          },
+        },
       },
       orderBy: { votes: 'desc' },
       take: 5,
@@ -91,29 +118,53 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             username: true,
           },
         },
+        PostReaction: {
+          select: {
+            reactionType: true,
+          },
+        },
         _count: {
           select: {
             Comment: true,
+            PostReaction: true,
           },
         },
       },
-      orderBy: { votes: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
-    const recentPostsWithCounts = recentPosts.map(post => ({
-      ...post,
-      likeCount: post.votes, // Use votes field which is kept in sync by toggleLikePost
-      commentCount: post._count.Comment,
-      isLiked: likedPostIds.has(post.id),
-    }));
+    const recentPostsWithCounts = recentPosts.map(post => {
+      // Count reactions by type
+      const reactionCounts = post.PostReaction.reduce((acc: Record<string, number>, r) => {
+        acc[r.reactionType] = (acc[r.reactionType] || 0) + 1;
+        return acc;
+      }, {});
 
-    const trendingPostsWithCounts = trendingPosts.map(post => ({
-      ...post,
-      likeCount: post.votes, // Use votes field which is kept in sync by toggleLikePost
-      commentCount: post._count.Comment,
-      isLiked: likedPostIds.has(post.id),
-    }));
+      return {
+        ...post,
+        commentCount: post._count.Comment,
+        reactionCount: post._count.PostReaction,
+        reactionCounts,
+        userReactions: userReactionsByPost.get(post.id) || []
+      };
+    });
+
+    const trendingPostsWithCounts = trendingPosts.map(post => {
+      // Count reactions by type
+      const reactionCounts = post.PostReaction.reduce((acc: Record<string, number>, r) => {
+        acc[r.reactionType] = (acc[r.reactionType] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        ...post,
+        commentCount: post._count.Comment,
+        reactionCount: post._count.PostReaction,
+        reactionCounts,
+        userReactions: userReactionsByPost.get(post.id) || []
+      };
+    });
 
     const feed = [
       ...recentRatings.map((r) => ({ type: 'rating', data: r })),

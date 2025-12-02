@@ -252,6 +252,7 @@ export function mapMovieDbToApi(dbMovie: Prisma.movieGetPayload<{}>): Movie {
     imdbRating: dbMovie.imdbRating != null ? Number(dbMovie.imdbRating) : null,
     localRating: dbMovie.localRating,
     numRatings: dbMovie.numRatings,
+    imageUrl: dbMovie.imageUrl,
   };
 }
 
