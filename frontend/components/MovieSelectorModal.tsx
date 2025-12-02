@@ -47,9 +47,9 @@ export default function MovieSelectorModal({ visible, onClose, onSelect }: Props
   return (
     <Modal visible={visible} animationType="slide" transparent>
         <TouchableOpacity
-    activeOpacity={1}
-    onPress={onClose}  // <- slide close
-  ></TouchableOpacity>
+            activeOpacity={1}
+            onPress={onClose}  // <- slide close
+        ></TouchableOpacity>
       <View style={styles.modalContainer}>
         <View style={styles.sheet}>
 

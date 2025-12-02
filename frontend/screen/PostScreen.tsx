@@ -25,24 +25,16 @@ export default function PostScreen({
 }: {
   initialType: "long" | "short";
 }) {
-  // The post type comes from the route (/post/form?type=long)
   const [postType] = useState<"long" | "short">(initialType);
-
-  // Toolbar actions
   const [showStars, setShowStars] = useState(false);
-
-  // Form references
   const longFormRef = useRef<any>(null);
   const shortFormRef = useRef<any>(null);
-
-  // User info
   const { user } = useAuth();
 
-  // Submit handler (used by both forms)
   const handleFormSubmit = async (formData: PostFormData) => {
     const payload = {
       ...formData,
-      userId: user.id,
+      userId: user?.id,
       postType: postType === "long" ? "LONG_POST" : "SHORT_POST",
     };
 
@@ -50,7 +42,6 @@ export default function PostScreen({
     router.back();
   };
 
-  // Trigger internal form submit
   const handleSubmitButton = () => {
     if (postType === "long") {
       longFormRef.current?.submit();
@@ -59,7 +50,7 @@ export default function PostScreen({
     }
   };
 
-  // Toolbar action handler (stars, images, etc.)
+  // TO DO - ask in meeting on Wed
   const handleToolbarAction = (action: string) => {
     if (action === "rating") {
       setShowStars((prev) => !prev);
@@ -68,14 +59,12 @@ export default function PostScreen({
 
   return (
     <>
-      {/* Header bar with Back + Submit */}
       <CreatePostBar
         title={postType === "long" ? "Create Long" : "Create Short"}
         onBack={() => router.back()}
         onSubmit={handleSubmitButton}
       />
 
-      {/* Content */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -83,22 +72,17 @@ export default function PostScreen({
         <ScrollView keyboardShouldPersistTaps="handled">
           {postType === "long" ? (
             <LongPostForm
-              ref={longFormRef}
-              showTextBox
-              showStars={showStars}
               onToolbarAction={handleToolbarAction}
               onSubmit={handleFormSubmit}
-            />
+/>
           ) : (
             <ShortPostForm
-              ref={shortFormRef}
-              showTextBox
-              showStars={showStars}
               onToolbarAction={handleToolbarAction}
               onSubmit={handleFormSubmit}
             />
           )}
         </ScrollView>
+        
       </KeyboardAvoidingView>
     </>
   );
