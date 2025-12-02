@@ -148,16 +148,4 @@ const styles = StyleSheet.create({
     color: "#aaa",
     fontSize: 12,
   },
-
-  toolbar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 18,
-    paddingHorizontal: 4,
-  },
-  toolbarItem: {
-    fontFamily: "Figtree_500Medium",
-    fontSize: 12,
-    color: "#777",
-  },
 });
