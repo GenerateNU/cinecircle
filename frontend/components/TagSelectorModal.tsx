@@ -1,36 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
   FlatList,
 } from "react-native";
+
+import { getAllTags } from "../services/tagsService"; // <-- You will need this service
 
 interface Props {
   visible: boolean;
   selected: string[];
-  onChangeSelected: (tags: string[]) => void;
+  onChangeSelected: React.Dispatch<React.SetStateAction<string[]>>;
   onClose: () => void;
 }
-
-const PRESET_TAGS = [
-  "Funny",
-  "Slow",
-  "Beautiful",
-  "Emotional",
-  "Confusing",
-  "Smart",
-  "Thrilling",
-  "Charming",
-  "Dark",
-  "Goofy",
-  "Must Watch",
-  "Underrated",
-  "Overrated",
-];
 
 export default function TagSelectorModal({
   visible,
@@ -38,59 +24,75 @@ export default function TagSelectorModal({
   onChangeSelected,
   onClose,
 }: Props) {
+  const [allTags, setAllTags] = useState<string[]>([]);
   const [query, setQuery] = useState("");
 
-  const toggleTag = (tag: string) => {
-    onChangeSelected((prev: string[]) => {
-      if (prev.includes(tag)) {
-        return prev.filter((t) => t !== tag);
-      }
-      if (prev.length >= 8) return prev;
-      return [...prev, tag];
-    });
-  };
+  useEffect(() => {
+    if (visible) {
+      (async () => {
+        try {
+          const tags = await getAllTags();
+          console.log("Tags API returned:", tags);
+          setAllTags(tags);
+        } catch (err) {
+          console.log("Error fetching tags:", err);
+        }
+      })();
+    }
+  }, [visible]);
 
-  const filteredTags = PRESET_TAGS.filter((t) =>
+const toggleTag = (tag: string) => {
+  let newTags = [...selected];
+
+  if (newTags.includes(tag)) {
+    newTags = newTags.filter(t => t !== tag);
+  } else if (newTags.length < 8) {
+    newTags.push(tag);
+  }
+
+  onChangeSelected(newTags);
+};
+
+  const filtered = allTags.filter((t) =>
     t.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.overlay}>
+      {/* Tap outside to close */}
+      <TouchableOpacity
+        activeOpacity={1}
+        style={{ flex: 1 }}
+        onPress={onClose}
+      />
+
+      <View style={styles.modalContainer}>
         <View style={styles.sheet}>
           <View style={styles.dragHandle} />
 
-          <Text style={styles.header}>Add Tags</Text>
+          <Text style={styles.label}>Add Tags</Text>
 
           <TextInput
             style={styles.input}
-            placeholder="+ Start typing to add a tag..."
+            placeholder="+ Start typing to search tags..."
             placeholderTextColor="#999"
             value={query}
             onChangeText={setQuery}
           />
 
           <FlatList
-            data={filteredTags}
+            data={filtered}
             keyExtractor={(item) => item}
-            numColumns={3}
-            columnWrapperStyle={{ gap: 10 }}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={styles.pillContainer}
             renderItem={({ item }) => {
               const isSelected = selected.includes(item);
               return (
                 <TouchableOpacity
-                  style={[
-                    styles.tagChip,
-                    isSelected && styles.tagChipSelected,
-                  ]}
+                  style={[styles.pill, isSelected && styles.pillSelected]}
                   onPress={() => toggleTag(item)}
                 >
                   <Text
-                    style={[
-                      styles.tagText,
-                      isSelected && styles.tagTextSelected,
-                    ]}
+                    style={[styles.pillText, isSelected && styles.pillTextSelected]}
                   >
                     {item}
                   </Text>
@@ -105,16 +107,18 @@ export default function TagSelectorModal({
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  modalContainer: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
   sheet: {
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    padding: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 18,
     minHeight: "45%",
   },
   dragHandle: {
@@ -123,37 +127,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccc",
     alignSelf: "center",
     borderRadius: 3,
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  header: {
-    fontSize: 16,
+  label: {
     fontFamily: "Figtree_600SemiBold",
-    marginBottom: 10,
+    fontSize: 16,
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#f2f2f2",
     borderRadius: 10,
     padding: 12,
-    marginBottom: 18,
     fontFamily: "Figtree_400Regular",
+    marginBottom: 20,
+    fontSize: 15,
   },
-  list: {
+  pillContainer: {
     gap: 10,
   },
-  tagChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    backgroundColor: "#D5ECEF",
+  pill: {
+    alignSelf: "flex-start",
+    backgroundColor: "#d5ecef",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    marginBottom: 10,
   },
-  tagChipSelected: {
-    backgroundColor: "#E66A4E",
+  pillSelected: {
+    backgroundColor: "#e66a4e",
   },
-  tagText: {
+  pillText: {
     fontFamily: "Figtree_500Medium",
     color: "#333",
   },
-  tagTextSelected: {
-    color: "#fff",
+  pillTextSelected: {
+    color: "white",
   },
 });
