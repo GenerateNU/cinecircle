@@ -26,7 +26,7 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
   const primaryNavColor = '#D62E05';
   const inactiveNavColor = '#979797';
   const navOptions = ['For You', 'Friends', 'Trending', 'Country'];
-  const navTabs = navOptions.map((label) => ({ key: label, label }));
+  const navTabs = navOptions.map(label => ({ key: label, label }));
   const quickActionButtons = [
     {
       label: 'Browse Movies',
@@ -49,11 +49,13 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <SearchBar
-        placeholder="Search movies, posts, events..."
-        onPress={() => router.push({
-          pathname: '/search',
-          params: { origin: 'home', defaultCategory: 'posts' }
-        })}
+        placeholder="Search posts..."
+        onPress={() =>
+          router.push({
+            pathname: '/search',
+            params: { origin: 'home', defaultCategory: 'posts' },
+          })
+        }
       />
       <ScrollView
         style={tw`flex-1`}
@@ -68,7 +70,7 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
                 uri: 'https://image.tmdb.org/t/p/original/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg',
               }}
               style={{ width: screenWidth, height: heroHeight }}
-              resizeMode='cover'
+              resizeMode="cover"
             >
               <View
                 style={[tw`flex-1`, { backgroundColor: 'rgba(0,0,0,0.25)' }]}
@@ -92,14 +94,14 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
         <View style={tw`mt-6 px-5`}>
           {activeNav === 'For You' ? (
             <View>
-              <SectionHeader title='For You' size='large' />
+              <SectionHeader title="For You" size="large" />
               <Text style={tw`text-sm text-gray-500 mt-2`}>
                 Your personalized feed will appear here soon.
               </Text>
             </View>
           ) : (
             <View>
-              <SectionHeader title={activeNav} size='large' />
+              <SectionHeader title={activeNav} size="large" />
               <Text style={tw`text-sm text-gray-500`}>
                 Content for {activeNav} will appear here.
               </Text>

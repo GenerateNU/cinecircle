@@ -269,13 +269,15 @@ export default function MoviesScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <SearchBar
-        placeholder="Enter search text"
+        placeholder="Search movies..."
         value={searchText}
         onChangeText={setSearchText}
-        onPress={() => router.push({
-          pathname: '/search',
-          params: { origin: 'movies', defaultCategory: 'movies' }
-        })}
+        onPress={() =>
+          router.push({
+            pathname: '/search',
+            params: { origin: 'movies', defaultCategory: 'movies' },
+          })
+        }
       />
 
       <View style={styles.tabsContainer}>
