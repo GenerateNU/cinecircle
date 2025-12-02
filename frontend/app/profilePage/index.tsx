@@ -11,6 +11,7 @@ import {
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
 import tw from 'twrnc';
 import { User, TabKey } from './_types';
 import { formatCount } from './_utils';
@@ -64,6 +65,7 @@ const ProfilePage = ({
   const targetUserId = isMe ? profile?.userId : profileUserId;
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const scrollBottomPadding = NAV_HEIGHT + insets.bottom + 32;
 
   const handleBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -205,9 +207,9 @@ const ProfilePage = ({
   const u = displayUser;
 
   return (
-    <View style={tw`flex-1 bg-white`}>
-      {/* All content scrolls, including the gray header */}
-      <ScrollView contentContainerStyle={{ paddingBottom: NAV_HEIGHT + 32 }}>
+      <View style={tw`flex-1 bg-white`}>
+        {/* All content scrolls, including the gray header */}
+        <ScrollView contentContainerStyle={{ paddingBottom: scrollBottomPadding }}>
         {/* Scrollable gray header band */}
         <View
           style={[
@@ -554,6 +556,45 @@ const ProfilePage = ({
         )}
       </ScrollView>
 
+      {/* Inline bottom nav so it remains visible when viewing another user's profile */}
+      {!isMe && (
+        <View
+          style={[
+            bottomNavStyles.bar,
+            {
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              paddingBottom: insets.bottom,
+            },
+          ]}
+        >
+          {[
+            { route: '/(tabs)/home', icon: 'home' as const, label: 'Home' },
+            { route: '/(tabs)/movies', icon: 'confirmation-number' as const, label: 'Movies' },
+            { route: '/(tabs)/post', icon: 'add-circle' as const, label: 'Create post' },
+            { route: '/(tabs)/events', icon: 'place' as const, label: 'Events' },
+            { route: '/(tabs)/profile', icon: 'account-circle' as const, label: 'Profile' },
+          ].map((item) => {
+            const isActive = item.route === '/(tabs)/profile';
+            return (
+              <TouchableOpacity
+                key={item.route}
+                onPress={() => router.navigate(item.route)}
+                style={[bottomNavStyles.item, { overflow: 'visible' }]}
+                accessibilityRole="button"
+                accessibilityLabel={`Go to ${item.label}`}
+              >
+                <MaterialIcons
+                  name={item.icon}
+                  style={isActive ? bottomNavStyles.activeIcon : bottomNavStyles.icon}
+                />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 };
