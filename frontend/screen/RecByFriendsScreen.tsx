@@ -9,10 +9,12 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { fetchHomeFeed, togglePostReaction } from '../services/feedService';
+import { getMoviePosterUrl } from '../services/imageService';
 import TextPost from '../components/TextPost';
 import PicturePost from '../components/PicturePost';
 import ReviewPost from '../components/ReviewPost';
 import InteractionBar from '../components/InteractionBar';
+import UserBar from '../components/UserBar';
 import type { components } from '../types/api-generated';
 
 type Post = components['schemas']['Post'];
@@ -188,11 +190,24 @@ export default function RecByFriendsScreen() {
 
   const renderRating = (rating: Rating, index: number) => {
     const username = rating.UserProfile?.username || 'Unknown';
-    const movieTitle = `Movie #${rating.movieId}`;
+    const movieTitle =
+      (rating as any).movie?.title || `Movie #${rating.movieId}`;
+    const movieImagePath = (rating as any).movie?.imageUrl;
+    const moviePosterUrl = getMoviePosterUrl(movieImagePath);
+
+    const handleReviewPress = () => {
+      // TODO: Navigate to review detail page
+      console.log('Review pressed:', rating.id, 'Movie:', rating.movieId);
+      // navigation.navigate('ReviewDetail', { reviewId: rating.id, movieId: rating.movieId });
+    };
 
     return (
       <React.Fragment key={rating.id}>
-        <View style={styles.postContainer}>
+        <View style={styles.ratingContainer}>
+          <UserBar name={username} username={username} userId={rating.userId} />
+          <Text style={styles.shareText}>
+            Check out this new review that I just dropped!
+          </Text>
           <ReviewPost
             userName={username}
             username={username}
@@ -202,13 +217,9 @@ export default function RecByFriendsScreen() {
             rating={rating.stars}
             userId={rating.userId}
             reviewerUserId={rating.userId}
+            movieImageUrl={moviePosterUrl}
+            onPress={handleReviewPress}
           />
-          <View style={styles.interactionWrapper}>
-            <InteractionBar
-              initialComments={0}
-              onCommentPress={() => console.log('Rating comment')}
-            />
-          </View>
         </View>
         {index < feedItems.length - 1 && <View style={styles.divider} />}
       </React.Fragment>
@@ -270,6 +281,18 @@ const styles = StyleSheet.create({
   postContainer: {
     backgroundColor: '#FFF',
     paddingTop: width * 0.04,
+  },
+  ratingContainer: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: width * 0.04,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.04,
+  },
+  shareText: {
+    fontSize: width * 0.04,
+    color: '#000',
+    marginTop: width * 0.03,
+    marginBottom: width * 0.04,
   },
   interactionWrapper: {
     paddingHorizontal: width * 0.04,
