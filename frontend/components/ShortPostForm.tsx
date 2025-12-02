@@ -9,9 +9,11 @@ import {
 } from "react-native";
 
 import MovieSelectorModal from "./MovieSelectorModal";
+import CreatePostToolBar from "./CreatePostToolBar";
 
-interface Props {
+interface ShortPostFormProps {
   onSubmit: (data: any) => void;
+  onToolbarAction: (action: string) => void;
 }
 
 interface Movie {
@@ -19,7 +21,7 @@ interface Movie {
   title: string;
 }
 
-const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
+const ShortPostForm = forwardRef(({ onSubmit, onToolbarAction }: ShortPostFormProps, ref) => {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [spoiler, setSpoiler] = useState(false);
   const [content, setContent] = useState("");
@@ -84,11 +86,8 @@ const ShortPostForm = forwardRef(({ onSubmit }: Props, ref) => {
         {content.length}/{CHAR_LIMIT}
       </Text>
 
-      <View style={styles.toolbar}>
-        <Text style={styles.toolbarItem}>Photo and Video</Text>
-        <Text style={styles.toolbarItem}>GIF</Text>
-        <Text style={styles.toolbarItem}>Keyboard Down</Text>
-      </View>
+      <CreatePostToolBar onToolbarAction={onToolbarAction} />
+
       <MovieSelectorModal
         visible={movieModalVisible}
         onClose={() => setMovieModalVisible(false)}

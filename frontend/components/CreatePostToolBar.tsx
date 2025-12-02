@@ -7,9 +7,9 @@ import {
   Image
 } from 'react-native';
 
-import ImagePic from '../assets/image.png'
-import Gif from '../assets/gif.png'
-import Keyboard from '../assets/keyboard-down.png'
+import ImagePic from '../assets/image.png';
+import Gif from '../assets/gif.png';
+import Keyboard from '../assets/keyboard-down.png';
 
 interface CreatePostToolBarProps {
   onToolbarAction: (action: string) => void;
@@ -22,9 +22,9 @@ export default function CreatePostToolBar({ onToolbarAction }: CreatePostToolBar
         onPress={() => onToolbarAction("video")}
         style={styles.toolbarItem}
       >
-        <View>
-            <Image source ={ImagePic} resizeMode="contain"></Image>
-            <Text style={styles.toolbarText}>Photo and Video</Text>
+        <View style={styles.row}>
+          <Image source={ImagePic} resizeMode="contain" style={styles.icon} />
+          <Text style={styles.toolbarText}>Photo and Video</Text>
         </View>
       </TouchableOpacity>
 
@@ -32,9 +32,9 @@ export default function CreatePostToolBar({ onToolbarAction }: CreatePostToolBar
         onPress={() => onToolbarAction("gif")}
         style={styles.toolbarItem}
       >
-         <View>
-            <Image source ={Gif} resizeMode="contain"></Image>
-            <Text style={styles.toolbarText}>GIF</Text>
+        <View style={styles.row}>
+          <Image source={Gif} resizeMode="contain" style={styles.icon} />
+          <Text style={styles.toolbarText}>GIF</Text>
         </View>
       </TouchableOpacity>
 
@@ -42,9 +42,9 @@ export default function CreatePostToolBar({ onToolbarAction }: CreatePostToolBar
         onPress={() => onToolbarAction("photo")}
         style={styles.toolbarItem}
       >
-         <View>
-            <Image source ={Keyboard} resizeMode="contain"></Image>
-            <Text style={styles.toolbarText}>Keyboard Down</Text>
+        <View style={styles.row}>
+          <Image source={Keyboard} resizeMode="contain" style={styles.icon} />
+          <Text style={styles.toolbarText}>Keyboard Down</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -63,8 +63,18 @@ const styles = StyleSheet.create({
   toolbarItem: {
     alignItems: 'center',
   },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  icon: {
+    width: 20,
+    height: 20,
+  },
   toolbarText: {
     fontSize: 14,
-    color: '#E05B4E',
+    color: '#979797',
+    fontFamily: "Figtree_500Medium"
   },
 });
