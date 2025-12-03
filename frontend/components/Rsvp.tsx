@@ -58,7 +58,7 @@ export default function Rsvp({ eventId, onContinue }: RsvpProps) {
               onPress={() => handleOptionPress('maybe')}
               activeOpacity={0.7}
             >
-              <Text style={styles.optionEmoji}>😊</Text>
+              <Text style={styles.optionEmoji}>🫥</Text>
               <Text style={[
                 styles.optionText,
                 isSelected('maybe') && styles.optionTextSelected

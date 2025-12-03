@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Modal
 } from 'react-native';
+import RsvpNotification from '../../components/RsvpNotification';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { CircleDollarSign, MapPin, Calendar } from 'lucide-react-native';
@@ -24,6 +25,8 @@ export default function EventDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
+  const [userRsvp, setUserRsvp] = useState<'yes' | 'maybe' | 'no' | null>(null); 
+  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     if (eventId) loadEventDetails();
@@ -51,8 +54,19 @@ export default function EventDetailScreen() {
 
   const handleRsvpComplete = (response: 'yes' | 'maybe' | 'no' | null) => {
     console.log('RSVP Response:', response, 'for event:', eventId);
-    setShowRsvpModal(false);  // just close the modal for now - need to figure out backend integration
-    // TODO: Save to backend later
+    setUserRsvp(response); // save response
+    setShowRsvpModal(false);
+    setShowNotification(true); // show notification
+    // TODO: save to backend later
+  };
+
+  const handleEditRsvp = () => {
+    setShowNotification(false);
+    setShowRsvpModal(true);
+  };
+
+  const handleDismissNotification = () => {
+    setShowNotification(false);
   };
 
   if (loading) {
@@ -260,28 +274,41 @@ export default function EventDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Floating RSVP Button */}
-      <View style={styles.floatingButtonContainer}>
-        <TouchableOpacity 
-          style={styles.rsvpButton}
-          onPress={handleRSVP}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.rsvpButtonText}>RSVP</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Floating RSVP Button - Only show if no notification */}
+      {!showNotification && (
+        <View style={styles.floatingButtonContainer}>
+          <TouchableOpacity 
+            style={styles.rsvpButton}
+            onPress={handleRSVP}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.rsvpButtonText}>
+              {userRsvp ? `RSVP: ${userRsvp.toUpperCase()}` : 'RSVP'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
+      {/* RSVP Modal */}
       <Modal
-      visible={showRsvpModal}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={() => setShowRsvpModal(false)}
-    >
-      <Rsvp 
-        eventId={eventId} 
-        onContinue={handleRsvpComplete}
+        visible={showRsvpModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowRsvpModal(false)}
+      >
+        <Rsvp 
+          eventId={eventId} 
+          onContinue={handleRsvpComplete}
+        />
+      </Modal>
+
+      {/* RSVP Success Notification */}
+      <RsvpNotification
+        visible={showNotification}
+        response={userRsvp}
+        onEdit={handleEditRsvp}
+        onDismiss={handleDismissNotification}
       />
-    </Modal>
     </View>
   );
 }
@@ -427,8 +454,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopWidth: 0,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

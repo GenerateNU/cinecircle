@@ -70,7 +70,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   continueButtonActive: {
-    backgroundColor: '#8B3A2B',
+    backgroundColor: '#A82411',
   },
   continueText: {
     fontSize: width * 0.045,

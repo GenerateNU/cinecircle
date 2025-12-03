@@ -410,6 +410,7 @@ model Comment {
   content       String
   createdAt     DateTime    @default(now())
   parentId      String?
+  spoiler       Boolean     @default(false)
   Comment       Comment?    @relation("CommentToComment", fields: [parentId], references: [id])
   other_Comment Comment[]   @relation("CommentToComment")
   Post          Post?       @relation(fields: [postId], references: [id])
@@ -441,6 +442,7 @@ model Rating {
   tags        String[]    @default([])
   date        DateTime
   votes       Int         @default(0)
+  spoiler     Boolean     @default(false)
   Comment     Comment[]
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
 
@@ -471,6 +473,7 @@ model UserProfile {
   primaryLanguage                                String       @default("English")
   profilePicture                                 String?
   secondaryLanguage                              String[]     @default([])
+  spoiler                                        Boolean      @default(false)
   Comment                                        Comment[]
   Post                                           Post[]
   Rating                                         Rating[]
