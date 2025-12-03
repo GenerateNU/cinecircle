@@ -10,6 +10,7 @@ import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, 
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent, getLocalEvents } from "../controllers/local-events"
+import { createOrUpdateRsvp, getUserRsvp, deleteRsvp, getEventAttendees } from "../controllers/event-rsvp"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
 import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree} from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
@@ -84,6 +85,13 @@ router.get("/api/local-event/:id", getLocalEvent);
 router.post("/api/local-event", createLocalEvent);
 router.delete("/api/local-event/:id", deleteLocalEvent);
 router.put("/api/local-event/:id", updateLocalEvent);
+
+// Event RSVP routes
+router.post("/api/event-rsvp", createOrUpdateRsvp);
+router.get("/api/event-rsvp/:eventId", getUserRsvp);
+router.delete("/api/event-rsvp/:eventId", deleteRsvp);
+router.get("/api/event-rsvp/event/:eventId/attendees", getEventAttendees);
+
 //Ratings routes
 router.post('api/ratings', createRating);
 router.get('api/ratings', getRatings);

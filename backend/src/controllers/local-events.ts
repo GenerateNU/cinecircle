@@ -14,6 +14,7 @@ type LocalEvent = {
   cost: number;
   lat: number;
   lon: number;
+  imageUrl: string | null;
 };
 
 export const getLocalEvent = async (req: Request, res: Response) => {
@@ -21,7 +22,25 @@ export const getLocalEvent = async (req: Request, res: Response) => {
   if (!id) return res.status(400).json({ message: "Event ID is required." });
 
   try {
-    const event = await prisma.local_event.findUnique({ where: { id } });
+    const event = await prisma.local_event.findUnique({ 
+      where: { id },
+      include: {
+        event_rsvp: {
+          include: {
+            UserProfile: {
+              select: {
+                userId: true,
+                username: true,
+                profilePicture: true,
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      }
+    });
     if (!event) return res.status(404).json({ message: "Local event not found." });
 
     const eventDate = event.time || new Date();
@@ -34,6 +53,23 @@ export const getLocalEvent = async (req: Request, res: Response) => {
       hour: 'numeric', 
       minute: '2-digit' 
     });
+
+    // Format attendees (only 'yes' RSVPs)
+    const attendees = event.event_rsvp
+      .filter(rsvp => rsvp.status === 'yes')
+      .map(rsvp => ({
+        userId: rsvp.userId,
+        username: rsvp.UserProfile.username,
+        profilePicture: rsvp.UserProfile.profilePicture,
+      }));
+
+    // Count RSVPs by status
+    const rsvpCounts = {
+      yes: event.event_rsvp.filter(r => r.status === 'yes').length,
+      maybe: event.event_rsvp.filter(r => r.status === 'maybe').length,
+      no: event.event_rsvp.filter(r => r.status === 'no').length,
+      total: event.event_rsvp.length,
+    };
 
     const data = {
       id: event.id,
@@ -48,6 +84,10 @@ export const getLocalEvent = async (req: Request, res: Response) => {
       languages: event.languages,
       lat: event.lat,
       lon: event.lon,
+      imageUrl: event.imageUrl,
+      attendees,
+      attendeeCount: attendees.length,
+      rsvpCounts,
     };
 
     res.status(200).json({ message: "Local event retrieved.", data });
@@ -57,7 +97,7 @@ export const getLocalEvent = async (req: Request, res: Response) => {
 };
 
 export const createLocalEvent = async (req: Request, res: Response) => {
-  const { title, time, description, genre, languages, cost, occasion, lat, lon } = req.body;
+  const { title, time, description, genre, languages, cost, occasion, lat, lon, imageUrl } = req.body;
 
   if (
     !title ||
@@ -85,6 +125,7 @@ export const createLocalEvent = async (req: Request, res: Response) => {
         cost,
         lat,
         lon,
+        imageUrl,
       },
     });
 
@@ -101,6 +142,7 @@ export const createLocalEvent = async (req: Request, res: Response) => {
         cost: event.cost,
         lat: event.lat,
         lon: event.lon,
+        imageUrl: event.imageUrl,
       },
     });
   } catch (err) {
@@ -113,7 +155,7 @@ export const createLocalEvent = async (req: Request, res: Response) => {
 
 export const updateLocalEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, time, description, genre, languages, cost, occasion, lat, lon } = req.body;
+  const { title, time, description, genre, languages, cost, occasion, lat, lon, imageUrl } = req.body;
 
   if (!id) return res.status(400).json({ message: "Event ID is required." });
 
@@ -135,6 +177,7 @@ export const updateLocalEvent = async (req: Request, res: Response) => {
         occasion: occasion ?? existing.occasion,
         lat: lat ?? existing.lat,
         lon: lon ?? existing.lon,
+        imageUrl: imageUrl ?? existing.imageUrl,
       },
     });
 
@@ -151,6 +194,7 @@ export const updateLocalEvent = async (req: Request, res: Response) => {
         occasion: updated.occasion,
         lat: updated.lat,
         lon: updated.lon,
+        imageUrl: updated.imageUrl,
       },
     });
   } catch (err) {
@@ -207,6 +251,7 @@ export const getLocalEvents = async (req: Request, res: Response) => {
         languages: event.languages,
         lat: event.lat,
         lon: event.lon,
+        imageUrl: event.imageUrl,
       };
     }));
 

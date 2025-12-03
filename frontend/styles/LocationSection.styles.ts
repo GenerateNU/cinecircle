@@ -7,8 +7,9 @@ export const styles = StyleSheet.create({
     marginBottom: height * 0.03,
   },
   title: {
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#515151',
     marginBottom: height * 0.01,
   },
   address: {

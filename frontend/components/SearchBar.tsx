@@ -9,6 +9,7 @@ type SearchBarProps = {
     value?: string;
     onPress?: () => void;
     editable?: boolean;
+    onSubmitEditing?: () => void;
 };
 
 export default function SearchBar({ 
@@ -17,6 +18,7 @@ export default function SearchBar({
     value,
     onPress,
     editable = true,
+    onSubmitEditing,
 }: SearchBarProps) {
     const content = (
         <View style={styles.searchBox}>
@@ -29,6 +31,8 @@ export default function SearchBar({
                 value={value}
                 editable={editable && !onPress}
                 pointerEvents={onPress ? 'none' : 'auto'}
+                returnKeyType="search"
+                onSubmitEditing={onSubmitEditing}
             />
         </View>
     );

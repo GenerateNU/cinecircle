@@ -1923,6 +1923,8 @@ export interface paths {
                         lat?: unknown;
                         /** @example any */
                         lon?: unknown;
+                        /** @example any */
+                        imageUrl?: unknown;
                     };
                 };
             };
@@ -2059,6 +2061,8 @@ export interface paths {
                         lat?: unknown;
                         /** @example any */
                         lon?: unknown;
+                        /** @example any */
+                        imageUrl?: unknown;
                     };
                 };
             };
@@ -2093,6 +2097,252 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/event-rsvp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @example any */
+                        eventId?: unknown;
+                        /** @example any */
+                        status?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/event-rsvp/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/event-rsvp/event/{eventId}/attendees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3294,6 +3544,8 @@ export interface components {
             localRating?: number | string | null;
             numRatings?: number | string | null;
             imageUrl?: string | null;
+            releaseYear?: number | null;
+            director?: string | null;
         };
         UpdateMovieInput: {
             title?: string | null;
@@ -3302,6 +3554,9 @@ export interface components {
             imdbRating?: number | null;
             localRating?: number | string | null;
             numRatings?: number | string | null;
+            imageUrl?: string | null;
+            releaseYear?: number | null;
+            director?: string | null;
         };
         UpdateMovieEnvelope: components["schemas"]["ApiEnvelope<Movie>"];
         DeleteMovieResponse: {
@@ -3419,6 +3674,11 @@ export interface components {
             rating?: components["schemas"]["Rating"];
             movie?: components["schemas"]["Movie"];
         };
+        /** @description -------- Local Events -------- */
+        GetLocalEventsResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"][];
+        };
         LocalEvent: {
             id: string;
             title: string;
@@ -3432,14 +3692,67 @@ export interface components {
             languages: string[];
             lat: number | null;
             lon: number | null;
+            imageUrl: string | null;
+            attendees: components["schemas"]["EventAttendee"][];
+            attendeeCount: number;
+            rsvpCounts: components["schemas"]["RsvpCounts"];
         };
-        GetLocalEventsResponse: {
-            message: string;
-            data: components["schemas"]["LocalEvent"][];
+        EventAttendee: {
+            userId: string;
+            username: string | null;
+            profilePicture: string | null;
+        };
+        RsvpCounts: {
+            yes: number;
+            maybe: number;
+            no: number;
+            total: number;
         };
         GetLocalEventResponse: {
             message: string;
             data: components["schemas"]["LocalEvent"];
+        };
+        /** @description -------- Event RSVP -------- */
+        CreateRsvpRequest: {
+            eventId: string;
+            /** @enum {string} */
+            status: "yes" | "maybe" | "no";
+        };
+        CreateRsvpResponse: {
+            message: string;
+            data: components["schemas"]["EventRsvp"];
+        };
+        EventRsvp: {
+            id: string;
+            eventId: string;
+            userId: string;
+            /** @enum {string} */
+            status: "yes" | "maybe" | "no";
+            createdAt: string;
+            updatedAt: string;
+            user?: {
+                userId: string;
+                username: string | null;
+                profilePicture: string | null;
+            };
+        };
+        GetRsvpResponse: {
+            message: string;
+            data: components["schemas"]["EventRsvp"];
+        };
+        GetEventAttendeesResponse: {
+            message: string;
+            data: {
+                attendees: {
+                    id: string;
+                    userId: string;
+                    status: string;
+                    createdAt: string;
+                    username: string | null;
+                    profilePicture: string | null;
+                }[];
+                counts: components["schemas"]["RsvpCounts"];
+            };
         };
         PostReaction: {
             id: string;
