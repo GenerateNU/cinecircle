@@ -10,11 +10,19 @@ type TmdbMovie = {
   overview?: string;
   vote_average?: number;
   spoken_languages?: Array<{ english_name?: string }>;
+  release_date?: string; // e.g., "2010-07-16"
+  poster_path?: string; // e.g., "/ii8QGacT3MXESqBckQlyrATY0lT.jpg"
+  credits?: {
+    crew?: Array<{
+      job?: string;
+      name?: string;
+    }>;
+  };
 };
 
-// Fetch from TMDB
+// Fetch movie details from TMDB (including credits)
 export async function fetchTmdbMovie(tmdbId: string): Promise<TmdbMovie> {
-  const resp = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}`, {
+  const resp = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?append_to_response=credits`, {
     method: "GET",
     headers: {
       accept: "application/json",
@@ -38,6 +46,15 @@ export function mapTmdbToMovie(
   },
 ): MovieInsert {
   const defaults = opts?.defaults ?? {};
+  
+  // Extract release year from release_date (e.g., "2010-07-16" -> 2010)
+  const releaseYear = tmdb.release_date
+    ? parseInt(tmdb.release_date.split('-')[0], 10)
+    : null;
+  
+  // Find the director from credits (if available)
+  const director = tmdb.credits?.crew?.find((c) => c.job === "Director")?.name ?? null;
+  
   return {
     movieId: randomUUID(), // Generate UUID
     title: tmdb.title ?? "",
@@ -46,8 +63,11 @@ export function mapTmdbToMovie(
       .map((l) => l.english_name)
       .filter(Boolean) as string[],
     imdbRating: Math.round((tmdb.vote_average ?? 0) * 10), // e.g., 7.5 -> 75 (stored as BigInt)
-    localRating: defaults.localRating !== undefined ? String(defaults.localRating) : "0",
-    numRatings: defaults.numRatings !== undefined ? String(defaults.numRatings) : "0",
+    localRating: defaults.localRating ?? "0",
+    numRatings: defaults.numRatings ?? "0",
+    imageUrl: tmdb.poster_path ?? null,
+    releaseYear: releaseYear,
+    director: director,
   };
 }
 
@@ -85,7 +105,9 @@ export const getMovie = async (req: Request, res: Response) => {
   if (!tmdbId) return res.status(400).json({ message: "Movie ID is required" });
 
   try {
+    // Fetch movie details from TMDB (includes credits via append_to_response)
     const tmdb = await fetchTmdbMovie(tmdbId);
+    
     const mappedAppModel = mapTmdbToMovie(tmdb);
     const prismaCreate = mappedAppModel;
 
@@ -253,6 +275,8 @@ export function mapMovieDbToApi(dbMovie: Prisma.movieGetPayload<{}>): Movie {
     localRating: dbMovie.localRating,
     numRatings: dbMovie.numRatings,
     imageUrl: dbMovie.imageUrl,
+    releaseYear: dbMovie.releaseYear,
+    director: dbMovie.director,
   };
 }
 
@@ -301,6 +325,18 @@ export const mapMovieToPrismaUpdate = (
     } else {
       data.numRatings = String(patch.numRatings);
     }
+  }
+
+  if ("releaseYear" in patch) {
+    data.releaseYear = patch.releaseYear ?? null;
+  }
+
+  if ("director" in patch) {
+    data.director = patch.director ?? null;
+  }
+
+  if ("imageUrl" in patch) {
+    data.imageUrl = patch.imageUrl ?? null;
   }
 
   return data;

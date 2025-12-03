@@ -78,6 +78,9 @@ export type UpdateMovieInput = {
   imdbRating?: number | null;
   localRating?: number | string | null;
   numRatings?: number | string | null;
+  imageUrl?: string | null;
+  releaseYear?: number | null;
+  director?: string | null;
 };
 export type UpdateMovieEnvelope = ApiEnvelope<Movie>;
 export type DeleteMovieResponse = { message: string };

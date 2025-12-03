@@ -289,6 +289,7 @@ export default function EventDetailScreen() {
             </View>
           )}
 
+          {/* TODO: Replace with tag row from movie detail page */}
           {/* Filter Pills */}
           <View style={styles.filterSection}>
             <ScrollView

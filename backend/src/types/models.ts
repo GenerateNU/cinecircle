@@ -7,6 +7,8 @@ export type Movie = {
   localRating?: number | string | null; 
   numRatings?: number | string | null;  
   imageUrl?: string | null;
+  releaseYear?: number | null;
+  director?: string | null;
 };
 
 export type UserProfileBasic = {
