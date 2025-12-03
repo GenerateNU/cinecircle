@@ -2,17 +2,24 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import type { CommentNode } from '../_utils';
 import CommentUserRow from './CommentUserRow';
+import CommentInteractionBar from './CommentInteractionBar';
 import { commentStyles, INDENT_PER_LEVEL } from '../styles/Comment.styles';
 
 type CommentProps = {
   comment: CommentNode;
   depth: number;
   onReply?: (comment: CommentNode) => void;
+  onContinueThread?: () => void;
 };
 
 const MAX_PREVIEW_CHARS = 280;
 
-const Comment: React.FC<CommentProps> = ({ comment, depth, onReply }) => {
+const Comment: React.FC<CommentProps> = ({
+  comment,
+  depth,
+  onReply,
+  onContinueThread,
+}) => {
   const username = comment.UserProfile?.username ?? 'Anonymous';
   const profilePicture = comment.UserProfile?.profilePicture ?? null;
   const [isExpanded, setIsExpanded] = useState(false);
@@ -24,8 +31,7 @@ const Comment: React.FC<CommentProps> = ({ comment, depth, onReply }) => {
   const displayText = isExpanded || !isLong ? comment.content : previewText;
 
   return (
-    <View style={[commentStyles.container, { marginLeft: depth * INDENT_PER_LEVEL }]}> 
-      {/* Left thread bar */}
+    <View style={[commentStyles.container, { marginLeft: depth * INDENT_PER_LEVEL }]}>
       {depth > 0 && <View style={commentStyles.threadBar} />}
 
       <View style={commentStyles.content}>
@@ -42,17 +48,29 @@ const Comment: React.FC<CommentProps> = ({ comment, depth, onReply }) => {
         {isLong && (
           <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
             <Text style={commentStyles.expandText}>
-              {isExpanded ? 'Show less' : 'Expand comment'}
+              {isExpanded ? 'Show less' : 'Expand Comment'}
             </Text>
           </TouchableOpacity>
         )}
 
-        <View style={commentStyles.actionsRow}>
-          <TouchableOpacity onPress={() => onReply?.(comment)}>
-            <Text style={commentStyles.actionText}>Reply</Text>
-          </TouchableOpacity>
-          {/* Add more actions later: Like, More, etc. */}
-        </View>
+        {(isExpanded || !isLong) && (
+          <View>
+            <View style={commentStyles.interactionsBar}>
+              <CommentInteractionBar
+                onLikePress={() => { }}
+                onTranslatePress={() => { }}
+                onReplyPress={() => onReply?.(comment)}
+              />
+            </View>
+            <View>
+              {onContinueThread && (
+                <TouchableOpacity onPress={onContinueThread}>
+                  <Text style={commentStyles.continueThreadText}>Continue Thread → </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );

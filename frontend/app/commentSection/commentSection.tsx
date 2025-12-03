@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { api } from '../../services/apiClient';
 import type { ApiComment } from './_types';
 import { buildCommentTree, type CommentNode } from './_utils';
-import CommentThread from './components/commentThread';
+import CommentThread from './components/CommentThread';
 
 interface CommentSectionProps {
   targetType: 'post' | 'rating';
@@ -91,12 +91,13 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
             node={node}
             depth={0}
             onReply={setReplyTarget}
+            targetType={targetType}
+            targetId={targetId}
           />
         ))}
 
         {hasMoreThreads && (
           <TouchableOpacity
-            style={{ paddingVertical: 8 }}
             onPress={() =>
               setVisibleThreadCount((prev) => Math.min(prev + THREAD_INCREMENT, tree.length))
             }

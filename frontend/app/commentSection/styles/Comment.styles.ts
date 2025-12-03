@@ -5,7 +5,7 @@ export const INDENT_PER_LEVEL = 12;
 export const commentStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingVertical: 8,
+    marginHorizontal: 28,
   },
   threadBar: {
     width: 2,
@@ -19,22 +19,29 @@ export const commentStyles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   body: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#222',
-    marginTop: 2,
+    marginHorizontal: 28,
+    justifyContent: 'center',
   },
   expandText: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#757575',
-    fontWeight: '500',
+    fontSize: 12,
+    color: '#D62E05',
+    fontWeight: '400',
+    textAlign: 'center',
   },
-  actionsRow: {
+  interactionsBar: {
     flexDirection: 'row',
-    marginTop: 6,
+    justifyContent: 'flex-end',
+  },
+  continueThreadText: {
+    paddingVertical: 2,
+    color: '#D62E05',
+    fontSize: 12,
+    textAlign: 'right',
   },
   actionText: {
     fontSize: 13,

@@ -1,16 +1,17 @@
 import { StyleSheet } from 'react-native';
 
-export const DEFAULT_AVATAR_SIZE = 32;
+export const DEFAULT_AVATAR_SIZE = 20;
 
 export const commentUserRowStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginLeft: 8,
   },
   avatar: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 5,
   },
   avatarText: {
     color: '#fff',
