@@ -542,7 +542,7 @@ const ProfilePage = ({
         <View style={tw`px-4 pt-3`}>
           {activeTab === 'movies' && <MoviesGrid userId={targetUserId ?? null} />}
           {activeTab === 'posts' && <PostsList user={u} userId={targetUserId ?? null} />}
-          {activeTab === 'events' && <EventsList />}
+          {activeTab === 'events' && <EventsList userId={targetUserId ?? null} />}
           {activeTab === 'badges' && <BadgesGrid />}
         </View>
 
