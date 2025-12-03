@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  FlatList,
+} from 'react-native';
 import tw from 'twrnc';
 import UpcomingEventCard from '../../events/components/UpcomingEventCard';
 import type { LocalEvent } from '../../../services/eventsService';
@@ -10,7 +16,9 @@ type Props = {
 };
 
 const EventsList = ({ userId }: Props) => {
-  const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>('saved');
+  const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>(
+    'saved'
+  );
   const [savedEvents, setSavedEvents] = useState<LocalEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +71,8 @@ const EventsList = ({ userId }: Props) => {
               paddingVertical: 8,
               borderRadius: 8,
               marginHorizontal: 2,
-              backgroundColor: activeSubTab === 'saved' ? '#D62E05' : 'transparent',
+              backgroundColor:
+                activeSubTab === 'saved' ? '#D62E05' : 'transparent',
             },
           ]}
           onPress={() => setActiveSubTab('saved')}
@@ -84,7 +93,8 @@ const EventsList = ({ userId }: Props) => {
               paddingVertical: 8,
               borderRadius: 8,
               marginHorizontal: 2,
-              backgroundColor: activeSubTab === 'attended' ? '#D62E05' : 'transparent',
+              backgroundColor:
+                activeSubTab === 'attended' ? '#D62E05' : 'transparent',
             },
           ]}
           onPress={() => setActiveSubTab('attended')}
@@ -126,7 +136,7 @@ const EventsList = ({ userId }: Props) => {
       ) : (
         <FlatList
           data={events}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           scrollEnabled={false}
           removeClippedSubviews={false}
           showsVerticalScrollIndicator={false}

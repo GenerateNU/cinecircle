@@ -7,6 +7,8 @@ export type Movie = {
   localRating?: number | string | null; 
   numRatings?: number | string | null;  
   imageUrl?: string | null;
+  releaseYear?: number | null;
+  director?: string | null;
 };
 
 export type UserProfileBasic = {
@@ -52,13 +54,17 @@ export type Comment = {
   ratingId?: string | null;
   postId?: string | null;
   content: string;
+  parentId?: string | null;
   createdAt: string;
   UserProfile?: {
     userId: string;
     username: string | null;
+    profilePicture: string | null;
   };
   rating?: unknown;
   post?: unknown;
+  parentComment?: unknown;
+  childComments?: unknown[];
 };
 
 export type FollowEdge = {
@@ -69,7 +75,19 @@ export type FollowEdge = {
   following?: UserProfile;
 };
 
-// Keep LocalEvent from HEAD
+export type EventAttendee = {
+  userId: string;
+  username: string | null;
+  profilePicture: string | null;
+};
+
+export type RsvpCounts = {
+  yes: number;
+  maybe: number;
+  no: number;
+  total: number;
+};
+
 export type LocalEvent = {
   id: string;
   title: string;
@@ -83,16 +101,24 @@ export type LocalEvent = {
   languages: string[];
   lat: number | null;
   lon: number | null;
+  imageUrl: string | null;
+  attendees: EventAttendee[];
+  attendeeCount: number;
+  rsvpCounts: RsvpCounts;
 };
 
-export type GetLocalEventsResponse = {
-  message: string;
-  data: LocalEvent[];
-};
-
-export type GetLocalEventResponse = {
-  message: string;
-  data: LocalEvent;
+export type EventRsvp = {
+  id: string;
+  eventId: string;
+  userId: string;
+  status: 'yes' | 'maybe' | 'no';
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    userId: string;
+    username: string | null;
+    profilePicture: string | null;
+  };
 };
 
 export type ReactionType = 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER';

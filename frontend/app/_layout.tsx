@@ -19,29 +19,45 @@ function RootNavigator() {
   }
 
   const isAuthenticated = !!user;
-  const needsOnboarding = isAuthenticated && profile !== null && !profile.onboardingCompleted;
-  const isFullyOnboarded = isAuthenticated && profile !== null && profile.onboardingCompleted === true;
+  const needsOnboarding =
+    isAuthenticated && profile !== null && !profile.onboardingCompleted;
+  const isFullyOnboarded =
+    isAuthenticated && profile !== null && profile.onboardingCompleted === true;
 
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          animation: 'slide_from_right',
+        }}
+      >
         {/* Protected: Only accessible when NOT authenticated */}
         <Stack.Protected guard={!isAuthenticated}>
-          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(auth)" options={{ gestureEnabled: false }} />
         </Stack.Protected>
 
         {/* Protected: Only accessible when authenticated but needs onboarding */}
         <Stack.Protected guard={needsOnboarding}>
-          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen
+            name="(onboarding)"
+            options={{ gestureEnabled: false }}
+          />
         </Stack.Protected>
 
         {/* Protected: Only accessible when fully authenticated and onboarded */}
         <Stack.Protected guard={isFullyOnboarded}>
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="movies/[movieId]" />
+          <Stack.Screen name="events" />
+          <Stack.Screen name="profilePage" />
+          <Stack.Screen name="search" />
         </Stack.Protected>
 
         {/* Index is always accessible - it handles initial routing */}
-        <Stack.Screen name="index" />
+        <Stack.Screen name="index" options={{ gestureEnabled: false }} />
       </Stack>
     </SafeAreaProvider>
   );
