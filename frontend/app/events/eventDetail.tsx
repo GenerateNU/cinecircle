@@ -6,7 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Modal
+  Modal,
+  Image,
 } from 'react-native';
 import RsvpNotification from '../../components/RsvpNotification';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Rsvp from '../../components/Rsvp';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getLocalEvent, type LocalEvent } from '../../services/eventsService';
+import { createOrUpdateRsvp, getUserRsvp } from '../../services/rsvpService';
 import LocationSection from '../../components/LocationSection';
 
 export default function EventDetailScreen() {
@@ -25,11 +27,14 @@ export default function EventDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
-  const [userRsvp, setUserRsvp] = useState<'yes' | 'maybe' | 'no' | null>(null); 
+  const [userRsvp, setUserRsvp] = useState<'yes' | 'maybe' | 'no' | null>(null);
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
-    if (eventId) loadEventDetails();
+    if (eventId) {
+      loadEventDetails();
+      loadUserRsvp();
+    }
   }, [eventId]);
 
   const loadEventDetails = async () => {
@@ -48,16 +53,40 @@ export default function EventDetailScreen() {
     }
   };
 
-  const handleRSVP = () => {
-    setShowRsvpModal(true);  // just showing modal for now
+  const loadUserRsvp = async () => {
+    if (!eventId) return;
+
+    try {
+      const response = await getUserRsvp(eventId);
+      if (response.data) {
+        setUserRsvp(response.data.status as 'yes' | 'maybe' | 'no');
+      }
+    } catch (err) {
+      // No RSVP found, that's okay
+      console.log('No existing RSVP found');
+    }
   };
 
-  const handleRsvpComplete = (response: 'yes' | 'maybe' | 'no' | null) => {
-    console.log('RSVP Response:', response, 'for event:', eventId);
-    setUserRsvp(response); // save response
-    setShowRsvpModal(false);
-    setShowNotification(true); // show notification
-    // TODO: save to backend later
+  const handleRSVP = () => {
+    setShowRsvpModal(true); // just showing modal for now
+  };
+
+  const handleRsvpComplete = async (
+    response: 'yes' | 'maybe' | 'no' | null
+  ) => {
+    if (!eventId || !response) return;
+
+    try {
+      await createOrUpdateRsvp(eventId, response);
+      setUserRsvp(response);
+      setShowRsvpModal(false);
+      setShowNotification(true);
+      // Reload event to get updated attendee list
+      loadEventDetails();
+    } catch (err) {
+      console.error('Failed to save RSVP:', err);
+      alert('Failed to save RSVP. Please try again.');
+    }
   };
 
   const handleEditRsvp = () => {
@@ -97,51 +126,55 @@ export default function EventDetailScreen() {
 
   const shouldShowReadMore = (event.description?.length || 0) > 150;
 
-  // Mock attendees for now
-  const mockAttendees = Array.from({ length: 5 }, (_, i) => ({
-    id: `${i + 1}`,
-    name: `User ${i + 1}`,
-  }));
-  const additionalAttendees = 7;
+  // Get attendees from event data
+  const attendees = event.attendees || [];
+  const displayAttendees = attendees.slice(0, 5);
+  const additionalAttendees = Math.max(0, attendees.length - 5);
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Hero Image */}
         <View style={styles.heroImageContainer}>
-          <View style={styles.heroImage} />
-
-          {/* Header Actions */}
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <MaterialIcons name="arrow-back" size={24} color="#A82411" />
-            </TouchableOpacity>
-            <View style={styles.rightActions}>
-              <TouchableOpacity style={styles.iconButton}>
-              <MaterialIcons name="ios-share" size={20} color="#A82411" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-              <MaterialIcons name="bookmark-border" size={20} color="#A82411" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          {event.imageUrl ? (
+            <Image
+              source={{ uri: event.imageUrl }}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.heroImage} />
+          )}
         </View>
 
         {/* Event Details */}
         <View style={styles.contentContainer}>
-          {/* Title */}
-          <Text style={styles.title}>{event.title}</Text>
+          {/* Title and Action Buttons */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{event.title}</Text>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity style={styles.iconButton}>
+                <MaterialIcons name="ios-share" size={20} color="#A82411" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton}>
+                <MaterialIcons
+                  name="bookmark-border"
+                  size={20}
+                  color="#A82411"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
 
           {/* Info Items */}
           <View style={styles.infoSection}>
             {/* Location */}
             <View style={styles.infoRow}>
               <View style={styles.iconCircle}>
-              <Entypo name="location" size={24} color="#A82411" />
+                <Entypo name="location" size={24} color="#A82411" />
               </View>
               <Text style={styles.infoText}>{event.location}</Text>
             </View>
@@ -149,7 +182,11 @@ export default function EventDetailScreen() {
             {/* Date & Time */}
             <View style={styles.infoRow}>
               <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="calendar-range-outline" size={19} color="#A82411" />
+                <MaterialCommunityIcons
+                  name="calendar-range-outline"
+                  size={19}
+                  color="#A82411"
+                />
               </View>
               <Text style={styles.infoText}>
                 {event.date} at {event.time}
@@ -160,7 +197,7 @@ export default function EventDetailScreen() {
             {event.cost !== null && (
               <View style={styles.infoRow}>
                 <View style={styles.iconCircle}>
-                <CircleDollarSign size={20} color="#A82411" />
+                  <CircleDollarSign size={20} color="#A82411" />
                 </View>
                 <Text style={styles.infoText}>
                   {event.cost === 0
@@ -211,31 +248,46 @@ export default function EventDetailScreen() {
           )}
 
           {/* Attendees */}
-          <View style={styles.attendeesSection}>
-            <Text style={styles.sectionTitle}>Who's Going?</Text>
-            <View style={styles.attendeesRow}>
-              {mockAttendees.map((attendee, index) => (
-                <View
-                  key={attendee.id}
-                  style={[
-                    styles.avatarCircle,
-                    index > 0 && { marginLeft: -12 },
-                  ]}
-                >
-                  <Text style={styles.avatarText}>{attendee.name[0]}</Text>
-                </View>
-              ))}
-              <View
-                style={[
-                  styles.avatarCircle,
-                  styles.moreAvatar,
-                  { marginLeft: -12 },
-                ]}
-              >
-                <Text style={styles.avatarText}>+{additionalAttendees}</Text>
+          {attendees.length > 0 && (
+            <View style={styles.attendeesSection}>
+              <Text style={styles.smallText}>Who's Going?</Text>
+              <View style={styles.attendeesRow}>
+                {displayAttendees.map((attendee, index) => (
+                  <View
+                    key={attendee.userId}
+                    style={[
+                      styles.avatarCircle,
+                      index > 0 && { marginLeft: -12 },
+                    ]}
+                  >
+                    {attendee.profilePicture ? (
+                      <Image
+                        source={{ uri: attendee.profilePicture }}
+                        style={styles.avatarImage}
+                      />
+                    ) : (
+                      <Text style={styles.avatarText}>
+                        {attendee.username?.[0]?.toUpperCase() || '?'}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+                {additionalAttendees > 0 && (
+                  <View
+                    style={[
+                      styles.avatarCircle,
+                      styles.moreAvatar,
+                      { marginLeft: -12 },
+                    ]}
+                  >
+                    <Text style={styles.avatarText}>
+                      +{additionalAttendees}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
-          </View>
+          )}
 
           {/* Filter Pills */}
           <View style={styles.filterSection}>
@@ -277,7 +329,7 @@ export default function EventDetailScreen() {
       {/* Floating RSVP Button - Only show if no notification */}
       {!showNotification && (
         <View style={styles.floatingButtonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.rsvpButton}
             onPress={handleRSVP}
             activeOpacity={0.8}
@@ -296,10 +348,7 @@ export default function EventDetailScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowRsvpModal(false)}
       >
-        <Rsvp 
-          eventId={eventId} 
-          onContinue={handleRsvpComplete}
-        />
+        <Rsvp eventId={eventId} onContinue={handleRsvpComplete} />
       </Modal>
 
       {/* RSVP Success Notification */}
@@ -347,27 +396,24 @@ const styles = StyleSheet.create({
   },
   heroImageContainer: {
     width: '100%',
-    paddingHorizontal: 20,  // Add horizontal padding
-    paddingTop: 30,         // Add top padding
-    paddingBottom: 10,      // Small bottom padding
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 10,
     backgroundColor: '#fff',
+    position: 'relative',
+    marginTop: 20,
   },
   heroImage: {
     width: '100%',
-    height: 300,            // Fixed height instead of percentage
+    height: 300,
     backgroundColor: '#e0e0e0',
-    borderRadius: 20,       // Add rounded corners
-    overflow: 'hidden',    
-  },
-  headerActions: {
-    position: 'absolute',
-    top: 40,                // Adjust to account for padding
-    left: 30,               // Adjust for horizontal padding
-    right: 30,              // Adjust for horizontal padding
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 30,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -375,11 +421,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 24,
-    color: '#333',
+  contentContainer: {
+    padding: 20,
   },
-  rightActions: {
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  title: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: '500',
+    color: '#333',
+    marginRight: 12,
+  },
+  actionButtons: {
     flexDirection: 'row',
     gap: 10,
   },
@@ -387,21 +445,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  iconText: {
-    fontSize: 18,
-  },
-  contentContainer: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
   },
   infoSection: {
     marginBottom: 24,
@@ -424,8 +470,9 @@ const styles = StyleSheet.create({
   },
   infoText: {
     flex: 1,
-    fontSize: 16,
-    color: '#333',
+    fontSize: 15,
+    fontWeight: '400',
+    color: 'black',
   },
   descriptionSection: {
     marginBottom: 24,
@@ -439,7 +486,7 @@ const styles = StyleSheet.create({
   descriptionText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: 'black',
   },
   readMoreText: {
     fontSize: 15,
@@ -512,6 +559,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#fff',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   moreAvatar: {
     backgroundColor: '#d32f2f',
@@ -543,5 +595,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 60, // to stop hiding behind button ?
-  }
+  },
+  smallText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#515151',
+  },
 });

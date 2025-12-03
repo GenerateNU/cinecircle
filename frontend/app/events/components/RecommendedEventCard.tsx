@@ -24,7 +24,7 @@ export default function RecommendedEventCard({
       activeOpacity={0.7}
     >
       <ImageBackground
-        source={{ uri: PLACEHOLDER_IMAGE }}
+        source={{ uri: event.imageUrl || PLACEHOLDER_IMAGE }}
         style={[styles.image, styles[`${size}Image`]]}
         imageStyle={styles.imageStyle}
       />

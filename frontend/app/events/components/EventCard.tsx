@@ -26,7 +26,7 @@ export default function EventCard({
       activeOpacity={0.7}
     >
       <ImageBackground
-        source={{ uri: PLACEHOLDER_IMAGE }}
+        source={{ uri: event.imageUrl || PLACEHOLDER_IMAGE }}
         style={[styles.imageBackground, styles[`${size}Height`]]}
         imageStyle={styles.imageStyle}
       >
