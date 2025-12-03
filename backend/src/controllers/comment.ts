@@ -63,6 +63,41 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 /**
+ * GET /api/comments/post/:postId or /api/comments/rating/:ratingId
+ * Returns a flat list of comments for the post or rating
+ */
+export const getCommentsTree = async (req: AuthenticatedRequest, res: Response) => {
+  const timestamp = new Date().toISOString();
+  const { postId, ratingId } = req.params;
+
+  if (!postId && !ratingId) {
+    return res.status(400).json({
+      message: "Missing postId or ratingId",
+      timestamp,
+    });
+  }
+
+  try {
+    const comments = await prisma.comment.findMany({
+      where: postId ? { postId } : { ratingId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        UserProfile: { select: { userId: true, username: true, profilePicture: true } }
+      }
+    });
+
+    // Return flat list - client builds tree
+    res.json({ message: "Comments retrieved", comments });
+  } catch (error) {
+    console.error(`[${timestamp}] getCommentsTree error:`, error);
+    res.status(500).json({
+      message: "Internal server error retrieving comments",
+      timestamp,
+    });
+  }
+};
+
+/**
  * POST /api/comment
  * Body: { content: string, postId?: string, ratingId?: string, parentId?: string }
  */
