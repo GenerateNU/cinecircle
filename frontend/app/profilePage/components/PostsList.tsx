@@ -27,9 +27,23 @@ const PostsList = ({ user, userId }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   const resolvedUserId = useMemo(() => userId ?? null, [userId]);
+  const isValidUuid = useCallback(
+    (value: string | null) =>
+      !!value &&
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        value
+      ),
+    []
+  );
 
   const loadPosts = useCallback(async () => {
     if (!resolvedUserId) {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+    if (!isValidUuid(resolvedUserId)) {
+      // Avoid hitting backend with invalid ids (which can trigger DB errors)
       setPosts([]);
       setLoading(false);
       return;
@@ -49,7 +63,7 @@ const PostsList = ({ user, userId }: Props) => {
     } finally {
       setLoading(false);
     }
-  }, [resolvedUserId]);
+  }, [resolvedUserId, isValidUuid]);
 
   useEffect(() => {
     loadPosts();

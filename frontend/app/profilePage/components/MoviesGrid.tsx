@@ -33,9 +33,19 @@ const MoviesGrid = ({ userId }: Props) => {
 
   const movies = moviesByStatus[activeSubTab];
   const showBookmark = activeSubTab === 'toWatch';
+  const isValidUuid = (val: string | null | undefined) =>
+    !!val &&
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      val
+    );
 
   const fetchMoviesForUser = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || !isValidUuid(userId)) {
+      setMoviesByStatus({ toWatch: [], completed: [] });
+      setLoading(false);
+      setError(null);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);

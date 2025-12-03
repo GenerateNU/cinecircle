@@ -231,18 +231,15 @@ export const searchUsers = async (req: Request, res: Response) => {
             select: {
                 userId: true,
                 username: true,
-                preferredCategories: true,
-                preferredLanguages: true,
+                profilePicture: true,
                 favoriteMovies: true,
-                createdAt: true,
+                favoriteGenres: true,
             },
         });
 
         return res.json({
-            type: "users",
-            query: q,
-            count: users.length,
-            results: users,
+            message: "Users retrieved",
+            data: users,
         });
     } catch (error) {
         console.error("searchUsers error:", error);

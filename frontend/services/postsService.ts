@@ -25,6 +25,6 @@ export async function getPosts(params?: GetPostsParams): Promise<Post[]> {
         parentPostId: params.parentPostId === null ? 'null' : params.parentPostId,
       }
     : undefined;
-  const res = await api.get<PostsResponse>('/posts', normalizedParams);
+  const res = await api.get<PostsResponse>('/api/posts', normalizedParams);
   return res.data ?? [];
 }

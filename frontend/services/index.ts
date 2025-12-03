@@ -6,3 +6,4 @@ export * from './healthService';
 export * from './eventsService';
 export * from './postsService';
 export * from './imageService';
+export * from './searchService';
