@@ -10,7 +10,6 @@ import { useState, useEffect } from 'react';
 import SearchBar from '../components/SearchBar';
 import RatingRow from '../components/RatingRow';
 import TagList from '../components/TagList';
-import ActionButtons from '../components/ActionButtons';
 import ReviewCard from '../components/ReviewCard';
 import {
   getMovieRatings,
@@ -105,7 +104,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const getAllTags = () => {
     const allTags = ratings.flatMap(r => r.tags || []);
     const uniqueTags = [...new Set(allTags)].slice(0, 5);
-    return uniqueTags;
+    const capitalizedTags = uniqueTags.map(tag =>
+      tag
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+    );
+    return capitalizedTags;
   };
 
   const title = movieEnvelope?.title ?? 'Inception';
@@ -131,7 +136,22 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         {description}
       </Text>
 
-      {!loading && getAllTags().length > 0 && <TagList tags={getAllTags()} />}
+      {!loading && getAllTags().length > 0 && (
+        <TagList tags={getAllTags()} variant="blue" />
+      )}
+
+      <View style={styles.ratingsContainer}>
+        <RatingRow
+          label={t(UiTextKey.CineCircleAverage)}
+          rating={calculateAverageRating()}
+          size={24}
+        />
+        <RatingRow label="IMDB Rating" rating={8.8 / 2} size={24} />
+      </View>
+
+      {/* Bar w/ spoiler button and trending dropdown */}
+
+      {/* AI Consensus */}
 
       {/* <View style={styles.summaryContainer}>
         <Text style={styles.sectionHeader}>{t(UiTextKey.AiSummary)}</Text>
@@ -214,23 +234,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           </>
         )}
       </View> */}
-
-      <View style={styles.ratingsContainer}>
-        <RatingRow
-          label={t(UiTextKey.CineCircleAverage)}
-          rating={calculateAverageRating()}
-        />
-        <Text style={styles.ratingCount}>
-          {t(UiTextKey.BasedOnReviews).replace(
-            '{count}',
-            String(ratings.length)
-          )}
-        </Text>
-        <RatingRow label="Rotten Tomatoes" rating={0} />
-        <RatingRow label="IMDB" rating={8.8} />
-      </View>
-
-      <ActionButtons />
 
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -345,12 +348,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     padding: 16,
     marginTop: 12,
-  },
-  ratingCount: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 4,
-    marginBottom: 12,
   },
   tabContainer: {
     flexDirection: 'row',

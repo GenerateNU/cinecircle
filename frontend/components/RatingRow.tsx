@@ -1,42 +1,34 @@
 import { View, Text, StyleSheet } from 'react-native';
+import StarRating from './StarRating';
 
 type RatingRowProps = {
-    label: string;
-    rating: number; // 0-5
+  label: string;
+  rating: number; // 0-5
+  size?: 16 | 24; // Star size
 };
 
-export default function RatingRow({ label, rating }: RatingRowProps) {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.label}>{label}</Text>
-            <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <Text key={star} style={styles.star}>
-                        {star <= rating ? '★' : '☆'}
-                    </Text>
-                ))}
-            </View>
-        </View>
-    );
+export default function RatingRow({
+  label,
+  rating,
+  size = 24,
+}: RatingRowProps) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.label}>{label}</Text>
+      <StarRating rating={rating} maxStars={5} size={size} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 8,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    starsContainer: {
-        flexDirection: 'row',
-    },
-    star: {
-        fontSize: 22,
-        color: '#D3D3D3',
-        marginHorizontal: 2,
-    },
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
 });
