@@ -93,7 +93,7 @@ export const getPostById = async (req: Request, res: Response) => {
               createdAt: "desc",
             },
           },
-          PostLike: true,
+          PostReaction: true,
           Replies: {
             include: {
               UserProfile: {
@@ -163,7 +163,7 @@ export const getPosts = async (req: Request, res: Response) => {
               username: true,
             },
           },
-          PostLike: true,
+          PostReaction: true,
           Comment: {
             select: {
               id: true,
@@ -301,15 +301,22 @@ export const deletePost = async (req: Request, res: Response) => {
     }
   };
 
-// TOGGLE LIKE POST
-export const toggleLikePost = async (req: Request, res: Response) => {
+// TOGGLE REACTION ON POST
+export const toggleReaction = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
-      const { userId } = req.body;
+      const { userId, reactionType } = req.body;
   
-      if (!postId || !userId) {
+      if (!postId || !userId || !reactionType) {
         return res.status(400).json({ 
-          message: "postId and userId are required" 
+          message: "postId, userId, and reactionType are required" 
+        });
+      }
+
+      const validReactions = ["SPICY", "STAR_STUDDED", "THOUGHT_PROVOKING", "BLOCKBUSTER"];
+      if (!validReactions.includes(reactionType)) {
+        return res.status(400).json({ 
+          message: "Invalid reactionType. Must be one of: SPICY, STAR_STUDDED, THOUGHT_PROVOKING, BLOCKBUSTER" 
         });
       }
   
@@ -322,73 +329,57 @@ export const toggleLikePost = async (req: Request, res: Response) => {
         return res.status(404).json({ message: "Post not found" });
       }
   
-      // Check if like already exists
-      const existingLike = await prisma.postLike.findUnique({
+      // Check if this exact reaction already exists
+      const existingReaction = await prisma.postReaction.findUnique({
         where: {
-          postId_userId: {
+          postId_userId_reactionType: {
             postId,
             userId,
+            reactionType,
           },
         },
       });
   
-      if (existingLike) {
-        // Unlike
-        await prisma.postLike.delete({
+      if (existingReaction) {
+        // Remove reaction
+        await prisma.postReaction.delete({
           where: {
-            id: existingLike.id,
-          },
-        });
-  
-        // Decrement vote count
-        await prisma.post.update({
-          where: { id: postId },
-          data: {
-            votes: {
-              decrement: 1,
-            },
+            id: existingReaction.id,
           },
         });
   
         return res.json({
-          message: "Post unliked successfully",
-          liked: false,
+          message: "Reaction removed successfully",
+          reacted: false,
+          reactionType,
         });
       } else {
-        // Like
-        await prisma.postLike.create({
+        // Add reaction
+        await prisma.postReaction.create({
           data: {
             postId,
             userId,
-          },
-        });
-
-        // Increment vote count
-        await prisma.post.update({
-          where: { id: postId },
-          data: {
-            votes: {
-              increment: 1,
-            },
+            reactionType,
           },
         });
   
         return res.json({
-          message: "Post liked successfully",
-          liked: true,
+          message: "Reaction added successfully",
+          reacted: true,
+          reactionType,
         });
       }
     } catch (err) {
-      console.error("toggleLikePost error:", err);
+      console.error("toggleReaction error:", err);
       res.status(500).json({
-        message: "Failed to toggle like",
+        message: "Failed to toggle reaction",
         error: err instanceof Error ? err.message : "Unknown error",
       });
     }
   };
 
-// GET POST LIKES
-export const getPostLikes = async (req: Request, res: Response) => {
+// GET POST REACTIONS
+export const getPostReactions = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
   
@@ -396,7 +387,7 @@ export const getPostLikes = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Post ID is required" });
       }
   
-      const likes = await prisma.postLike.findMany({
+      const reactions = await prisma.postReaction.findMany({
         where: { postId },
         include: {
           UserProfile: {
@@ -410,16 +401,23 @@ export const getPostLikes = async (req: Request, res: Response) => {
           createdAt: "desc",
         },
       });
+
+      // Group by reaction type with counts
+      const reactionCounts = reactions.reduce((acc: Record<string, number>, reaction) => {
+        acc[reaction.reactionType] = (acc[reaction.reactionType] || 0) + 1;
+        return acc;
+      }, {});
   
       res.json({
-        message: "Likes retrieved successfully",
-        data: likes,
-        count: likes.length,
+        message: "Reactions retrieved successfully",
+        data: reactions,
+        counts: reactionCounts,
+        total: reactions.length,
       });
     } catch (err) {
-      console.error("getPostLikes error:", err);
+      console.error("getPostReactions error:", err);
       res.status(500).json({
-        message: "Failed to retrieve likes",
+        message: "Failed to retrieve reactions",
         error: err instanceof Error ? err.message : "Unknown error",
       });
     }
@@ -443,7 +441,7 @@ export const getPostReplies = async (req: Request, res: Response) => {
               username: true,
             },
           },
-          PostLike: true,
+          PostReaction: true,
           Replies: {
             select: {
               id: true,

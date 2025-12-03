@@ -4,4 +4,4 @@ export * from './moviesService';
 export * from './followService';
 export * from './healthService';
 export * from './eventsService';
-
+export * from './imageService';
