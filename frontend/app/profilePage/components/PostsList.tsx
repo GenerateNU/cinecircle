@@ -123,9 +123,9 @@ const PostsList = ({ user, userId }: Props) => {
       windowSize={Math.max(5, posts.length || 5)}
       showsVerticalScrollIndicator={false}
       renderItem={({ item: p }) => {
-        const likeCount = formatCount(p.likeCount ?? (p as any).votes ?? 0);
-        const commentCount = formatCount(p.commentCount ?? (p as any).commentCount ?? 0);
-        const replyCount = formatCount(p.replyCount ?? (p as any).replyCount ?? 0);
+        const likeCount = formatCount(p.reactionCount ?? 0);
+        const commentCount = formatCount(p.commentCount ?? 0);
+        const replyCount = formatCount(p.replyCount ?? 0);
         const avatar = user.profilePic;
         const displayName =
           p.UserProfile?.username?.trim() ||
