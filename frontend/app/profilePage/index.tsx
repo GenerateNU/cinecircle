@@ -260,7 +260,7 @@ const ProfilePage = ({
             {/* Settings button top-right */}
             {isMe ? (
               <TouchableOpacity
-                onPress={() => router.push('/profilePage/settings')}
+                onPress={() => router.push('/profilePage/accountSettings')}
                 style={tw`w-10 h-10 items-center justify-center rounded-full`}
                 accessibilityRole="button"
                 accessibilityLabel="Open settings"
@@ -378,6 +378,7 @@ const ProfilePage = ({
             {isMe ? (
               // Logged-in user sees edit button
               <TouchableOpacity
+                onPress={() => router.push('/profilePage/settings')}
                 style={[
                   tw`items-center justify-center px-[18px] py-[10px]`,
                   {
