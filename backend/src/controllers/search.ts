@@ -230,25 +230,11 @@ export const searchUsers = async (req: Request, res: Response) => {
             take: limitNum,
         });
 
-        const results = users.map((u: any) => ({
-            userId: u.userId,
-            username: u.username,
-            profilePicture: u.profilePicture,
-            favoriteMovies: u.favoriteMovies ?? [],
-            preferredCategories: u.preferredCategories ?? u.favoriteGenres ?? [],
-            preferredLanguages: Array.isArray(u.preferredLanguages)
-                ? u.preferredLanguages
-                : Array.isArray(u.secondaryLanguage)
-                ? u.secondaryLanguage
-                : [],
-            createdAt: u.createdAt,
-        }));
-
         return res.json({
             type: "users",
             query: q,
-            count: results.length,
-            results,
+            count: users.length,
+            results: users,
         });
     } catch (error) {
         console.error("searchUsers error:", error);
