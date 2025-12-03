@@ -526,6 +526,8 @@ model movie {
   description String?
   numRatings  String?
   imageUrl    String?
+  releaseYear Int?
+  director    String?
   Rating      Rating[]
 
   @@schema("public")

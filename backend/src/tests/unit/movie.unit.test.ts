@@ -109,6 +109,10 @@ describe("Movie Controller Unit Tests", () => {
         overview: "A ticking-time-bomb insomniac...",
         vote_average: 8.4,
         spoken_languages: [{english_name: "English"}],
+        release_date: "1999-10-15",
+        credits: {
+          crew: [{ job: "Director", name: "David Fincher" }],
+        },
       };
 
       // @ts-ignore
@@ -120,7 +124,7 @@ describe("Movie Controller Unit Tests", () => {
       const result = await fetchTmdbMovie("550");
 
       expect(global.fetch).toHaveBeenCalledWith(
-          "https://api.themoviedb.org/3/movie/550",
+          "https://api.themoviedb.org/3/movie/550?append_to_response=credits",
           expect.objectContaining({
             method: "GET",
             headers: expect.objectContaining({
@@ -271,6 +275,10 @@ describe("Movie Controller Unit Tests", () => {
       overview: "A ticking-time-bomb insomniac...",
       vote_average: 8.4,
       spoken_languages: [{ english_name: "English" }],
+      release_date: "1999-10-15",
+      credits: {
+        crew: [{ job: "Director", name: "David Fincher" }],
+      },
     };
 
     const mockSavedMovie = {
@@ -281,6 +289,9 @@ describe("Movie Controller Unit Tests", () => {
       imdbRating: BigInt(84),
       localRating: "0",
       numRatings: "0",
+      releaseYear: 1999,
+      director: "David Fincher",
+      imageUrl: null,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
     };
@@ -337,6 +348,10 @@ describe("Movie Controller Unit Tests", () => {
       overview: "Updated description",
       vote_average: 8.5,
       spoken_languages: [{ english_name: "English" }],
+      release_date: "1999-10-15",
+      credits: {
+        crew: [{ job: "Director", name: "David Fincher" }],
+      },
     };
 
     const updatedMovie = {
@@ -347,6 +362,9 @@ describe("Movie Controller Unit Tests", () => {
       imdbRating: BigInt(85),
       localRating: "0",
       numRatings: "0",
+      releaseYear: 1999,
+      director: "David Fincher",
+      imageUrl: null,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-02"),
     };

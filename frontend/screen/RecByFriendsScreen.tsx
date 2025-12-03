@@ -7,6 +7,7 @@ import {
   View,
   Text,
 } from 'react-native';
+import { router } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { fetchHomeFeed, togglePostReaction } from '../services/feedService';
 import { getMoviePosterUrl } from '../services/imageService';
@@ -196,9 +197,10 @@ export default function RecByFriendsScreen() {
     const moviePosterUrl = getMoviePosterUrl(movieImagePath);
 
     const handleReviewPress = () => {
-      // TODO: Navigate to review detail page
-      console.log('Review pressed:', rating.id, 'Movie:', rating.movieId);
-      // navigation.navigate('ReviewDetail', { reviewId: rating.id, movieId: rating.movieId });
+      router.push({
+        pathname: '/movies/[movieId]',
+        params: { movieId: rating.movieId },
+      });
     };
 
     return (

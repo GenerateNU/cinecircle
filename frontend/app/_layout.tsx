@@ -38,6 +38,10 @@ function RootNavigator() {
         {/* Protected: Only accessible when fully authenticated and onboarded */}
         <Stack.Protected guard={isFullyOnboarded}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="movies/[movieId]" options={{ headerShown: false }} />
+          <Stack.Screen name="events" options={{ headerShown: false }} />
+          <Stack.Screen name="profilePage" options={{ headerShown: false }} />
+          <Stack.Screen name="search" options={{ headerShown: false }} />
         </Stack.Protected>
 
         {/* Index is always accessible - it handles initial routing */}
