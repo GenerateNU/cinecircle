@@ -1,4 +1,3 @@
-// frontend/app/screens/MovieChosenScreen.tsx
 import {
   ScrollView,
   View,
@@ -20,8 +19,8 @@ import {
   getMovieByCinecircleId,
 } from '../services/moviesService';
 import type { components } from '../types/api-generated';
-import { t } from '../app/il8n/il8n';
-import { UiTextKey } from '../app/il8n/keys';
+import { t } from '../il8n/_il8n';
+import { UiTextKey } from '../il8n/_keys';
 
 type MovieChosenScreenProps = {
   movieId: string;

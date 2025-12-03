@@ -421,15 +421,32 @@ model Comment {
 }
 
 model Post {
-  id          String      @id
-  userId      String      @db.Uuid
-  content     String
-  type        PostType
-  votes       Int         @default(0)
-  createdAt   DateTime    @default(now())
-  Comment     Comment[]
-  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+  id              String         @id @default(uuid())
+  userId          String         @db.Uuid
+  content         String
+  type            PostType
+  createdAt       DateTime       @default(now())
+  imageUrls       String[]       @default([])
+  parentPostId    String?        // For threading/replies
+  Comment         Comment[]
+  UserProfile     UserProfile    @relation(fields: [userId], references: [userId])
+  PostReaction    PostReaction[] // Track individual reactions
+  ParentPost      Post?          @relation("PostReplies", fields: [parentPostId], references: [id], onDelete: SetNull)
+  Replies         Post[]         @relation("PostReplies")
 
+  @@schema("public")
+}
+
+model PostReaction {
+  id           String       @id @default(uuid())
+  postId       String
+  userId       String       @db.Uuid
+  reactionType ReactionType
+  createdAt    DateTime     @default(now())
+  Post         Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  UserProfile  UserProfile  @relation(fields: [userId], references: [userId])
+
+  @@unique([postId, userId, reactionType])
   @@schema("public")
 }
 
@@ -445,6 +462,7 @@ model Rating {
   spoiler     Boolean     @default(false)
   Comment     Comment[]
   UserProfile UserProfile @relation(fields: [userId], references: [userId])
+  movie       movie        @relation(fields: [movieId], references: [movieId])
 
   @@schema("public")
 }
@@ -461,24 +479,24 @@ model UserFollow {
 }
 
 model UserProfile {
-  userId                                         String       @id @db.Uuid
+  userId                                         String         @id @db.Uuid
   username                                       String?
-  favoriteMovies                                 String[]     @default([])
-  createdAt                                      DateTime     @default(now())
-  updatedAt                                      DateTime
-  city                                           String?
-  country                                        String?
-  favoriteGenres                                 String[]     @default([])
-  onboardingCompleted                            Boolean      @default(false)
-  primaryLanguage                                String       @default("English")
+  onboardingCompleted                            Boolean        @default(false)
+  primaryLanguage                                String         @default("English")
+  secondaryLanguage                              String[]       @default([])
   profilePicture                                 String?
-  secondaryLanguage                              String[]     @default([])
-  spoiler                                        Boolean      @default(false)
+  country                                        String?
+  city                                           String?
+  favoriteGenres                                 String[]       @default([])
+  favoriteMovies                                 String[]       @default([])
+  createdAt                                      DateTime       @default(now())
+  updatedAt                                      DateTime       @updatedAt
   Comment                                        Comment[]
   Post                                           Post[]
+  PostReaction                                   PostReaction[]
   Rating                                         Rating[]
-  UserFollow_UserFollow_followerIdToUserProfile  UserFollow[] @relation("UserFollow_followerIdToUserProfile")
-  UserFollow_UserFollow_followingIdToUserProfile UserFollow[] @relation("UserFollow_followingIdToUserProfile")
+  UserFollow_UserFollow_followerIdToUserProfile  UserFollow[]   @relation("UserFollow_followerIdToUserProfile")
+  UserFollow_UserFollow_followingIdToUserProfile UserFollow[]   @relation("UserFollow_followingIdToUserProfile")
 
   @@schema("public")
 }
@@ -508,7 +526,7 @@ model local_event {
 }
 
 model movie {
-  movieId     String  @id
+  movieId     String   @id
   localRating String?
   imdbRating  BigInt?
   languages   Json?
@@ -516,6 +534,7 @@ model movie {
   description String?
   numRatings  String?
   imageUrl    String?
+  Rating      Rating[]
 
   @@schema("public")
 }
@@ -602,6 +621,15 @@ enum one_time_token_type {
 enum PostType {
   SHORT
   LONG
+
+  @@schema("public")
+}
+
+enum ReactionType {
+  SPICY           // 🌶️ Drama-filled, bold, or full of tension
+  STAR_STUDDED    // ✨ Packed with A-listers
+  THOUGHT_PROVOKING // 🧠 Thought-provoking/mind blowing
+  BLOCKBUSTER     // 🧨 Mega-hit with hype, memes, and madness
 
   @@schema("public")
 }

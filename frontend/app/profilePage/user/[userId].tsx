@@ -4,7 +4,7 @@ import { DeviceEventEmitter } from 'react-native';
 import ProfilePage from '../index';
 import { followUser, unfollowUser, getFollowers, getFollowing } from './followServiceProxy';
 import { getUserProfile } from '../../../services/userService';
-import type { User } from '../types';
+import type { User } from '../_types';
 
 /**
  * Standalone profile screen for viewing another user's page.

@@ -1,18 +1,28 @@
-// app/index.tsx
-import React, { useContext } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
-import HomeScreen from '../screen/HomeScreen';
+import { Redirect } from 'expo-router';
+import { useAuth } from '../context/AuthContext';
+import { View, ActivityIndicator } from 'react-native';
 
-export default function HomeRoute() {
-  const { user, signOut } = useContext(AuthContext);
-  return (
-    <View style={styles.container}>
-      <HomeScreen user={user} onSignOut={signOut} />
-    </View>
-  );
+export default function Index() {
+  const { user, profile, loading, profileLoading } = useAuth();
+
+  if (loading || profileLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#9A0169" />
+      </View>
+    );
+  }
+
+  // Not authenticated -> go to auth
+  if (!user) {
+    return <Redirect href="/(auth)/welcome" />;
+  }
+
+  // Authenticated but needs onboarding
+  if (profile && !profile.onboardingCompleted) {
+    return <Redirect href="/(onboarding)/username" />;
+  }
+
+  // Fully onboarded -> go to tabs
+  return <Redirect href="/(tabs)/home" />;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-});

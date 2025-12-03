@@ -11,8 +11,8 @@ import {
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import tw from 'twrnc';
-import { User, TabKey } from './types';
-import { formatCount } from './utils';
+import { User, TabKey } from './_types';
+import { formatCount } from './_utils';
 import MoviesGrid from './components/MoviesGrid';
 import PostsList from './components/PostsList';
 import EventsList from './components/EventsList';

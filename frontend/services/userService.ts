@@ -1,7 +1,7 @@
 import { api } from "./apiClient";
 import type { components } from "../types/api-generated";
-import { setLanguage } from "../app/il8n/il8n";
-import type { LanguageCode } from "../app/il8n/languages";
+import { setLanguage } from "../il8n/_il8n";
+import type { LanguageCode } from "../il8n/_languages";
 
 
 type ProtectedResponse = components["schemas"]["ProtectedResponse"];

@@ -1,80 +1,73 @@
-import { useState } from "react";
-import { View, TouchableOpacity, Text } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { styles } from "../styles/InteractionBar.styles"
+import { useState } from 'react';
+import { View } from 'react-native';
+import ReactionButton from './ReactionButton';
+import CommentButton from './CommentButton';
+import { styles } from '../styles/InteractionBar.styles';
+
+type Reaction = {
+  emoji: string;
+  count: number;
+  selected: boolean;
+};
 
 interface InteractionBarProps {
-  initialLikes?: number;
   initialComments?: number;
-  isLiked?: boolean;
-  onLikePress?: () => void;
   onCommentPress?: () => void;
+  reactions?: Reaction[];
+  onReactionPress?: (index: number) => void;
 }
 
-export default function InteractionBar({ 
-  initialLikes = 0, 
+const DEFAULT_REACTIONS: Reaction[] = [
+  { emoji: '🌶️', count: 0, selected: false }, // SPICY - Drama-filled, bold
+  { emoji: '✨', count: 0, selected: false }, // STAR_STUDDED - Packed with A-listers
+  { emoji: '🧠', count: 0, selected: false }, // THOUGHT_PROVOKING - Mind blowing
+  { emoji: '🧨', count: 0, selected: false }, // BLOCKBUSTER - Mega-hit with hype
+];
+
+export default function InteractionBar({
   initialComments = 0,
-  isLiked = false,
-  onLikePress,
-  onCommentPress
+  onCommentPress,
+  reactions = DEFAULT_REACTIONS,
+  onReactionPress,
 }: InteractionBarProps) {
-  const [liked, setLiked] = useState(isLiked);
-  const [likeCount, setLikeCount] = useState(initialLikes);
+  const [localReactions, setLocalReactions] = useState(DEFAULT_REACTIONS);
 
-  const isLikeInteractive = onLikePress !== undefined;
-  const isCommentInteractive = onCommentPress !== undefined;
+  // Use prop reactions if handler provided, otherwise use local state
+  const displayReactions = onReactionPress ? reactions : localReactions;
 
-  const handleLikePress = () => {
-    if (!isLikeInteractive) return;
-    
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
-    onLikePress();
-  };
-
-  const handleCommentPress = () => {
-    if (!isCommentInteractive) return;
-    onCommentPress();
-  };
-
-  const formatCount = (count: number): string => {
-    if (count >= 1000000) {
-      return (count / 1000000).toFixed(1) + "M";
+  const handleReactionPress = (index: number) => {
+    if (onReactionPress) {
+      onReactionPress(index);
+    } else {
+      // Local state management
+      setLocalReactions(prev => {
+        const newStates = [...prev];
+        const reaction = { ...newStates[index] };
+        reaction.selected = !reaction.selected;
+        reaction.count = reaction.selected
+          ? reaction.count + 1
+          : Math.max(0, reaction.count - 1);
+        newStates[index] = reaction;
+        return newStates;
+      });
     }
-    if (count >= 1000) {
-      return (count / 1000).toFixed(2) + "k";
-    }
-    return count.toString();
   };
-
-  const LikeContainer = isLikeInteractive ? TouchableOpacity : View;
-  const CommentContainer = isCommentInteractive ? TouchableOpacity : View;
 
   return (
     <View style={styles.container}>
-      <LikeContainer 
-        style={styles.button} 
-        onPress={isLikeInteractive ? handleLikePress : undefined}
-        activeOpacity={isLikeInteractive ? 0.7 : 1}
-      >
-        <MaterialIcons
-          name="favorite"
-          style={liked ? styles.likedIcon : styles.icon}
-        />
-        <Text style={styles.count}>{formatCount(likeCount)}</Text>
-      </LikeContainer>
+      <CommentButton count={initialComments} onPress={onCommentPress} />
 
-      <CommentContainer 
-        style={styles.button} 
-        onPress={isCommentInteractive ? handleCommentPress : undefined}
-        activeOpacity={isCommentInteractive ? 0.7 : 1}
-      >
-        <MaterialIcons
-          name="chat-bubble"
-          style={styles.icon}
-        />
-        <Text style={styles.count}>{formatCount(initialComments)}</Text>
-      </CommentContainer>
+      <View style={styles.reactionsContainer}>
+        {displayReactions.map((reaction, index) => (
+          <ReactionButton
+            key={index}
+            emoji={reaction.emoji}
+            count={reaction.count}
+            selected={reaction.selected}
+            onPress={() => handleReactionPress(index)}
+          />
+        ))}
+      </View>
     </View>
   );
 }

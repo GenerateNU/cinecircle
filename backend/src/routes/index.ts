@@ -11,10 +11,10 @@ import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent, getLocalEvents } from "../controllers/local-events"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
-import { getComment, createComment, updateComment, deleteComment, getMovieComments} from "../controllers/comment"
+import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree} from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
 import { getAllMovies } from "../controllers/movies";
-import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
+import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReplies, toggleReaction, getPostReactions } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
 // backend/src/routes/index.ts
@@ -66,6 +66,9 @@ router.get("/api/comment/:id", getComment)
 router.put("/api/comment/:id", updateComment);
 router.delete("/api/comment/:id", deleteComment);
 router.get("/api/:movieId/comments", getMovieComments);
+router.get("/api/comments/post/:postId", getCommentsTree);
+router.get("/api/comments/rating/:ratingId", getCommentsTree);
+
 // Ratings routes
 router.post('/api/ratings', createRating);
 router.get('/api/ratings', getRatings);
@@ -91,15 +94,16 @@ router.put('api/ratings/:id', updateRating);
 router.delete('api/ratings/:id', deleteRating);
 
 // Post routes
-router.post("/post", createPost);
-router.get("/posts", getPosts);
-router.get("/post/:postId", getPostById);
-router.put("/post/:postId", updatePost);
-router.delete("/post/:postId", deletePost);
+router.post("/api/post", createPost);
+router.get("/api/posts", getPosts);
+router.get("/api/post/:postId", getPostById);
+router.put("/api/post/:postId", updatePost);
+router.delete("/api/post/:postId", deletePost);
 
-router.post("/post/:postId/like", toggleLikePost);
-router.get("/post/:postId/likes", getPostLikes);
-router.get("/:postId/replies", getPostReplies);
+// Reaction routes
+router.post("/api/post/:postId/reaction", toggleReaction);
+router.get("/api/post/:postId/reactions", getPostReactions);
+router.get("/api/post/:postId/replies", getPostReplies);
 
 // Search routes
 router.get("/api/search/movies", searchMovies)
