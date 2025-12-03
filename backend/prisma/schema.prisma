@@ -424,6 +424,7 @@ model Post {
   userId          String         @db.Uuid
   content         String
   type            PostType
+  spoiler         Boolean
   createdAt       DateTime       @default(now())
   imageUrls       String[]       @default([])
   parentPostId    String?        // For threading/replies
