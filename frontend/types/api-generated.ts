@@ -3669,6 +3669,11 @@ export interface components {
             rating?: components["schemas"]["Rating"];
             movie?: components["schemas"]["Movie"];
         };
+        /** @description -------- Local Events -------- */
+        GetLocalEventsResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"][];
+        };
         LocalEvent: {
             id: string;
             title: string;
@@ -3682,14 +3687,67 @@ export interface components {
             languages: string[];
             lat: number | null;
             lon: number | null;
+            imageUrl: string | null;
+            attendees: components["schemas"]["EventAttendee"][];
+            attendeeCount: number;
+            rsvpCounts: components["schemas"]["RsvpCounts"];
         };
-        GetLocalEventsResponse: {
-            message: string;
-            data: components["schemas"]["LocalEvent"][];
+        EventAttendee: {
+            userId: string;
+            username: string | null;
+            profilePicture: string | null;
+        };
+        RsvpCounts: {
+            yes: number;
+            maybe: number;
+            no: number;
+            total: number;
         };
         GetLocalEventResponse: {
             message: string;
             data: components["schemas"]["LocalEvent"];
+        };
+        /** @description -------- Event RSVP -------- */
+        CreateRsvpRequest: {
+            eventId: string;
+            /** @enum {string} */
+            status: "yes" | "maybe" | "no";
+        };
+        CreateRsvpResponse: {
+            message: string;
+            data: components["schemas"]["EventRsvp"];
+        };
+        EventRsvp: {
+            id: string;
+            eventId: string;
+            userId: string;
+            /** @enum {string} */
+            status: "yes" | "maybe" | "no";
+            createdAt: string;
+            updatedAt: string;
+            user?: {
+                userId: string;
+                username: string | null;
+                profilePicture: string | null;
+            };
+        };
+        GetRsvpResponse: {
+            message: string;
+            data: components["schemas"]["EventRsvp"];
+        };
+        GetEventAttendeesResponse: {
+            message: string;
+            data: {
+                attendees: {
+                    id: string;
+                    userId: string;
+                    status: string;
+                    createdAt: string;
+                    username: string | null;
+                    profilePicture: string | null;
+                }[];
+                counts: components["schemas"]["RsvpCounts"];
+            };
         };
         PostReaction: {
             id: string;
