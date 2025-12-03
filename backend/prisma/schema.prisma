@@ -489,6 +489,7 @@ model UserProfile {
   Rating                                         Rating[]
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[]   @relation("UserFollow_followerIdToUserProfile")
   UserFollow_UserFollow_followingIdToUserProfile UserFollow[]   @relation("UserFollow_followingIdToUserProfile")
+  event_rsvp                                     event_rsvp[]
 
   @@schema("public")
 }
@@ -503,22 +504,38 @@ model bootcamp {
 }
 
 model local_event {
-  id          String    @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
+  id          String       @id(map: "local_events_pkey") @default(uuid()) @db.Uuid
   title       String
-  time        DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  time        DateTime?    @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
   description String
   genre       String
-  cost        Float?    @db.Real
+  cost        Float?       @db.Real
   occasion    String?
   languages   String[]
   lat         Float?
   lon         Float?
+  imageUrl    String?
+  event_rsvp  event_rsvp[]
 
   @@schema("public")
 }
 
+model event_rsvp {
+  id           String       @id @default(uuid()) @db.Uuid
+  eventId      String       @db.Uuid
+  userId       String       @db.Uuid
+  status       String       // 'yes', 'maybe', 'no'
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  local_event  local_event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  UserProfile  UserProfile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@schema("public")
+}
+
 model movie {
-  movieId     String   @id
+  movieId     String  @id
   localRating String?
   imdbRating  BigInt?
   languages   Json?
@@ -526,7 +543,7 @@ model movie {
   description String?
   numRatings  String?
   imageUrl    String?
-  Rating      Rating[]
+   Rating      Rating[]
 
   @@schema("public")
 }

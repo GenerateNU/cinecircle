@@ -18,6 +18,10 @@ const SAVED_EVENTS: LocalEvent[] = [
     languages: [],
     lat: null,
     lon: null,
+    imageUrl: null,
+    attendees: [],
+    attendeeCount: 0,
+    rsvpCounts: { yes: 0, maybe: 0, no: 0, total: 0 },
   },
   {
     id: 'saved-2',
@@ -32,6 +36,10 @@ const SAVED_EVENTS: LocalEvent[] = [
     languages: [],
     lat: null,
     lon: null,
+    imageUrl: null,
+    attendees: [],
+    attendeeCount: 0,
+    rsvpCounts: { yes: 0, maybe: 0, no: 0, total: 0 },
   },
 ];
 
@@ -49,6 +57,10 @@ const ATTENDED_EVENTS: LocalEvent[] = [
     languages: [],
     lat: null,
     lon: null,
+    imageUrl: null,
+    attendees: [],
+    attendeeCount: 0,
+    rsvpCounts: { yes: 0, maybe: 0, no: 0, total: 0 },
   },
   {
     id: 'att-2',
@@ -63,6 +75,10 @@ const ATTENDED_EVENTS: LocalEvent[] = [
     languages: [],
     lat: null,
     lon: null,
+    imageUrl: null,
+    attendees: [],
+    attendeeCount: 0,
+    rsvpCounts: { yes: 0, maybe: 0, no: 0, total: 0 },
   },
 ];
 
