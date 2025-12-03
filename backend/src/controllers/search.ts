@@ -228,18 +228,27 @@ export const searchUsers = async (req: Request, res: Response) => {
                 }
             },
             take: limitNum,
-            select: {
-                userId: true,
-                username: true,
-                profilePicture: true,
-                favoriteMovies: true,
-                favoriteGenres: true,
-            },
         });
 
+        const results = users.map((u: any) => ({
+            userId: u.userId,
+            username: u.username,
+            profilePicture: u.profilePicture,
+            favoriteMovies: u.favoriteMovies ?? [],
+            preferredCategories: u.preferredCategories ?? u.favoriteGenres ?? [],
+            preferredLanguages: Array.isArray(u.preferredLanguages)
+                ? u.preferredLanguages
+                : Array.isArray(u.secondaryLanguage)
+                ? u.secondaryLanguage
+                : [],
+            createdAt: u.createdAt,
+        }));
+
         return res.json({
-            message: "Users retrieved",
-            data: users,
+            type: "users",
+            query: q,
+            count: results.length,
+            results,
         });
     } catch (error) {
         console.error("searchUsers error:", error);
