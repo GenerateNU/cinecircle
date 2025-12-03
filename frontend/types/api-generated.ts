@@ -3554,6 +3554,9 @@ export interface components {
             imdbRating?: number | null;
             localRating?: number | string | null;
             numRatings?: number | string | null;
+            imageUrl?: string | null;
+            releaseYear?: number | null;
+            director?: string | null;
         };
         UpdateMovieEnvelope: components["schemas"]["ApiEnvelope<Movie>"];
         DeleteMovieResponse: {
