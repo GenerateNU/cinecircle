@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { CommentNode } from './_utils';
 
@@ -10,12 +9,20 @@ type CommentProps = {
 };
 
 const INDENT_PER_LEVEL = 12;
+const MAX_PREVIEW_CHARS = 280;
 
 const Comment: React.FC<CommentProps> = ({ comment, depth, onReply }) => {
   const username = comment.UserProfile?.username ?? 'Anonymous';
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const isLong = comment.content.length > MAX_PREVIEW_CHARS;
+  const previewText = isLong
+    ? comment.content.slice(0, MAX_PREVIEW_CHARS).trimEnd() + '…'
+    : comment.content;
+  const displayText = isExpanded || !isLong ? comment.content : previewText;
 
   return (
-    <View style={[styles.container, { marginLeft: depth * INDENT_PER_LEVEL }]}>
+    <View style={[styles.container, { marginLeft: depth * INDENT_PER_LEVEL }]}> 
       {/* Left thread bar */}
       {depth > 0 && <View style={styles.threadBar} />}
 
@@ -33,7 +40,15 @@ const Comment: React.FC<CommentProps> = ({ comment, depth, onReply }) => {
           </View>
         </View>
 
-        <Text style={styles.body}>{comment.content}</Text>
+        <Text style={styles.body}>{displayText}</Text>
+
+        {isLong && (
+          <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
+            <Text style={styles.expandText}>
+              {isExpanded ? 'Show less' : 'Expand comment'}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={() => onReply?.(comment)}>
@@ -95,6 +110,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#222',
     marginTop: 2,
+  },
+  expandText: {
+    marginTop: 4,
+    fontSize: 13,
+    color: '#757575',
+    fontWeight: '500',
   },
   actionsRow: {
     flexDirection: 'row',

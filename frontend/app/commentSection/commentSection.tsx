@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { api } from '../../services/apiClient';
 import type { ApiComment } from './_types';
 import { buildCommentTree, type CommentNode } from './_utils';
@@ -33,35 +34,29 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
     [targetId, targetType]
   );
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadComments() {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await api.get<GetCommentsResponse>(endpoint);
-        if (!cancelled) {
-          setComments(response.comments ?? []);
-          setVisibleThreadCount(MAX_INITIAL_THREADS);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error('Failed to load comments', err);
-          setError('Failed to load comments');
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+  const loadComments = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get<GetCommentsResponse>(endpoint);
+      setComments(response.comments ?? []);
+      setVisibleThreadCount(MAX_INITIAL_THREADS);
+    } catch (err) {
+      console.error('Failed to load comments', err);
+      setError('Failed to load comments');
+    } finally {
+      setLoading(false);
     }
-
-    loadComments();
-    return () => {
-      cancelled = true;
-    };
   }, [endpoint]);
+
+  // Re-fetch comments every time this screen/component gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadComments();
+      // no cleanup needed; we rely on latest state when refocused
+      return undefined;
+    }, [loadComments])
+  );
 
   const tree = useMemo(() => buildCommentTree(comments), [comments]);
   const visibleThreads = tree.slice(0, visibleThreadCount);
