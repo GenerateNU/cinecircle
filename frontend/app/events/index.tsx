@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import { router } from 'expo-router';
 import { getLocalEvents, type LocalEvent } from '../../services/eventsService';
@@ -13,6 +14,7 @@ import FilterModal, { FilterOption } from '../../components/FilterModal';
 import EventCard from './components/EventCard';
 import UpcomingEventCard from './components/UpcomingEventCard';
 import RecommendedEventCard from './components/RecommendedEventCard';
+import SearchBar from '../../components/SearchBar';
 
 interface FilterState {
   price: string[];
@@ -151,20 +153,19 @@ export default function Events() {
     },
   };
 
-  return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 96 }}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Events</Text>
-          <TouchableOpacity>
-            <Text style={styles.searchIcon}>🔍</Text>
-          </TouchableOpacity>
-        </View>
-
+      <SearchBar
+        placeholder="Search events..."
+        onPress={() => router.push({
+          pathname: '/search',
+          params: { origin: 'events', defaultCategory: 'events' }
+        })}
+      />
         {/* Filter Buttons Row */}
         <View style={styles.filterButtonsRow}>
           {filterCategories.map((category, index) => (
@@ -254,7 +255,7 @@ export default function Events() {
           />
         );
       })}
-    </View>
+    </SafeAreaView>
   );
 }
 

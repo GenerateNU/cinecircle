@@ -14,7 +14,7 @@ import { followUser, unfollowUser, getFollowers, getFollowing } from "../control
 import { getComment, createComment, updateComment, deleteComment, getMovieComments} from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
 import { getAllMovies } from "../controllers/movies";
-import { createPost, getPostById, getPosts, updatePost, deletePost, toggleLikePost, getPostLikes, getPostReplies } from "../controllers/post.js";
+import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReplies, toggleReaction, getPostReactions } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
 // backend/src/routes/index.ts
@@ -89,15 +89,16 @@ router.put('api/ratings/:id', updateRating);
 router.delete('api/ratings/:id', deleteRating);
 
 // Post routes
-router.post("/post", createPost);
-router.get("/posts", getPosts);
-router.get("/post/:postId", getPostById);
-router.put("/post/:postId", updatePost);
-router.delete("/post/:postId", deletePost);
+router.post("/api/post", createPost);
+router.get("/api/posts", getPosts);
+router.get("/api/post/:postId", getPostById);
+router.put("/api/post/:postId", updatePost);
+router.delete("/api/post/:postId", deletePost);
 
-router.post("/post/:postId/like", toggleLikePost);
-router.get("/post/:postId/likes", getPostLikes);
-router.get("/:postId/replies", getPostReplies);
+// Reaction routes
+router.post("/api/post/:postId/reaction", toggleReaction);
+router.get("/api/post/:postId/reactions", getPostReactions);
+router.get("/api/post/:postId/replies", getPostReplies);
 
 // Search routes
 router.get("/api/search/movies", searchMovies)
