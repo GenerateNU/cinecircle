@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { api } from '../../services/apiClient';
 import type { ApiComment } from './_types';
 import { buildCommentTree, type CommentNode } from './_utils';
-import CommentThread from './commentThread';
+import CommentThread from './components/commentThread';
 
 interface CommentSectionProps {
   targetType: 'post' | 'rating';

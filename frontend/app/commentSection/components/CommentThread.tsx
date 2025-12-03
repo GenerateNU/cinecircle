@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { CommentNode } from "./_utils";
+import { CommentNode } from "../_utils";
 import { View, TouchableOpacity, Text } from "react-native";
 import { router } from "expo-router";
 import Comment from "./comment";
+import { commentThreadStyles } from "../styles/CommentThread.styles";
 
 interface CommentThreadProps {
   node: CommentNode;
@@ -32,9 +33,9 @@ function CommentThread({ node, depth, onReply }: CommentThreadProps) {
                 params: { commentId: node.id },
               })
             }
-            style={{ marginLeft: (depth + 1) * 12, paddingVertical: 4 }}
+            style={[commentThreadStyles.viewMoreButton, { marginLeft: (depth + 1) * 12 }]}
           >
-            <Text style={{ color: "#555", fontSize: 13 }}>
+            <Text style={commentThreadStyles.viewMoreText}>
               View full conversation ({totalReplies} replies)
             </Text>
           </TouchableOpacity>
@@ -43,7 +44,7 @@ function CommentThread({ node, depth, onReply }: CommentThreadProps) {
     );
   }
 
-  // Depth 0: render up to three immediate replies with a "view more" expander.
+  // Depth 0: render up to four immediate replies with a "view more" expander.
   const [visibleReplies, setVisibleReplies] = useState(INITIAL_VISIBLE_REPLIES);
   const repliesToRender = node.replies.slice(0, visibleReplies);
   const hasMoreReplies = totalReplies > visibleReplies;
@@ -64,9 +65,9 @@ function CommentThread({ node, depth, onReply }: CommentThreadProps) {
       {hasMoreReplies && (
         <TouchableOpacity
           onPress={() => setVisibleReplies(totalReplies)}
-          style={{ marginLeft: (depth + 1) * 12, paddingVertical: 4 }}
+          style={[commentThreadStyles.viewMoreButton, { marginLeft: (depth + 1) * 12 }]}
         >
-          <Text style={{ color: "#555", fontSize: 13 }}>
+          <Text style={commentThreadStyles.viewMoreText}>
             View more replies ({totalReplies - visibleReplies} more)
           </Text>
         </TouchableOpacity>
