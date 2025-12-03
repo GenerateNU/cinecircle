@@ -52,13 +52,17 @@ export type Comment = {
   ratingId?: string | null;
   postId?: string | null;
   content: string;
+  parentId?: string | null;
   createdAt: string;
   UserProfile?: {
     userId: string;
     username: string | null;
+    profilePicture: string | null;
   };
   rating?: unknown;
   post?: unknown;
+  parentComment?: unknown;
+  childComments?: unknown[];
 };
 
 export type FollowEdge = {

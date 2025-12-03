@@ -57,6 +57,7 @@ export type DeleteUserProfileResponse = { message: string };
 /** -------- Ratings & Comments (query returns arrays) -------- */
 export type GetUserRatingsResponse = { message: string; ratings: Rating[] };
 export type GetUserCommentsResponse = { message: string; comments: Comment[] };
+export type GetCommentsTreeResponse = { message: string; comments: Comment[] };
 
 /** -------- Follows -------- */
 export type FollowBody = { followingId: string };
