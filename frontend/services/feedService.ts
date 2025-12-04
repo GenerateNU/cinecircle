@@ -2,20 +2,18 @@ import { api } from './apiClient';
 import type { components } from '../types/api-generated';
 
 type Post = components["schemas"]["Post"];
-type Rating = components["schemas"]["Rating"];
-
 
 // Feed response from backend
 export type FeedResponse = {
   message: string;
   data: Array<{
-    type: 'post' | 'rating' | 'trending_post' | 'trending_rating';
-    data: Post | Rating;
+    type: 'post' | 'trending_post';
+    data: Post;
   }>;
 };
 
 /**
- * Fetch home feed (posts + ratings from friends)
+ * Fetch home feed (posts from friends - SHORT and LONG types)
  */
 export async function fetchHomeFeed(limit: number = 20): Promise<FeedResponse> {
   return api.get<FeedResponse>('/api/feed', { limit });

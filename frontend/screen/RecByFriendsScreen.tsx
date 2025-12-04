@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   View,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
@@ -19,13 +20,12 @@ import UserBar from '../components/UserBar';
 import type { components } from '../types/api-generated';
 
 type Post = components['schemas']['Post'];
-type Rating = components['schemas']['Rating'];
 
 const { width } = Dimensions.get('window');
 
 type FeedItem = {
-  type: 'post' | 'rating' | 'trending_post' | 'trending_rating';
-  data: Post | Rating;
+  type: 'post' | 'trending_post';
+  data: Post;
 };
 
 export default function RecByFriendsScreen() {
@@ -53,12 +53,13 @@ export default function RecByFriendsScreen() {
   };
 
   const renderFeedItem = (item: FeedItem, index: number) => {
-    const isPost = item.type === 'post' || item.type === 'trending_post';
+    const post = item.data as Post;
 
-    if (isPost) {
-      return renderPost(item.data as Post, index);
+    // If post has stars, render as review, otherwise as regular post
+    if (post.stars !== null && post.stars !== undefined) {
+      return renderReview(post, index);
     } else {
-      return renderRating(item.data as Rating, index);
+      return renderPost(post, index);
     }
   };
 
@@ -157,29 +158,34 @@ export default function RecByFriendsScreen() {
     return (
       <React.Fragment key={post.id}>
         <View style={styles.postContainer}>
-          {hasImage ? (
-            <PicturePost
-              userName={username}
-              username={username}
-              date={formatDate(post.createdAt)}
-              content={post.content}
-              imageUrls={post.imageUrls || []}
-              userId={post.userId}
-            />
-          ) : (
-            <TextPost
-              userName={username}
-              username={username}
-              date={formatDate(post.createdAt)}
-              content={post.content}
-              userId={post.userId}
-            />
-          )}
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => handlePostPress(post)}
+          >
+            {hasImage ? (
+              <PicturePost
+                userName={username}
+                username={username}
+                date={formatDate(post.createdAt)}
+                content={post.content}
+                imageUrls={post.imageUrls || []}
+                userId={post.userId}
+              />
+            ) : (
+              <TextPost
+                userName={username}
+                username={username}
+                date={formatDate(post.createdAt)}
+                content={post.content}
+                userId={post.userId}
+              />
+            )}
+          </TouchableOpacity>
           <View style={styles.interactionWrapper}>
             <InteractionBar
               initialComments={post.commentCount || 0}
               reactions={reactions}
-              onCommentPress={() => handleComment(post.id)}
+              onCommentPress={() => handleComment(post)}
               onReactionPress={handleReaction}
             />
           </View>
@@ -189,36 +195,44 @@ export default function RecByFriendsScreen() {
     );
   };
 
-  const renderRating = (rating: Rating, index: number) => {
-    const username = rating.UserProfile?.username || 'Unknown';
-    const movieTitle =
-      (rating as any).movie?.title || `Movie #${rating.movieId}`;
-    const movieImagePath = (rating as any).movie?.imageUrl;
+  const renderReview = (post: Post, index: number) => {
+    const username = post.UserProfile?.username || 'Unknown';
+    const movieTitle = post.movie?.title || `Movie #${post.movieId}`;
+    const movieImagePath = post.movie?.imageUrl;
     const moviePosterUrl = getMoviePosterUrl(movieImagePath);
 
     const handleReviewPress = () => {
-      router.push({
-        pathname: '/movies/[movieId]',
-        params: { movieId: rating.movieId },
+      // TODO: Navigate to post detail page (review)
+      console.log('Review pressed:', post.id, 'Movie:', post.movieId);
+      console.log('Would navigate to PostDetail with:', {
+        postId: post.id,
+        movieId: post.movieId,
+        type: 'LONG',
+        hasStars: true,
       });
+      // For now, commenting out navigation to movie page - should go to post detail
+      // router.push({
+      //   pathname: '/movies/[movieId]',
+      //   params: { movieId: post.movieId },
+      // });
     };
 
     return (
-      <React.Fragment key={rating.id}>
+      <React.Fragment key={post.id}>
         <View style={styles.ratingContainer}>
-          <UserBar name={username} username={username} userId={rating.userId} />
+          <UserBar name={username} username={username} userId={post.userId} />
           <Text style={styles.shareText}>
             Check out this new review that I just dropped!
           </Text>
           <ReviewPost
             userName={username}
             username={username}
-            date={formatDate(rating.date)}
+            date={formatDate(post.createdAt)}
             reviewerName={username}
             movieTitle={movieTitle}
-            rating={rating.stars}
-            userId={rating.userId}
-            reviewerUserId={rating.userId}
+            rating={post.stars || 0}
+            userId={post.userId}
+            reviewerUserId={post.userId}
             movieImageUrl={moviePosterUrl}
             onPress={handleReviewPress}
           />
@@ -233,8 +247,28 @@ export default function RecByFriendsScreen() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const handleComment = (itemId: string) => {
-    console.log('Navigate to comments:', itemId);
+  const handleComment = (post: Post) => {
+    // TODO: Navigate to post detail page to view/add comments
+    console.log('Comment button pressed for post:', post.id);
+    console.log('Would navigate to PostDetail with:', {
+      postId: post.id,
+      movieId: post.movieId,
+      type: post.type,
+      focusCommentInput: true, // Auto-focus comment input when navigating from comment button
+    });
+  };
+
+  const handlePostPress = (post: Post) => {
+    // TODO: Navigate to post detail page
+    console.log('Post pressed:', post.id, 'Movie:', post.movieId);
+    console.log('Would navigate to PostDetail with:', {
+      postId: post.id,
+      movieId: post.movieId,
+      type: post.type,
+      hasStars: post.stars !== null && post.stars !== undefined,
+      hasImages: post.imageUrls && post.imageUrls.length > 0,
+      imageCount: post.imageUrls?.length || 0,
+    });
   };
 
   if (loading) {

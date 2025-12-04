@@ -100,6 +100,7 @@ describe("GET /api/feed", () => {
         data: {
           id: "post-feed-1",
           userId: FOLLOWED_USER_ID,
+          movieId: "movie-10", // All posts must reference a movie
           content: "New post from followed user",
           type: "SHORT",
           createdAt: new Date(),
