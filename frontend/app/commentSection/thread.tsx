@@ -1,16 +1,23 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { api } from '../../services/apiClient';
+import { useAuth } from '../../context/AuthContext';
 import type { ApiComment } from './_types';
 import { buildCommentTree, findCommentById, findRootAncestor, type CommentNode } from './_utils';
 import Comment from './components/Comment';
+import CommentInput from './components/CommentInput';
 import { threadStyles } from './styles/Thread.styles';
 
 interface GetCommentsResponse {
   message?: string;
   comments: ApiComment[];
+}
+
+interface CreateCommentResponse {
+  message: string;
+  comment: ApiComment;
 }
 
 /**
@@ -44,6 +51,7 @@ function ThreadComment({
 }
 
 const Thread = () => {
+  const { profile } = useAuth();
   const params = useLocalSearchParams<{
     type: 'post' | 'rating';
     targetId: string;
@@ -106,6 +114,34 @@ const Thread = () => {
     return findCommentById(tree, rootId);
   }, [comments, commentId]);
 
+  const handleSubmitComment = useCallback(async (content: string) => {
+    const body: { content: string; postId?: string; ratingId?: string; parentId?: string } = {
+      content,
+    };
+
+    if (type === 'post') {
+      body.postId = targetId;
+    } else {
+      body.ratingId = targetId;
+    }
+
+    if (replyTarget) {
+      body.parentId = replyTarget.id;
+    } else if (threadRoot) {
+      // If no specific reply target, reply to the root comment of this thread
+      body.parentId = threadRoot.id;
+    }
+
+    await api.post<CreateCommentResponse>('/api/comment', body);
+    setReplyTarget(null);
+    // Reload comments to show the new one
+    await loadComments();
+  }, [type, targetId, replyTarget, threadRoot, loadComments]);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyTarget(null);
+  }, []);
+
   const handleBack = () => {
     router.back();
   };
@@ -149,32 +185,40 @@ const Thread = () => {
 
   return (
     <SafeAreaView style={threadStyles.container}>
-      <View style={threadStyles.header}>
-        <TouchableOpacity onPress={handleBack} style={threadStyles.backButton}>
-          <MaterialIcons name="arrow-back" style={threadStyles.backIcon} />
-        </TouchableOpacity>
-        <Text style={threadStyles.headerTitle}>Thread</Text>
-      </View>
-
-      <ScrollView
-        style={threadStyles.scrollContainer}
-        contentContainerStyle={threadStyles.contentContainer}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={threadStyles.keyboardAvoidingContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        <ThreadComment
-          node={threadRoot}
-          depth={0}
-          onReply={setReplyTarget}
-        />
-      </ScrollView>
-
-      {replyTarget && (
-        <View style={{ padding: 12, backgroundColor: '#f5f5f5' }}>
-          <Text style={{ fontSize: 14, color: '#666' }}>
-            Replying to: {replyTarget.UserProfile?.username ?? 'Anonymous'}
-          </Text>
+        <View style={threadStyles.header}>
+          <TouchableOpacity onPress={handleBack} style={threadStyles.backButton}>
+            <MaterialIcons name="arrow-back" style={threadStyles.backIcon} />
+          </TouchableOpacity>
+          <Text style={threadStyles.headerTitle}>Thread</Text>
         </View>
-      )}
+
+        <ScrollView
+          style={threadStyles.scrollContainer}
+          contentContainerStyle={threadStyles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ThreadComment
+            node={threadRoot}
+            depth={0}
+            onReply={setReplyTarget}
+          />
+        </ScrollView>
+
+        <CommentInput
+          onSubmit={handleSubmitComment}
+          replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
+          onCancelReply={handleCancelReply}
+          placeholder="Reply to thread..."
+          userProfilePicture={profile?.profilePicture}
+          username={profile?.username}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

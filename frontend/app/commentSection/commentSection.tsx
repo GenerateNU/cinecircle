@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { api } from '../../services/apiClient';
+import { useAuth } from '../../context/AuthContext';
 import type { ApiComment } from './_types';
 import { buildCommentTree, type CommentNode } from './_utils';
 import CommentThread from './components/CommentThread';
+import CommentInput from './components/CommentInput';
 import { commentSectionStyles } from './styles/CommentSection.styles';
 
 interface CommentSectionProps { 
@@ -17,10 +19,16 @@ interface GetCommentsResponse {
   comments: ApiComment[];
 }
 
+interface CreateCommentResponse {
+  message: string;
+  comment: ApiComment;
+}
+
 const MAX_INITIAL_THREADS = 4;
 const THREAD_INCREMENT = 8;
 
 const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
+  const { profile } = useAuth();
   const [comments, setComments] = useState<ApiComment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,6 +71,31 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
   const visibleThreads = tree.slice(0, visibleThreadCount);
   const hasMoreThreads = tree.length > visibleThreadCount;
 
+  const handleSubmitComment = useCallback(async (content: string) => {
+    const body: { content: string; postId?: string; ratingId?: string; parentId?: string } = {
+      content,
+    };
+
+    if (targetType === 'post') {
+      body.postId = targetId;
+    } else {
+      body.ratingId = targetId;
+    }
+
+    if (replyTarget) {
+      body.parentId = replyTarget.id;
+    }
+
+    await api.post<CreateCommentResponse>('/api/comment', body);
+    setReplyTarget(null);
+    // Reload comments to show the new one
+    await loadComments();
+  }, [targetType, targetId, replyTarget, loadComments]);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyTarget(null);
+  }, []);
+
   if (loading) {
     return (
       <View style={commentSectionStyles.loadingContainer}>
@@ -80,7 +113,11 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
   }
 
   return (
-    <View style={commentSectionStyles.container}>
+    <KeyboardAvoidingView
+      style={commentSectionStyles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <Text style={commentSectionStyles.header}>
         {comments.length} Comments
       </Text>
@@ -88,6 +125,7 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
       <ScrollView
         contentContainerStyle={commentSectionStyles.threadContainer}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {visibleThreads.map((node) => (
           <CommentThread
@@ -99,7 +137,6 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
             targetId={targetId}
           />
         ))}
-
 
         {hasMoreThreads && (
           <TouchableOpacity
@@ -115,12 +152,14 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
         )}
       </ScrollView>
 
-      {replyTarget && (
-        <Text style={commentSectionStyles.viewMoreText}>
-          Replying to: {replyTarget.UserProfile?.username ?? 'Anonymous'}
-        </Text>
-      )}
-    </View>
+      <CommentInput
+        onSubmit={handleSubmitComment}
+        replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
+        onCancelReply={handleCancelReply}
+        userProfilePicture={profile?.profilePicture}
+        username={profile?.username}
+      />
+    </KeyboardAvoidingView>
   );
 };
 
