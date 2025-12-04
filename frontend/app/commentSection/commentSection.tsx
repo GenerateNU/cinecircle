@@ -86,10 +86,22 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
       body.parentId = replyTarget.id;
     }
 
-    await api.post<CreateCommentResponse>('/api/comment', body);
-    setReplyTarget(null);
-    // Reload comments to show the new one
-    await loadComments();
+    try {
+      const response = await api.post<CreateCommentResponse>('/api/comment', body);
+      setReplyTarget(null);
+      
+      // Optimistically add the new comment to the state without showing loading
+      if (response.comment) {
+        setComments((prevComments) => [...prevComments, response.comment]);
+      } else {
+        // Fallback: reload if response doesn't include the comment
+        await loadComments();
+      }
+    } catch (error) {
+      console.error('Failed to submit comment:', error);
+      // Reload on error to ensure consistency
+      await loadComments();
+    }
   }, [targetType, targetId, replyTarget, loadComments]);
 
   const handleCancelReply = useCallback(() => {

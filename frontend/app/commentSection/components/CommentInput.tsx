@@ -74,6 +74,8 @@ const CommentInput: React.FC<CommentInputProps> = ({
           multiline
           maxLength={2000}
           editable={!isSubmitting}
+          blurOnSubmit={false}
+          returnKeyType="default"
         />
         <TouchableOpacity
           style={[

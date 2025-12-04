@@ -46,7 +46,7 @@ export const commentStyles = StyleSheet.create({
   expandText: {
     fontSize: width * 0.03,
     color: '#D62E05',
-    fontWeight: '400',
+    fontWeight: '500',
   },
   interactionsBar: {
     flexDirection: 'row',

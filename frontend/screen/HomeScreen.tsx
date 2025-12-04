@@ -14,6 +14,7 @@ import tw from 'twrnc';
 import SearchBar from '../components/SearchBar';
 import TabToggle from '../components/TabToggle';
 import SectionHeader from '../components/SectionHeader';
+import CommentSection from '../app/commentSection/commentSection';
 
 export type HomeScreenProps = {
   user?: any;
@@ -62,6 +63,7 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
         contentContainerStyle={[tw`pb-28`]}
         showsVerticalScrollIndicator={false}
       >
+        <CommentSection targetType="post" targetId="1348bdf8asfqwer" />
         {/* Hero image */}
         <View style={{ paddingBottom: 16 }}>
           <View style={{ position: 'relative' }}>
