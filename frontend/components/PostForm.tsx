@@ -1,25 +1,34 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button } from 'react-native';
+import { View, TextInput, Button, StyleSheet } from 'react-native';
+import ImagePicker from './PhotoPicker';
+
 
 interface PostFormProps {
   showTitle?: boolean;
   showStars?: boolean;
   showTextBox?: boolean;
-  onSubmit: (data: { title: string; content: string; rating: number }) => void;
+  showImagePicker?: boolean;
+  onSubmit: (data: { title: string; content: string; rating: number; imageUri?: string; }) => void;
 }
 
 export default function PostForm({ 
   showTitle = false, 
   showStars = false, 
   showTextBox = true,
+  showImagePicker = true,
   onSubmit 
 }: PostFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(0);
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
   const handleSubmit = () => {
-    onSubmit({ title, content, rating });
+    onSubmit({ title, content, rating, imageUri: imageUri || undefined });
+  };
+
+  const handleImageSelected = (uri: string) => {
+    setImageUri(uri || null);
   };
 
   return (
@@ -73,8 +82,26 @@ export default function PostForm({
           }}
         />
       )}
+
+      {showImagePicker && (
+        <View style={styles.imagePickerContainer}>
+          <ImagePicker
+            onImageSelected={handleImageSelected}
+            currentImage={imageUri}
+            size="large"
+            shape="square"
+          />
+        </View>
+      )}
       
       <Button title="Submit" onPress={handleSubmit} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  imagePickerContainer: {
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+});
