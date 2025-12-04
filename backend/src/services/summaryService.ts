@@ -19,50 +19,34 @@ const SUMMARY_TTL_MS = 60 * 60 * 1000; // 1 hour
 const CHUNK_MAX_CHARS = 4000;
 
 /**
- * Turn all ratings + comments into normalized text entries.
+ * Fetch all posts for a movie and extract their textual content.
+ * No images or metadata - just the text content of posts.
  */
-// summaryService.ts
 
 async function getReviewTextsForMovie(movieId: string): Promise<string[]> {
-  // 1) Fetch ratings for this movie
-  const ratings = await prisma.rating.findMany({
+  // Fetch all posts for this movie (both LONG and SHORT)
+  const posts = await prisma.post.findMany({
     where: { movieId },
     select: {
       id: true,
+      content: true,
       stars: true,
-      comment: true,
+      type: true,
     },
   });
 
-  const ratingIds = ratings.map(r => r.id);
-
-  // 2) Fetch comments linked to those ratings
-  let comments: { content: string | null; spoiler: boolean | null }[] = [];
-
-  if (ratingIds.length > 0) {
-    comments = await prisma.comment.findMany({
-      where: {
-        ratingId: { in: ratingIds }, // ✅ no relation magic, just FK
-      },
-      select: {
-        content: true, 
-         },
-    });
-  }
-
   const texts: string[] = [];
 
-  // include rating comments
-  for (const r of ratings) {
-    if (r.comment) {
-      texts.push(`Rating (${r.stars}/10): ${r.comment}`);
-    }
-  }
-
-  // include free-form comments
-  for (const c of comments) {
-    if (c.content) {
-      texts.push(`Comment: ${c.content}`);
+  // Extract textual content from posts
+  for (const post of posts) {
+    if (post.content) {
+      // If post has stars (it's a review), include the rating in context
+      if (post.stars !== null && post.stars !== undefined) {
+        texts.push(`Review (${post.stars}/10): ${post.content}`);
+      } else {
+        // Regular post without stars
+        texts.push(`Post: ${post.content}`);
+      }
     }
   }
 
@@ -99,10 +83,10 @@ function chunkTexts(texts: string[], maxChars = CHUNK_MAX_CHARS): string[] {
  * Analyze a single chunk of reviews using the LLM and return a ChunkSummary.
  */
 async function summarizeChunk(movieId: string, chunkText: string): Promise<ChunkSummary> {
-    console.log(`Summarizing movie ${movieId} review items and ${chunkText.length} chunks`);
+    console.log(`Summarizing movie ${movieId} with ${chunkText.length} characters in chunk`);
 
   const systemPrompt = `
-You are an assistant that analyzes a subset of user reviews for a movie and produces a SHORT, structured summary for this chunk only.
+You are an assistant that analyzes user posts about a movie and produces a SHORT, structured summary for this chunk only.
 
 You MUST return ONLY valid JSON with this exact shape:
 {
@@ -123,7 +107,7 @@ Keep spoilers to a minimum if possible.
   const userPrompt = `
 Movie ID: ${movieId}
 
-Here is one CHUNK of user ratings & comments:
+Here is one CHUNK of user posts about this movie:
 
 ${chunkText}
 `.trim();
@@ -240,7 +224,7 @@ async function generateOverallFromAggregates(
   const { movieId, pros, cons, stats, quotes } = aggregated;
 
   const systemPrompt = `
-You are an assistant that writes a SHORT "overall" paragraph summarizing the sentiment of movie reviews.
+You are an assistant that writes a SHORT "overall" paragraph summarizing the sentiment of user posts about a movie.
 
 You will receive aggregated pros, cons, sentiment stats, and a few sample quotes.
 Return ONLY a concise paragraph (2–4 sentences).
@@ -289,13 +273,13 @@ export async function generateMovieSummary(movieId: string): Promise<MovieSummar
     return cached.summary;
   }
 
-  // 2) Fetch review texts
+  // 2) Fetch post texts
   const texts = await getReviewTextsForMovie(movieId);
 
   if (texts.length === 0) {
     const summary: MovieSummary = {
       movieId,
-      overall: 'There are no reviews yet for this movie.',
+      overall: 'There are no posts yet for this movie.',
       pros: [],
       cons: [],
       stats: { positive: 0, neutral: 0, negative: 0, total: 0 },

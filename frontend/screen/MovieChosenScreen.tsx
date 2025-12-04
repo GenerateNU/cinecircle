@@ -22,7 +22,7 @@ import InteractionBar from '../components/InteractionBar';
 import UserBar from '../components/UserBar';
 import StarRating from '../components/StarRating';
 import {
-  // getMovieSummary,
+  getMovieSummary,
   getMovieByCinecircleId,
 } from '../services/moviesService';
 import { getPosts } from '../services/postsService';
@@ -39,7 +39,7 @@ type MovieChosenScreenProps = {
 
 type Post = components['schemas']['Post'];
 type Movie = components['schemas']['Movie'];
-// type Summary = components["schemas"]["Summary"];
+type Summary = components['schemas']['Summary'];
 
 type FeedItem = {
   type: 'post';
@@ -53,9 +53,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // const [summary, setSummary] = useState<Summary | null>(null);
-  // const [summaryLoading, setSummaryLoading] = useState(false);
-  // const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const [movieEnvelope, setMovieEnvelope] = useState<Movie | null>(null);
   const [showSpoilers, setShowSpoilers] = useState(false);
@@ -75,7 +75,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
         setLoading(true);
         setError(null);
-        // setSummaryError(null);
+
+        // Reset summary when switching movies
+        setSummary(null);
+        setSummaryError(null);
+        setSummaryLoading(false);
 
         // Optional: fetch movie meta (title, description, etc.)
         try {
@@ -93,24 +97,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         });
 
         setPosts(postsResponse || []);
-
-        // setSummaryLoading(true);
-        // try {
-        //   const summaryResponse = await getMovieSummary(movieId);
-        //   // setSummary(summaryResponse);
-        // } catch (summaryErr: any) {
-        //   console.error('Error fetching AI summary:', summaryErr?.message);
-        //   // setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
-        // }
       } catch (err: any) {
         console.error('=== FETCH MOVIE DATA ERROR ===');
         console.error('Error type:', err?.constructor?.name);
         console.error('Error message:', err?.message);
         setError(t(UiTextKey.FailedToLoadMovieData));
-        // setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
       } finally {
         setLoading(false);
-        // setSummaryLoading(false);
         console.log('=== FETCH MOVIE DATA END ===');
       }
     };
@@ -128,6 +121,28 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       useNativeDriver: true,
     }).start();
   }, [showSpoilers]);
+
+  const handleGenerateSummary = async () => {
+    console.log('Generating AI summary for movieId:', movieId);
+
+    if (!movieId) return;
+
+    try {
+      setSummaryError(null);
+      setSummary(null);
+      setSummaryLoading(true);
+
+      const summaryResponse = await getMovieSummary(movieId);
+      console.log('AI summary response:', summaryResponse);
+
+      setSummary(summaryResponse);
+    } catch (err: any) {
+      console.error('Error fetching AI summary:', err?.message);
+      setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
 
   const calculateAverageRating = () => {
     // Only calculate average from posts that have star ratings (reviews)
@@ -664,6 +679,110 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         )}
       </View>
 
+      {/* AI Consensus / Sentiment Analysis */}
+      <View style={styles.summaryContainer}>
+        <View style={styles.summaryHeaderRow}>
+          <Text style={styles.sectionHeader}>Community Consensus</Text>
+
+          <TouchableOpacity
+            style={[
+              styles.summaryButton,
+              summaryLoading && styles.summaryButtonDisabled,
+            ]}
+            onPress={handleGenerateSummary}
+            disabled={summaryLoading}
+          >
+            {summaryLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.summaryButtonText}>
+                {summary ? 'Regenerate' : 'Generate'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Error state */}
+        {summaryError && (
+          <Text style={styles.summaryErrorText}>{summaryError}</Text>
+        )}
+
+        {/* Summary content */}
+        {summary && !summaryError && (
+          <>
+            {/* Overall paragraph */}
+            {summary.overall && (
+              <Text style={styles.summaryOverall}>{summary.overall}</Text>
+            )}
+
+            {/* Pros / Cons */}
+            {(summary.pros?.length || summary.cons?.length) && (
+              <View style={styles.summaryRow}>
+                {summary.pros && summary.pros.length > 0 && (
+                  <View style={styles.summaryColumn}>
+                    <Text style={styles.summarySubheader}>
+                      {t(UiTextKey.PeopleLiked)}
+                    </Text>
+                    {summary.pros.slice(0, 3).map((item, idx) => (
+                      <Text key={`pro-${idx}`} style={styles.summaryBullet}>
+                        • {item}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
+                {summary.cons && summary.cons.length > 0 && (
+                  <View style={styles.summaryColumn}>
+                    <Text style={styles.summarySubheader}>
+                      {t(UiTextKey.CommonComplaints)}
+                    </Text>
+                    {summary.cons.slice(0, 3).map((item, idx) => (
+                      <Text key={`con-${idx}`} style={styles.summaryBullet}>
+                        • {item}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Sentiment stats */}
+            {summary.stats && (
+              <View style={styles.statsRow}>
+                <Text style={styles.statsText}>
+                  👍 {summary.stats.positive} {t(UiTextKey.PositiveCount)}
+                </Text>
+                <Text style={styles.statsText}>
+                  😐 {summary.stats.neutral} {t(UiTextKey.NeutralCount)}
+                </Text>
+                <Text style={styles.statsText}>
+                  👎 {summary.stats.negative} {t(UiTextKey.NegativeCount)}
+                </Text>
+                <Text style={styles.statsTotalText}>
+                  Based on {summary.stats.total ?? 0} post
+                  {summary.stats.total !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            )}
+
+            {/* Representative quote */}
+            {summary.quotes && summary.quotes.length > 0 && (
+              <View style={styles.quoteContainer}>
+                <Text style={styles.quoteLabel}>Representative Post</Text>
+                <Text style={styles.quoteText}>"{summary.quotes[0]}"</Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* "Empty" state text when no summary yet and no error */}
+        {!summary && !summaryError && !summaryLoading && (
+          <Text style={styles.summaryHintText}>
+            Tap "Generate" to analyze posts about this movie.
+          </Text>
+        )}
+      </View>
+
       {/* Feed Items */}
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -683,92 +802,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           </Text>
         </View>
       )}
-
-      {/* Bar w/ spoiler button and trending dropdown */}
-
-      {/* AI Consensus */}
-
-      {/* <View style={styles.summaryContainer}>
-        <Text style={styles.sectionHeader}>{t(UiTextKey.AiSummary)}</Text>
-
-        {summaryLoading && (
-          <View style={styles.summaryLoadingRow}>
-            <ActivityIndicator size="small" />
-            <Text style={styles.summaryLoadingText}>
-              {/* can i18n this sentence later if you want */}
-      {/* Analyzing reviews...
-            </Text>
-          </View>
-        )}
-
-        {summaryError && !summaryLoading && (
-          <Text style={styles.summaryErrorText}>{summaryError}</Text>
-        )}
-
-        {summary && !summaryLoading && !summaryError && (
-          <>
-            <Text style={styles.summaryOverall}>{summary.movieId}</Text>
-
-            <View style={styles.summaryRow}>
-              {summary.pros?.length > 0 && (
-                <View style={styles.summaryColumn}>
-                  <Text style={styles.summarySubheader}>
-                    {t(UiTextKey.PeopleLiked)}
-                  </Text>
-                  {summary.pros.slice(0, 3).map((item, idx) => (
-                    <Text key={`pro-${idx}`} style={styles.summaryBullet}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              )}
-
-              {summary.cons?.length > 0 && (
-                <View style={styles.summaryColumn}>
-                  <Text style={styles.summarySubheader}>
-                    {t(UiTextKey.CommonComplaints)}
-                  </Text>
-                  {summary.cons.slice(0, 3).map((item, idx) => (
-                    <Text key={`con-${idx}`} style={styles.summaryBullet}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              )}
-            </View>
-            
-            {summary.stats && (
-              <View style={styles.statsRow}>
-                <Text style={styles.statsText}>
-                  👍 {summary.stats.positive} {t(UiTextKey.PositiveCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  😐 {summary.stats.neutral} {t(UiTextKey.NeutralCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  👎 {summary.stats.negative} {t(UiTextKey.NegativeCount)}
-                </Text>
-                <Text style={styles.statsTotalText}>
-                  {t(UiTextKey.BasedOnReviews).replace(
-                    "{count}",
-                    String(summary.stats.total ?? 0)
-                  )}
-                </Text>
-              </View>
-            )}
-
-            {summary.quotes && summary.quotes.length > 0 && (
-              <View style={styles.quoteContainer}>
-                <Text style={styles.quoteLabel}>
-                  {t(UiTextKey.RepresentativeComment)}
-                </Text>
-                <Text style={styles.quoteText}>"{summary.quotes[0]}"</Text>
-              </View>
-            )}
-           
-          </>
-        )}
-      </View> */}
     </ScrollView>
   );
 }
@@ -833,11 +866,41 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   summaryContainer: { backgroundColor: '#FFF', padding: 16, marginTop: 8 },
-  sectionHeader: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
+  sectionHeader: { fontSize: 18, fontWeight: '600' },
+  summaryHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  summaryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#000',
+  },
+  summaryButtonDisabled: {
+    opacity: 0.6,
+  },
+  summaryButtonText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '500',
+  },
   summaryLoadingRow: { flexDirection: 'row', alignItems: 'center' },
   summaryLoadingText: { marginLeft: 8, fontSize: 14, color: '#999' },
-  summaryErrorText: { fontSize: 14, color: '#FF3B30' },
-  summaryOverall: { fontSize: 15, color: '#333', marginBottom: 8 },
+  summaryErrorText: { fontSize: 14, color: '#FF3B30', marginTop: 8 },
+  summaryOverall: {
+    fontSize: 15,
+    color: '#333',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  summaryHintText: {
+    fontSize: 13,
+    color: '#777',
+    marginTop: 6,
+  },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
