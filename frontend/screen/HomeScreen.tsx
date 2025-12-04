@@ -14,6 +14,7 @@ import tw from 'twrnc';
 import SearchBar from '../components/SearchBar';
 import TabToggle from '../components/TabToggle';
 import SectionHeader from '../components/SectionHeader';
+import CommentSection from '../app/commentSection/commentSection';
 
 export type HomeScreenProps = {
   user?: any;
@@ -57,6 +58,7 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
           })
         }
       />
+      <CommentSection targetType="post" targetId="1348bdf8asfqwer" />
       <ScrollView
         style={tw`flex-1`}
         contentContainerStyle={[tw`pb-28`]}

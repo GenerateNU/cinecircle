@@ -5,8 +5,11 @@ import { api } from '../../services/apiClient';
 import type { ApiComment } from './_types';
 import { buildCommentTree, type CommentNode } from './_utils';
 import CommentThread from './components/CommentThread';
+import { Dimensions } from 'react-native';
 
-interface CommentSectionProps {
+const { width } = Dimensions.get('window');
+
+interface CommentSectionProps { 
   targetType: 'post' | 'rating';
   targetId: string;
 }
@@ -79,12 +82,15 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, marginHorizontal: width * 0.025 }}>
       <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
         Comments ({comments.length})
       </Text>
 
-      <ScrollView>
+      <ScrollView
+        contentContainerStyle={{ paddingRight: width * 0.04 }}
+        showsVerticalScrollIndicator={false}
+      >
         {visibleThreads.map((node) => (
           <CommentThread
             key={node.id}

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { CommentNode } from '../_utils';
 import CommentUserRow from './CommentUserRow';
 import CommentInteractionBar from './CommentInteractionBar';
 import { commentStyles, INDENT_PER_LEVEL } from '../styles/Comment.styles';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 type CommentProps = {
   comment: CommentNode;
@@ -31,9 +33,10 @@ const Comment: React.FC<CommentProps> = ({
   const displayText = isExpanded || !isLong ? comment.content : previewText;
 
   return (
-    <View style={[commentStyles.container, { marginLeft: depth * INDENT_PER_LEVEL }]}>
-      {depth > 0 && <View style={commentStyles.threadBar} />}
-
+    <View style={[
+      commentStyles.container,
+      { marginLeft: depth * INDENT_PER_LEVEL }
+    ]}>
       <View style={commentStyles.content}>
         <View style={commentStyles.headerRow}>
           <CommentUserRow
@@ -43,15 +46,26 @@ const Comment: React.FC<CommentProps> = ({
           />
         </View>
 
-        <Text style={commentStyles.body}>{displayText}</Text>
 
-        {isLong && (
-          <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
-            <Text style={commentStyles.expandText}>
-              {isExpanded ? 'Show less' : 'Expand Comment'}
-            </Text>
-          </TouchableOpacity>
-        )}
+        <View style={commentStyles.bodyContainer}>
+          <Text style={commentStyles.body}>{displayText}</Text>
+          {isLong && !isExpanded && (
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 1)']}
+              locations={[0, 0.5, 1]}
+              style={commentStyles.fadeOverlay}
+            />
+          )}
+          {isLong && (
+            <View style={commentStyles.expandTextContainer}>
+              <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
+                <Text style={commentStyles.expandText}>
+                  {isExpanded ? 'Show less' : 'Expand Comment'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
         {(isExpanded || !isLong) && (
           <View>
@@ -65,7 +79,10 @@ const Comment: React.FC<CommentProps> = ({
             <View>
               {onContinueThread && (
                 <TouchableOpacity onPress={onContinueThread}>
-                  <Text style={commentStyles.continueThreadText}>Continue Thread → </Text>
+                  <View style={commentStyles.viewMoreTextContainer}>
+                    <Text style={commentStyles.viewMoreText}>Continue Thread</Text>
+                    <MaterialIcons name="arrow-forward" style={commentStyles.viewMoreIcon} />
+                  </View>
                 </TouchableOpacity>
               )}
             </View>

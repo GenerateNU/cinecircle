@@ -8,7 +8,6 @@ import {
 import PostTypeSelector from '../components/PostTypeSelector';
 import CreatePostBar from '../components/CreatePostBar';
 import PostForm from '../components/PostForm';
-import CommentSection from '../app/commentSection/commentSection';
 
 interface PostData {
   title: string;
@@ -47,7 +46,6 @@ export default function PostScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <CommentSection targetType="post" targetId="1348bdf8asfqwer" />
       {postType === null ? (
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <PostTypeSelector value={postType} onChange={setPostType} />

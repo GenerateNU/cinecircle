@@ -22,7 +22,7 @@ const CommentInteractionBar: React.FC<CommentInteractionBarProps> = ({
         style={commentInteractionBarStyles.button}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="translate" size={16} color="#777" />
+        <MaterialIcons name="translate" style={commentInteractionBarStyles.icon} />
       </TouchableOpacity>
 
       {/* Reply */}
@@ -31,7 +31,7 @@ const CommentInteractionBar: React.FC<CommentInteractionBarProps> = ({
         style={commentInteractionBarStyles.button}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="reply" size={16} color="#777" />
+        <MaterialIcons name="reply" style={commentInteractionBarStyles.icon} />
       </TouchableOpacity>
 
       {/* Like */}
@@ -40,7 +40,7 @@ const CommentInteractionBar: React.FC<CommentInteractionBarProps> = ({
         style={commentInteractionBarStyles.button}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="favorite-border" size={16} color="#777" />
+        <MaterialIcons name="favorite-border" style={commentInteractionBarStyles.icon} />
       </TouchableOpacity>
     </View>
   );

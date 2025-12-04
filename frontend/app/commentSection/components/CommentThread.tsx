@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { CommentNode } from '../_utils';
 import Comment from './Comment';
 import { commentThreadStyles } from '../styles/CommentThread.styles';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+const { width } = Dimensions.get('window');
+const GUTTER_WIDTH = width * 0.0475;
 
 interface CommentThreadProps {
   node: CommentNode;
@@ -13,8 +17,8 @@ interface CommentThreadProps {
   targetId: string;
 }
 
-const INITIAL_VISIBLE_REPLIES = 4;
-const MAX_DEPTH = 1; // only render one level of replies under each root
+const INITIAL_VISIBLE_REPLIES = 1;
+const MAX_DEPTH = 2; // only render one level of replies under each root
 
 function CommentThread({ node, depth, onReply, targetType, targetId }: CommentThreadProps) {
   const totalReplies = node.replies.length;
@@ -53,29 +57,33 @@ function CommentThread({ node, depth, onReply, targetType, targetId }: CommentTh
   const hasMoreReplies = totalReplies > visibleReplies;
 
   return (
-    <View>
-      <Comment comment={node} depth={depth} onReply={onReply} />
+    <View style={commentThreadStyles.container}>
+      {node.replies.length > 0 && <View style={[commentThreadStyles.threadLine, { left: GUTTER_WIDTH * depth }]} />}
+      <View style={commentThreadStyles.threadContainer}>
+        <Comment comment={node} depth={depth} onReply={onReply} />
 
-      {repliesToRender.map((child) => (
-        <CommentThread
-          key={child.id}
-          node={child}
-          depth={depth + 1}
-          onReply={onReply}
-          targetType={targetType}
-          targetId={targetId}
-        />
-      ))}
+        {repliesToRender.map((child) => (
+          <CommentThread
+            key={child.id}
+            node={child}
+            depth={depth + 1}
+            onReply={onReply}
+            targetType={targetType}
+            targetId={targetId}
+          />
+        ))}
 
-      {hasMoreReplies && (
-        <TouchableOpacity
-          onPress={() => setVisibleReplies(totalReplies)}
-          style={[commentThreadStyles.viewMoreButton, { marginLeft: (depth + 1) * 12 }]}
-        >
-          {/* This is for showing *more siblings* at depth 1, not the nested page */}
-          {/* You can keep it as-is or remove if you only want Continue Thread */}
-        </TouchableOpacity>
-      )}
+        {hasMoreReplies && (
+          <TouchableOpacity
+            onPress={() => setVisibleReplies(totalReplies)}
+          >
+            <View style={commentThreadStyles.viewMoreTextContainer}>
+              <Text style={commentThreadStyles.viewMoreText}>View more replies</Text>
+              <MaterialIcons name="arrow-forward" style={commentThreadStyles.viewMoreIcon} />
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }

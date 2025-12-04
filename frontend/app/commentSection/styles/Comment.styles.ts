@@ -1,17 +1,12 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
-export const INDENT_PER_LEVEL = 12;
+const { width, height } = Dimensions.get('window');
+
+export const INDENT_PER_LEVEL = width * 0.05;
 
 export const commentStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginHorizontal: 28,
-  },
-  threadBar: {
-    width: 2,
-    marginRight: 8,
-    borderRadius: 1,
-    backgroundColor: '#ddd',
   },
   content: {
     flex: 1,
@@ -19,34 +14,55 @@ export const commentStyles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: height * 0.005,
+  },
+  bodyContainer: {
+    marginLeft: width * 0.07,
+    flexDirection: 'column',
+    position: 'relative',
   },
   body: {
     fontSize: 15,
     color: '#222',
-    marginHorizontal: 28,
-    justifyContent: 'center',
+  },
+  fadeOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: height * 0.06,
+    pointerEvents: 'none',
+  },
+  expandTextContainer: {
+    alignSelf: 'center',
+    position: 'absolute',
+    bottom: 0,
+    zIndex: 1,
   },
   expandText: {
-    fontSize: 12,
+    fontSize: width * 0.03,
     color: '#D62E05',
     fontWeight: '400',
-    textAlign: 'center',
   },
   interactionsBar: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
-  continueThreadText: {
-    paddingVertical: 2,
-    color: '#D62E05',
-    fontSize: 12,
-    textAlign: 'right',
+  viewMoreTextContainer: {
+    paddingVertical: height * 0.002,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.01,
+    justifyContent: 'flex-end',
   },
-  actionText: {
-    fontSize: 13,
-    color: '#757575',
-    fontWeight: '500',
-    marginRight: 16,
+  viewMoreText: {
+    fontSize: width * 0.03,
+    color: '#D62E05',
+    fontWeight: '400',
+  },
+  viewMoreIcon: {
+    fontSize: width * 0.03,
+    color: '#D62E05',
+    fontWeight: '400',
   },
 });
