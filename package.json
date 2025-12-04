@@ -42,8 +42,5 @@
     "@types/node": "^24.7.2",
     "tsd": "^0.33.0",
     "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "openai": "^6.9.1"
   }
 }
