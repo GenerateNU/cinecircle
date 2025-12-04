@@ -12,7 +12,7 @@ interface EventCardProps {
 }
 
 const PLACEHOLDER_IMAGE =
-  'https://www.bostonteapartyship.com/wp-content/uploads/2023/03/boston-fall.jpg';
+  'https://community.softr.io/uploads/db9110/original/2X/7/74e6e7e382d0ff5d7773ca9a87e6f6f8817a68a6.jpeg';
 
 export default function EventCard({
   event,
@@ -26,7 +26,7 @@ export default function EventCard({
       activeOpacity={0.7}
     >
       <ImageBackground
-        source={{ uri: PLACEHOLDER_IMAGE }}
+        source={{ uri: event.imageUrl || PLACEHOLDER_IMAGE }}
         style={[styles.imageBackground, styles[`${size}Height`]]}
         imageStyle={styles.imageStyle}
       >

@@ -1,9 +1,21 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Dimensions } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+} from 'react-native';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
 import tw from 'twrnc';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { getUserProfile, updateUserProfile } from '../../services/userService';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
 
 export default function Settings() {
   const [displayName, setDisplayName] = useState('');
@@ -17,6 +29,9 @@ export default function Settings() {
   const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2);
   const AVATAR_SIZE = 100;
   const AVATAR_RADIUS = AVATAR_SIZE / 2;
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const scrollBottomPadding = insets.bottom + 96;
 
   const loadProfile = useCallback(async () => {
     try {
@@ -76,7 +91,11 @@ export default function Settings() {
           )}&size=200&background=667eea&color=fff`
         );
       }
-      router.back();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        router.push('/(tabs)/profile');
+      }
     } catch (err) {
       console.error('Failed to update profile:', err);
       Alert.alert('Unable to save', 'Please try again.');
@@ -87,7 +106,7 @@ export default function Settings() {
 
   return (
     <View style={tw`flex-1 bg-white`}>
-      <ScrollView contentContainerStyle={tw`pb-10`}>
+      <ScrollView contentContainerStyle={{ paddingBottom: scrollBottomPadding }}>
         {/* Header */}
         <View
           style={[
@@ -103,8 +122,24 @@ export default function Settings() {
               <Ionicons name="camera-outline" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-          <View style={tw`flex-row items-center justify-between px-5 pt-6`}>
-            <TouchableOpacity onPress={() => router.replace('/profilePage')} style={tw`px-2 py-2`}>
+          <View
+            style={[
+              tw`flex-row items-center justify-between px-5`,
+              { paddingTop: Math.max(insets.top, 12) },
+            ]}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                if (navigation.canGoBack()) {
+                  navigation.goBack();
+                } else {
+                  router.push('/(tabs)/profile');
+                }
+              }}
+              style={tw`px-2 py-2`}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
               <Ionicons name="chevron-back" size={24} color="#111" />
             </TouchableOpacity>
             <TouchableOpacity
@@ -228,6 +263,44 @@ export default function Settings() {
           </>
         )}
       </ScrollView>
+
+      {/* Bottom nav to keep tabs visible in settings */}
+      <View
+        style={[
+          bottomNavStyles.bar,
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            paddingBottom: insets.bottom,
+          },
+        ]}
+      >
+        {[
+          { route: '/(tabs)/home', icon: 'home' as const, label: 'Home' },
+          { route: '/(tabs)/movies', icon: 'confirmation-number' as const, label: 'Movies' },
+          { route: '/(tabs)/post', icon: 'add-circle' as const, label: 'Create post' },
+          { route: '/(tabs)/events', icon: 'place' as const, label: 'Events' },
+          { route: '/(tabs)/profile', icon: 'account-circle' as const, label: 'Profile' },
+        ].map((item) => {
+          const isActive = item.route === '/(tabs)/profile';
+          return (
+            <TouchableOpacity
+              key={item.route}
+              onPress={() => router.navigate(item.route)}
+              style={[bottomNavStyles.item, { overflow: 'visible' }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Go to ${item.label}`}
+            >
+              <MaterialIcons
+                name={item.icon}
+                style={isActive ? bottomNavStyles.activeIcon : bottomNavStyles.icon}
+              />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }

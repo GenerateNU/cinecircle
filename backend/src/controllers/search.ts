@@ -228,14 +228,6 @@ export const searchUsers = async (req: Request, res: Response) => {
                 }
             },
             take: limitNum,
-            select: {
-                userId: true,
-                username: true,
-                preferredCategories: true,
-                preferredLanguages: true,
-                favoriteMovies: true,
-                createdAt: true,
-            },
         });
 
         return res.json({

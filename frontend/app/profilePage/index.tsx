@@ -9,7 +9,9 @@ import {
   DeviceEventEmitter,
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
 import tw from 'twrnc';
 import { User, TabKey } from './_types';
 import { formatCount } from './_utils';
@@ -61,6 +63,17 @@ const ProfilePage = ({
   const [loading, setLoading] = useState(isMe);
   const [error, setError] = useState<string | null>(null);
   const targetUserId = isMe ? profile?.userId : profileUserId;
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const scrollBottomPadding = NAV_HEIGHT + insets.bottom + 32;
+
+  const handleBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      router.push('/(tabs)/home');
+    }
+  }, [navigation]);
 
   const fetchProfileData = useCallback(async () => {
     try {
@@ -194,9 +207,12 @@ const ProfilePage = ({
   const u = displayUser;
 
   return (
-    <View style={tw`flex-1 bg-white`}>
-      {/* All content scrolls, including the gray header */}
-      <ScrollView contentContainerStyle={{ paddingBottom: NAV_HEIGHT + 32 }}>
+      <View style={tw`flex-1 bg-white`}>
+        {/* All content scrolls, including the gray header */}
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: scrollBottomPadding }}
+          nestedScrollEnabled
+        >
         {/* Scrollable gray header band */}
         <View
           style={[
@@ -204,11 +220,47 @@ const ProfilePage = ({
             { height: HEADER_HEIGHT, backgroundColor: '#E9EBEF' },
           ]}
         >
-          {/* Settings button top-right */}
-          {isMe && (
-            <View style={tw`flex-row justify-end px-4 pt-3`}>
+          <View
+            style={[
+              tw`flex-row justify-between px-4`,
+              { paddingTop: Math.max(insets.top, 12) },
+            ]}
+          >
+            {/* Back button for visiting another user's profile */}
+            {!isMe ? (
               <TouchableOpacity
-                onPress={() => router.push('/profilePage/settings')}
+                onPress={handleBack}
+                style={[
+                  tw`flex-row items-center rounded-xl`,
+                  {
+                    paddingHorizontal: 10,
+                    paddingVertical: 8,
+                    backgroundColor: BUTTON_COLOR,
+                    borderColor: ACCENT_COLOR,
+                    borderWidth: 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Ionicons name="chevron-back" size={20} color={ACCENT_COLOR} />
+                <Text
+                  style={[
+                    tw`ml-1 font-semibold`,
+                    { color: ACCENT_COLOR },
+                  ]}
+                >
+                  Back
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={tw`w-10 h-10`} />
+            )}
+
+            {/* Settings button top-right */}
+            {isMe ? (
+              <TouchableOpacity
+                onPress={() => router.push('/profilePage/accountSettings')}
                 style={tw`w-10 h-10 items-center justify-center rounded-full`}
                 accessibilityRole="button"
                 accessibilityLabel="Open settings"
@@ -230,8 +282,10 @@ const ProfilePage = ({
                   />
                 </View>
               </TouchableOpacity>
-            </View>
-          )}
+            ) : (
+              <View style={tw`w-10 h-10`} />
+            )}
+          </View>
         </View>
 
         {/* Profile block (avatar overlaps the gray header) */}
@@ -324,6 +378,7 @@ const ProfilePage = ({
             {isMe ? (
               // Logged-in user sees edit button
               <TouchableOpacity
+                onPress={() => router.push('/profilePage/settings')}
                 style={[
                   tw`items-center justify-center px-[18px] py-[10px]`,
                   {
@@ -486,9 +541,9 @@ const ProfilePage = ({
 
         {/* Tab-specific content */}
         <View style={tw`px-4 pt-3`}>
-          {activeTab === 'movies' && <MoviesGrid />}
-          {activeTab === 'posts' && <PostsList user={u} />}
-          {activeTab === 'events' && <EventsList />}
+          {activeTab === 'movies' && <MoviesGrid userId={targetUserId ?? null} />}
+          {activeTab === 'posts' && <PostsList user={u} userId={targetUserId ?? null} />}
+          {activeTab === 'events' && <EventsList userId={targetUserId ?? null} />}
           {activeTab === 'badges' && <BadgesGrid />}
         </View>
 
@@ -505,6 +560,45 @@ const ProfilePage = ({
         )}
       </ScrollView>
 
+      {/* Inline bottom nav so it remains visible when viewing another user's profile */}
+      {!isMe && (
+        <View
+          style={[
+            bottomNavStyles.bar,
+            {
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              paddingBottom: insets.bottom,
+            },
+          ]}
+        >
+          {[
+            { route: '/(tabs)/home', icon: 'home' as const, label: 'Home' },
+            { route: '/(tabs)/movies', icon: 'confirmation-number' as const, label: 'Movies' },
+            { route: '/(tabs)/post', icon: 'add-circle' as const, label: 'Create post' },
+            { route: '/(tabs)/events', icon: 'place' as const, label: 'Events' },
+            { route: '/(tabs)/profile', icon: 'account-circle' as const, label: 'Profile' },
+          ].map((item) => {
+            const isActive = item.route === '/(tabs)/profile';
+            return (
+              <TouchableOpacity
+                key={item.route}
+                onPress={() => router.navigate(item.route)}
+                style={[bottomNavStyles.item, { overflow: 'visible' }]}
+                accessibilityRole="button"
+                accessibilityLabel={`Go to ${item.label}`}
+              >
+                <MaterialIcons
+                  name={item.icon}
+                  style={isActive ? bottomNavStyles.activeIcon : bottomNavStyles.icon}
+                />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 };
