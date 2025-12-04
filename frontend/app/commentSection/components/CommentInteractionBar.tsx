@@ -1,15 +1,19 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { commentInteractionBarStyles } from '../styles/CommentInteractionBar.styles';
 
 type CommentInteractionBarProps = {
+  likeCount: number;
+  liked: boolean;
   onLikePress?: () => void;
   onTranslatePress?: () => void;
   onReplyPress?: () => void;
 };
 
 const CommentInteractionBar: React.FC<CommentInteractionBarProps> = ({
+  likeCount,
+  liked,
   onLikePress,
   onTranslatePress,
   onReplyPress,
@@ -37,10 +41,22 @@ const CommentInteractionBar: React.FC<CommentInteractionBarProps> = ({
       {/* Like */}
       <TouchableOpacity
         onPress={onLikePress}
-        style={commentInteractionBarStyles.button}
+        style={commentInteractionBarStyles.likeButton}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="favorite-border" style={commentInteractionBarStyles.icon} />
+        <MaterialIcons
+          name={liked ? "favorite" : "favorite-border"}
+          style={[
+            commentInteractionBarStyles.icon,
+            liked && commentInteractionBarStyles.likedIcon,
+          ]}
+        />
+        <Text style={[
+          commentInteractionBarStyles.likeCount,
+          liked && commentInteractionBarStyles.likedText,
+        ]}>
+          {likeCount > 0 ? likeCount : ' '}
+        </Text>
       </TouchableOpacity>
     </View>
   );

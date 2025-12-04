@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { CommentNode } from '../_utils';
@@ -6,6 +6,7 @@ import CommentUserRow from './CommentUserRow';
 import CommentInteractionBar from './CommentInteractionBar';
 import { commentStyles, INDENT_PER_LEVEL } from '../styles/Comment.styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { api } from '../../../services/apiClient';
 
 type CommentProps = {
   comment: CommentNode;
@@ -13,6 +14,12 @@ type CommentProps = {
   onReply?: (comment: CommentNode) => void;
   onContinueThread?: () => void;
 };
+
+interface ToggleLikeResponse {
+  message: string;
+  liked: boolean;
+  likeCount: number;
+}
 
 const MAX_PREVIEW_CHARS = 400;
 
@@ -25,12 +32,40 @@ const Comment: React.FC<CommentProps> = ({
   const username = comment.UserProfile?.username ?? 'Anonymous';
   const profilePicture = comment.UserProfile?.profilePicture ?? null;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [liked, setLiked] = useState(comment.liked);
+  const [likeCount, setLikeCount] = useState(comment.likeCount);
+  const [isLiking, setIsLiking] = useState(false);
 
   const isLong = comment.content.length > MAX_PREVIEW_CHARS;
   const previewText = isLong
     ? comment.content.slice(0, MAX_PREVIEW_CHARS).trimEnd() + '…'
     : comment.content;
   const displayText = isExpanded || !isLong ? comment.content : previewText;
+
+  const handleLikePress = useCallback(async () => {
+    if (isLiking) return;
+
+    // Optimistic update
+    const previousLiked = liked;
+    const previousCount = likeCount;
+    setLiked(!liked);
+    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+    setIsLiking(true);
+
+    try {
+      const response = await api.post<ToggleLikeResponse>(`/api/comment/${comment.id}/like`);
+      // Sync with server response
+      setLiked(response.liked);
+      setLikeCount(response.likeCount);
+    } catch (error) {
+      // Revert on error
+      console.error('Failed to toggle like:', error);
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
+    } finally {
+      setIsLiking(false);
+    }
+  }, [comment.id, liked, likeCount, isLiking]);
 
   return (
     <View style={[
@@ -71,7 +106,9 @@ const Comment: React.FC<CommentProps> = ({
           <View>
             <View style={commentStyles.interactionsBar}>
               <CommentInteractionBar
-                onLikePress={() => { }}
+                likeCount={likeCount}
+                liked={liked}
+                onLikePress={handleLikePress}
                 onTranslatePress={() => { }}
                 onReplyPress={() => onReply?.(comment)}
               />

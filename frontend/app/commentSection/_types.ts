@@ -6,6 +6,8 @@ export type ApiComment = {
     parentId?: string | null;
     content: string;
     createdAt: string;
+    likeCount: number;
+    liked: boolean;
     UserProfile?: {
       userId: string;
       username: string | null;
