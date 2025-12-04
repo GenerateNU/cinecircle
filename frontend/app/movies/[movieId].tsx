@@ -1,30 +1,28 @@
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import MovieChosenScreen from '../../screen/MovieChosenScreen';
 
 export default function MovieDetailPage() {
+  const router = useRouter();
   const { movieId } = useLocalSearchParams<{ movieId: string }>();
-
+  
   if (!movieId) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>No movie ID provided</Text>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButtonError}
-          >
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+    return null;
   }
-
+  
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {/* Back button */}
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        style={styles.backButton}
+      >
+        <Ionicons name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
+      
       <MovieChosenScreen movieId={movieId} />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -33,23 +31,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
-  backButtonError: {
-    marginTop: 20,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#FF3B30',
-    marginBottom: 20,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });

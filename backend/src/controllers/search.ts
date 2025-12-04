@@ -240,6 +240,16 @@ export const searchUsers = async (req: Request, res: Response) => {
                 OR: orClauses,
             },
             take: limitNum,
+
+            select: {
+                userId: true,
+                username: true,
+                favoriteGenres: true,        // ← Changed from preferredCategories
+                secondaryLanguage: true,     // ← Changed from preferredLanguages
+                favoriteMovies: true,
+                createdAt: true,
+                profilePicture: true,        // ← Added this too (might be useful)
+            },
         });
 
         const toStrings = (val?: string[] | null) =>
@@ -326,7 +336,7 @@ export const searchReviews = async (req: Request, res: Response) => {
             where: whereClause,
             take: limitNum,
             orderBy: {
-                votes: "desc" // sorting by most votes to least, essentially most relevant
+                date: "desc" // sorting by most votes to least, essentially most relevant
             },
                 include: {
                     UserProfile: { 
@@ -395,7 +405,7 @@ export const searchPosts = async (req: Request, res: Response) => {
             where: whereClause,
             take: limitNum,
             orderBy: {
-                votes: "desc" // sorting by most votes to least, essentially most relevant
+                createdAt: "desc" // sorting by most votes to least, essentially most relevant
             },
             include: {
     UserProfile: { 
