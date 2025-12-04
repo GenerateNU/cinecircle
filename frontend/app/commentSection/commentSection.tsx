@@ -5,9 +5,7 @@ import { api } from '../../services/apiClient';
 import type { ApiComment } from './_types';
 import { buildCommentTree, type CommentNode } from './_utils';
 import CommentThread from './components/CommentThread';
-import { Dimensions } from 'react-native';
-
-const { width } = Dimensions.get('window');
+import { commentSectionStyles } from './styles/CommentSection.styles';
 
 interface CommentSectionProps { 
   targetType: 'post' | 'rating';
@@ -67,48 +65,51 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
 
   if (loading) {
     return (
-      <View>
-        <Text>Loading comments…</Text>
+      <View style={commentSectionStyles.loadingContainer}>
+        <Text style={commentSectionStyles.loadingText}>Loading comments…</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View>
-        <Text>{error}</Text>
+      <View style={commentSectionStyles.errorContainer}>
+        <Text style={commentSectionStyles.errorText}>{error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, marginHorizontal: width * 0.025 }}>
-      <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
+    <View style={commentSectionStyles.container}>
+      <Text style={commentSectionStyles.header}>
         Comments ({comments.length})
       </Text>
 
       <ScrollView
-        contentContainerStyle={{ paddingRight: width * 0.04 }}
         showsVerticalScrollIndicator={false}
       >
-        {visibleThreads.map((node) => (
-          <CommentThread
-            key={node.id}
-            node={node}
-            depth={0}
-            onReply={setReplyTarget}
-            targetType={targetType}
-            targetId={targetId}
-          />
-        ))}
+        <View style={commentSectionStyles.threadContainer}>
+            {visibleThreads.map((node) => (
+            <CommentThread
+                key={node.id}
+                node={node}
+                depth={0}
+                onReply={setReplyTarget}
+                targetType={targetType}
+                targetId={targetId}
+            />
+            ))}
+        </View>
+
 
         {hasMoreThreads && (
           <TouchableOpacity
             onPress={() =>
               setVisibleThreadCount((prev) => Math.min(prev + THREAD_INCREMENT, tree.length))
             }
+            style={commentSectionStyles.viewMoreButton}
           >
-            <Text style={{ color: '#555', fontWeight: '500' }}>
+            <Text style={commentSectionStyles.viewMoreText}>
               View more comments ({tree.length - visibleThreadCount} more)
             </Text>
           </TouchableOpacity>
@@ -116,7 +117,7 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
       </ScrollView>
 
       {replyTarget && (
-        <Text style={{ marginTop: 8 }}>
+        <Text style={commentSectionStyles.viewMoreText}>
           Replying to: {replyTarget.UserProfile?.username ?? 'Anonymous'}
         </Text>
       )}

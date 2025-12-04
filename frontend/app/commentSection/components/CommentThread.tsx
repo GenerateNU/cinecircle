@@ -17,7 +17,7 @@ interface CommentThreadProps {
   targetId: string;
 }
 
-const INITIAL_VISIBLE_REPLIES = 1;
+const INITIAL_VISIBLE_REPLIES = 2;
 const MAX_DEPTH = 2; // only render one level of replies under each root
 
 function CommentThread({ node, depth, onReply, targetType, targetId }: CommentThreadProps) {
@@ -40,7 +40,7 @@ function CommentThread({ node, depth, onReply, targetType, targetId }: CommentTh
   // show a "Continue Thread" link that navigates to the dedicated page.
   if (isAtMaxDepth) {
     return (
-      <View>
+      <View style={commentThreadStyles.container}>
         <Comment
           comment={node}
           depth={depth}
@@ -78,7 +78,9 @@ function CommentThread({ node, depth, onReply, targetType, targetId }: CommentTh
             onPress={() => setVisibleReplies(totalReplies)}
           >
             <View style={commentThreadStyles.viewMoreTextContainer}>
-              <Text style={commentThreadStyles.viewMoreText}>View more replies</Text>
+              <Text style={commentThreadStyles.viewMoreText}>
+                View {totalReplies - visibleReplies} Repl{totalReplies - visibleReplies === 1 ? 'y' : 'es'}
+              </Text>
               <MaterialIcons name="arrow-forward" style={commentThreadStyles.viewMoreIcon} />
             </View>
           </TouchableOpacity>

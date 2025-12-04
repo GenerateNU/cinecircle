@@ -1,35 +1,37 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
-export const DEFAULT_AVATAR_SIZE = 20;
+const { width, height } = Dimensions.get('window');
+
+export const DEFAULT_AVATAR_SIZE = width * 0.06;
 
 export const commentUserRowStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: width * 0.02,
   },
   avatar: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 5,
+    marginRight: width * 0.0125,
   },
   avatarText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: width * 0.035,
     fontWeight: '600',
   },
   textContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: width * 0.01,
   },
   username: {
-    fontSize: 14,
+    fontSize: width * 0.035,
     fontWeight: '600',
     color: '#111',
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: width * 0.03,
     color: '#888',
   },
 });

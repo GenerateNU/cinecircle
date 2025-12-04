@@ -49,13 +49,6 @@ const Comment: React.FC<CommentProps> = ({
 
         <View style={commentStyles.bodyContainer}>
           <Text style={commentStyles.body}>{displayText}</Text>
-          {isLong && !isExpanded && (
-            <LinearGradient
-              colors={['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 1)']}
-              locations={[0, 0.5, 1]}
-              style={commentStyles.fadeOverlay}
-            />
-          )}
           {isLong && (
             <View style={commentStyles.expandTextContainer}>
               <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
@@ -64,6 +57,13 @@ const Comment: React.FC<CommentProps> = ({
                 </Text>
               </TouchableOpacity>
             </View>
+          )}
+          {isLong && !isExpanded && (
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 1)']}
+              locations={[0, 0.3, 1]}
+              style={commentStyles.fadeOverlay}
+            />
           )}
         </View>
 

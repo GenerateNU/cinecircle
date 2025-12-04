@@ -7,6 +7,7 @@ export const INDENT_PER_LEVEL = width * 0.05;
 export const commentStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    marginVertical: height * 0.01,
   },
   content: {
     flex: 1,
@@ -22,20 +23,23 @@ export const commentStyles = StyleSheet.create({
     position: 'relative',
   },
   body: {
-    fontSize: 15,
+    fontSize: width * 0.035,
     color: '#222',
+    fontWeight: '400',
+    marginLeft: width * 0.025,
   },
   fadeOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: height * 0.06,
+    height: height * 0.05,
     pointerEvents: 'none',
   },
   expandTextContainer: {
     alignSelf: 'center',
     position: 'absolute',
+    marginBottom: height * 0.01,
     bottom: 0,
     zIndex: 1,
   },
@@ -61,7 +65,7 @@ export const commentStyles = StyleSheet.create({
     fontWeight: '400',
   },
   viewMoreIcon: {
-    fontSize: width * 0.03,
+    fontSize: width * 0.025,
     color: '#D62E05',
     fontWeight: '400',
   },

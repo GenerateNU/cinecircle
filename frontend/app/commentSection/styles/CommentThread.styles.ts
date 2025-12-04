@@ -5,6 +5,7 @@ const { width, height } = Dimensions.get('window');
 export const commentThreadStyles = StyleSheet.create({
   container: {
     position: 'relative',
+    marginLeft: width * 0.025,
   },
   threadContainer: {
     flex: 1,
@@ -16,14 +17,16 @@ export const commentThreadStyles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'lightgrey',
     borderRadius: 2,
-    marginLeft: width * 0.0425,
-    marginVertical: height * 0.03,
+    marginLeft: width * 0.0495,
+    marginTop: height * 0.045,
+    marginBottom: height * 0.03,
   },
   viewMoreTextContainer: {
     paddingVertical: height * 0.002,
     flexDirection: 'row',
     alignItems: 'center',
     gap: width * 0.01,
+    marginBottom: height * 0.01,
   },
   viewMoreText: {
     fontSize: width * 0.03,

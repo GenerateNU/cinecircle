@@ -15,7 +15,7 @@ export const commentInteractionBarStyles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    fontSize: width * 0.05,
+    fontSize: width * 0.04,
     color: '#777',
   },
 });
