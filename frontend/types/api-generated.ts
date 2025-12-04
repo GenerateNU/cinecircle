@@ -2631,7 +2631,15 @@ export interface paths {
                         /** @example any */
                         imageUrls?: unknown;
                         /** @example any */
-                        parentPostId?: unknown;
+                        repostedPostId?: unknown;
+                        /** @example any */
+                        movieId?: unknown;
+                        /** @example any */
+                        stars?: unknown;
+                        /** @example any */
+                        spoiler?: unknown;
+                        /** @example any */
+                        tags?: unknown;
                     };
                 };
             };
@@ -2691,9 +2699,11 @@ export interface paths {
                 query?: {
                     userId?: string;
                     type?: string;
-                    parentPostId?: string;
+                    movieId?: string;
+                    repostedPostId?: string;
                     limit?: string;
                     offset?: string;
+                    currentUserId?: string;
                 };
                 header?: {
                     authorization?: string;
@@ -3040,7 +3050,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/post/{postId}/replies": {
+    "/api/post/{postId}/reposts": {
         parameters: {
             query?: never;
             header?: never;
@@ -3575,16 +3585,26 @@ export interface components {
         Post: {
             id: string;
             userId: string;
+            movieId: string;
             content: string;
             /** @enum {string} */
             type: "SHORT" | "LONG";
+            stars: number | null;
+            spoiler: boolean;
+            tags: string[];
             createdAt: string;
             imageUrls: string[];
-            parentPostId: string | null;
+            repostedPostId: string | null;
             UserProfile?: {
                 userId: string;
                 username: string | null;
             };
+            movie?: {
+                movieId: string;
+                title: string | null;
+                imageUrl: string | null;
+            };
+            OriginalPost?: components["schemas"]["Post"];
             PostReaction?: {
                 id: string;
                 userId: string;
@@ -3593,11 +3613,11 @@ export interface components {
             Comment?: {
                 id: string;
             }[];
-            Replies?: {
+            Reposts?: {
                 id: string;
             }[];
             commentCount?: number;
-            replyCount?: number;
+            repostCount?: number;
             reactionCount?: number;
             reactionCounts?: {
                 SPICY: number;
@@ -3615,11 +3635,15 @@ export interface components {
         };
         CreatePostInput: {
             userId: string;
+            movieId: string;
             content: string;
             /** @enum {string} */
             type?: "SHORT" | "LONG";
+            stars?: number;
+            spoiler?: boolean;
+            tags?: string[];
             imageUrls?: string[];
-            parentPostId?: string;
+            repostedPostId?: string;
         };
         CreatePostResponse: {
             message: string;
@@ -3629,6 +3653,9 @@ export interface components {
             content?: string;
             /** @enum {string} */
             type?: "SHORT" | "LONG";
+            stars?: number;
+            spoiler?: boolean;
+            tags?: string[];
             imageUrls?: string[];
         };
         UpdatePostResponse: {

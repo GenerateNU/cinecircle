@@ -175,45 +175,68 @@ ON CONFLICT ("id") DO NOTHING;
 INSERT INTO "public"."Post" (
   "id",
   "userId",
+  "movieId",
   "content",
   "type",
+  "stars",
+  "spoiler",
+  "tags",
   "createdAt",
   "imageUrls",
-  "parentPostId"
+  "repostedPostId"
 ) VALUES
   -- Text posts
-  ('p1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Just watched Shawshank Redemption again. Never gets old! 🎬', 'SHORT', NOW() - INTERVAL '2 days', '{}', NULL),
-  ('p2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'The Dark Knight is a masterpiece of modern cinema. Christopher Nolan''s direction, Heath Ledger''s performance, and the moral complexity make it unforgettable.', 'LONG', NOW() - INTERVAL '5 days', '{}', NULL),
-  ('p3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'Anyone else think Inception is overrated?', 'SHORT', NOW() - INTERVAL '1 day', '{}', NULL),
-  ('p4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'Film analysis: The use of color grading in The Godfather to represent moral decay is absolutely brilliant. Each scene''s palette tells its own story.', 'LONG', NOW() - INTERVAL '7 days', '{}', NULL),
-  ('p5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'Spirited Away on the big screen tonight! Can''t wait! 🍿', 'SHORT', NOW() - INTERVAL '3 hours', '{}', NULL),
-  ('p6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'Just discovered the indie film scene. Why didn''t anyone tell me about this sooner?!', 'SHORT', NOW() - INTERVAL '12 hours', '{}', NULL),
-  ('p7777777-7777-7777-7777-777777777777', '77777777-7777-7777-7777-777777777777', 'Hot take: Fight Club aged poorly', 'SHORT', NOW() - INTERVAL '4 days', '{}', NULL),
-  ('p8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', 'Parasite winning Best Picture was a watershed moment for international cinema. It opened doors and changed perceptions about what mainstream audiences can appreciate.', 'LONG', NOW() - INTERVAL '10 days', '{}', NULL),
-  ('p9999999-9999-9999-9999-999999999999', '99999999-9999-9999-9999-999999999999', 'Documentary recommendations anyone?', 'SHORT', NOW() - INTERVAL '6 hours', '{}', NULL),
-  ('paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'The Matrix revolutionized action choreography and visual effects. Its influence can still be seen in films today, 25 years later.', 'LONG', NOW() - INTERVAL '8 days', '{}', NULL),
-  ('pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'Going to the Summer Film Festival next month. Who''s in?', 'SHORT', NOW() - INTERVAL '1 hour', '{}', NULL),
-  ('pcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'Rewatching LOTR trilogy this weekend. Epic! 🧙‍♂️', 'SHORT', NOW() - INTERVAL '2 hours', '{}', NULL),
-  ('pdddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'Pulp Fiction: nonlinear storytelling at its finest', 'SHORT', NOW() - INTERVAL '3 days', '{}', NULL),
-  ('peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', 'The cinematography in Interstellar is breathtaking. IMAX made all the difference.', 'SHORT', NOW() - INTERVAL '6 days', '{}', NULL),
-  ('pffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'Studio Ghibli marathon happening! Starting with Totoro 🌳', 'SHORT', NOW() - INTERVAL '4 hours', '{}', NULL),
-  ('pgggggg-gggg-gggg-gggg-gggggggggggg', '66666666-6666-6666-6666-666666666666', 'Se7en still holds up as one of the best thriller endings ever', 'SHORT', NOW() - INTERVAL '5 days', '{}', NULL),
-  ('phhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '77777777-7777-7777-7777-777777777777', 'Star Wars original trilogy > prequels > sequels. Fight me.', 'SHORT', NOW() - INTERVAL '8 hours', '{}', NULL),
-  ('piiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '88888888-8888-8888-8888-888888888888', 'Back to the Future is the perfect time travel movie. Everything about it works.', 'SHORT', NOW() - INTERVAL '9 days', '{}', NULL),
-  ('pjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', '99999999-9999-9999-9999-999999999999', 'Film noir appreciation post: Double Indemnity, The Maltese Falcon, Touch of Evil. The shadows, the dialogue, the moral ambiguity - this genre defined cinema.', 'LONG', NOW() - INTERVAL '11 days', '{}', NULL),
-  ('pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '12 Angry Men with just one room and phenomenal acting 👏', 'SHORT', NOW() - INTERVAL '5 hours', '{}', NULL),
+  ('p1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'tt0111161', 'Just watched Shawshank Redemption again. Never gets old! 🎬', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '2 days', '{}', NULL),
+  ('p2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'tt0468569', 'The Dark Knight is a masterpiece of modern cinema. Christopher Nolan''s direction, Heath Ledger''s performance, and the moral complexity make it unforgettable.', 'LONG', 10, false, ARRAY['action', 'dark'], NOW() - INTERVAL '5 days', '{}', NULL),
+  ('p3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'tt1375666', 'Anyone else think Inception is overrated?', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '1 day', '{}', NULL),
+  ('p4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'tt0068646', 'Film analysis: The use of color grading in The Godfather to represent moral decay is absolutely brilliant. Each scene''s palette tells its own story.', 'LONG', 10, false, ARRAY['crime', 'drama'], NOW() - INTERVAL '7 days', '{}', NULL),
+  ('p5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'tt0245429', 'Spirited Away on the big screen tonight! Can''t wait! 🍿', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '3 hours', '{}', NULL),
+  ('p6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'tt0114369', 'Just discovered the indie film scene. Why didn''t anyone tell me about this sooner?!', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '12 hours', '{}', NULL),
+  ('p7777777-7777-7777-7777-777777777777', '77777777-7777-7777-7777-777777777777', 'tt0137523', 'Hot take: Fight Club aged poorly', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '4 days', '{}', NULL),
+  ('p8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', 'tt6751668', 'Parasite winning Best Picture was a watershed moment for international cinema. It opened doors and changed perceptions about what mainstream audiences can appreciate.', 'LONG', 10, false, ARRAY['thriller', 'drama'], NOW() - INTERVAL '10 days', '{}', NULL),
+  ('p9999999-9999-9999-9999-999999999999', '99999999-9999-9999-9999-999999999999', 'tt0114369', 'Documentary recommendations anyone?', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '6 hours', '{}', NULL),
+  ('paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt0133093', 'The Matrix revolutionized action choreography and visual effects. Its influence can still be seen in films today, 25 years later.', 'LONG', 10, false, ARRAY['action', 'fantasy'], NOW() - INTERVAL '8 days', '{}', NULL),
+  ('pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'tt0111161', 'Going to the Summer Film Festival next month. Who''s in?', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '1 hour', '{}', NULL),
+  ('pcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'tt0167260', 'Rewatching LOTR trilogy this weekend. Epic! 🧙‍♂️', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '2 hours', '{}', NULL),
+  ('pdddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'tt0110912', 'Pulp Fiction: nonlinear storytelling at its finest', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '3 days', '{}', NULL),
+  ('peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', 'tt0816692', 'The cinematography in Interstellar is breathtaking. IMAX made all the difference.', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '6 days', '{}', NULL),
+  ('pffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'tt0245429', 'Studio Ghibli marathon happening! Starting with Totoro 🌳', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '4 hours', '{}', NULL),
+  ('pgggggg-gggg-gggg-gggg-gggggggggggg', '66666666-6666-6666-6666-666666666666', 'tt0114369', 'Se7en still holds up as one of the best thriller endings ever', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '5 days', '{}', NULL),
+  ('phhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '77777777-7777-7777-7777-777777777777', 'tt0076759', 'Star Wars original trilogy > prequels > sequels. Fight me.', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '8 hours', '{}', NULL),
+  ('piiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '88888888-8888-8888-8888-888888888888', 'tt0088763', 'Back to the Future is the perfect time travel movie. Everything about it works.', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '9 days', '{}', NULL),
+  ('pjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', '99999999-9999-9999-9999-999999999999', 'tt0114369', 'Film noir appreciation post: Double Indemnity, The Maltese Falcon, Touch of Evil. The shadows, the dialogue, the moral ambiguity - this genre defined cinema.', 'LONG', 9, false, ARRAY['classic', 'noir'], NOW() - INTERVAL '11 days', '{}', NULL),
+  ('pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt0050083', '12 Angry Men with just one room and phenomenal acting 👏', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '5 hours', '{}', NULL),
   
   -- Picture posts with image URLs (some with multiple images for carousel)
-  ('plllllll-llll-llll-llll-llllllllllll', '11111111-1111-1111-1111-111111111111', 'My home theater setup for movie night! 🎥', 'SHORT', NOW() - INTERVAL '10 hours', ARRAY['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800'], NULL),
-  ('pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '22222222-2222-2222-2222-222222222222', 'Found this incredible vintage poster at the flea market today!', 'SHORT', NOW() - INTERVAL '15 hours', ARRAY['https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
-  ('pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '33333333-3333-3333-3333-333333333333', 'Cinema architecture is art 🎭', 'SHORT', NOW() - INTERVAL '1 day', ARRAY['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
-  ('pooooooo-oooo-oooo-oooo-oooooooooooo', '44444444-4444-4444-4444-444444444444', 'My growing Criterion Collection 📚', 'SHORT', NOW() - INTERVAL '2 days', ARRAY['https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800'], NULL),
-  ('ppppppp-pppp-pppp-pppp-pppppppppppp', '55555555-5555-5555-5555-555555555555', 'Best seat in the house for tonight''s screening!', 'SHORT', NOW() - INTERVAL '30 minutes', ARRAY['https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800', 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
+  ('plllllll-llll-llll-llll-llllllllllll', '11111111-1111-1111-1111-111111111111', 'tt0111161', 'My home theater setup for movie night! 🎥', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '10 hours', ARRAY['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800'], NULL),
+  ('pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '22222222-2222-2222-2222-222222222222', 'tt0468569', 'Found this incredible vintage poster at the flea market today!', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '15 hours', ARRAY['https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
+  ('pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '33333333-3333-3333-3333-333333333333', 'tt0110912', 'Cinema architecture is art 🎭', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '1 day', ARRAY['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
+  ('pooooooo-oooo-oooo-oooo-oooooooooooo', '44444444-4444-4444-4444-444444444444', 'tt0068646', 'My growing Criterion Collection 📚', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '2 days', ARRAY['https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800'], NULL),
+  ('ppppppp-pppp-pppp-pppp-pppppppppppp', '55555555-5555-5555-5555-555555555555', 'tt0245429', 'Best seat in the house for tonight''s screening!', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '30 minutes', ARRAY['https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800', 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800'], NULL),
   
-  -- Reply posts (threads)
-  ('pqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '22222222-2222-2222-2222-222222222222', 'Totally agree! That scene gives me chills', 'SHORT', NOW() - INTERVAL '1 day', '{}', 'p1111111-1111-1111-1111-111111111111'),
-  ('prrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '33333333-3333-3333-3333-333333333333', 'You clearly didn''t understand it then', 'SHORT', NOW() - INTERVAL '20 hours', '{}', 'p3333333-3333-3333-3333-333333333333'),
-  ('pssssss-ssss-ssss-ssss-ssssssssssss', '44444444-4444-4444-4444-444444444444', 'Me! Been waiting for this all year', 'SHORT', NOW() - INTERVAL '45 minutes', '{}', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+  -- Reposts (users sharing others' posts with optional commentary)
+  ('pqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '22222222-2222-2222-2222-222222222222', 'tt0111161', 'Couldn''t have said it better! Everyone needs to watch this classic.', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '1 day', '{}', 'p1111111-1111-1111-1111-111111111111'),
+  ('prrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '33333333-3333-3333-3333-333333333333', 'tt1375666', 'This take is so accurate. Inception really stands the test of time.', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '20 hours', '{}', 'p3333333-3333-3333-3333-333333333333'),
+  ('pssssss-ssss-ssss-ssss-ssssssssssss', '44444444-4444-4444-4444-444444444444', 'tt0111161', 'Count me in! Summer film festivals are the best way to see classics.', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '45 minutes', '{}', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
+  
+  -- Additional posts for tt0111161 (Shawshank) to show all post type variations
+  -- SHORT post with single image
+  ('pttttttt-tttt-tttt-tttt-tttttttttttt', '33333333-3333-3333-3333-333333333333', 'tt0111161', 'The poster on Andy''s wall that changed everything 🖼️', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '3 hours', ARRAY['https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=800'], NULL),
+  
+  -- SHORT post with image only (minimal text/emoji only)
+  ('puuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', '44444444-4444-4444-4444-444444444444', 'tt0111161', '🎬✨', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '5 hours', ARRAY['https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800'], NULL),
+  
+  -- LONG post (review) WITH stars
+  ('pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '55555555-5555-5555-5555-555555555555', 'tt0111161', 'A masterclass in storytelling. The Shawshank Redemption is more than just a prison drama—it''s a testament to hope and friendship. Tim Robbins and Morgan Freeman deliver career-defining performances. The cinematography captures both the bleakness and beauty of the human spirit.', 'LONG', 10, false, ARRAY['inspirational', 'drama'], NOW() - INTERVAL '2 days', '{}', NULL),
+  
+  -- LONG post WITHOUT stars (detailed analysis/discussion)
+  ('pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '66666666-6666-6666-6666-666666666666', 'tt0111161', 'The symbolism in Shawshank is incredible. The rock hammer represents patience and persistence, Rita Hayworth symbolizes hope and escape, and the library renovation shows how knowledge liberates. Every frame has meaning. This is why it remains the top-rated film on IMDb.', 'LONG', NULL, false, ARRAY['thought-provoking'], NOW() - INTERVAL '1 day', '{}', NULL),
+  
+  -- SHORT post with multiple images (carousel) - different content
+  ('pxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '77777777-7777-7777-7777-777777777777', 'tt0111161', 'Best scenes from my favorite movie ever! Can''t pick just one 🎥', 'SHORT', NULL, false, '{}', NOW() - INTERVAL '8 hours', ARRAY['https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800', 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800'], NULL),
+  
+  -- LONG post with spoiler tag
+  ('pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '88888888-8888-8888-8888-888888888888', 'tt0111161', 'The ending reveal where we learn Andy has been planning his escape for years while appearing to have accepted his fate is brilliant. The slow reveal of the poster, the discovery of the empty cell, and Red''s realization of what Andy accomplished is peak cinema storytelling.', 'LONG', 10, true, ARRAY['suspense', 'emotional'], NOW() - INTERVAL '6 hours', '{}', NULL)
 ON CONFLICT ("id") DO NOTHING;
 
 -- ============================================
@@ -485,8 +508,8 @@ INSERT INTO "public"."PostReaction" (
   ('l000000p-000p-000p-000p-000000000009', 'ppppppp-pppp-pppp-pppp-pppppppppppp', '99999999-9999-9999-9999-999999999999', 'SPICY', NOW() - INTERVAL '20 minutes'),
   ('l000000p-000p-000p-000p-000000000010', 'ppppppp-pppp-pppp-pppp-pppppppppppp', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'BLOCKBUSTER', NOW() - INTERVAL '20 minutes'),
 
-  -- Reply posts
-  -- pqqqqqqq: 3 reactions (Reply about Shawshank)
+  -- Reposts
+  -- pqqqqqqq: 3 reactions (Repost of Shawshank post)
   ('l000000q-000q-000q-000q-000000000001', 'pqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '33333333-3333-3333-3333-333333333333', 'THOUGHT_PROVOKING', NOW() - INTERVAL '23 hours'),
   ('l000000q-000q-000q-000q-000000000002', 'pqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '44444444-4444-4444-4444-444444444444', 'SPICY', NOW() - INTERVAL '23 hours'),
   ('l000000q-000q-000q-000q-000000000003', 'pqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '55555555-5555-5555-5555-555555555555', 'BLOCKBUSTER', NOW() - INTERVAL '23 hours'),
@@ -499,51 +522,101 @@ INSERT INTO "public"."PostReaction" (
   ('l000000s-000s-000s-000s-000000000002', 'pssssss-ssss-ssss-ssss-ssssssssssss', '22222222-2222-2222-2222-222222222222', 'BLOCKBUSTER', NOW() - INTERVAL '40 minutes'),
   ('l000000s-000s-000s-000s-000000000003', 'pssssss-ssss-ssss-ssss-ssssssssssss', '33333333-3333-3333-3333-333333333333', 'STAR_STUDDED', NOW() - INTERVAL '40 minutes'),
   ('l000000s-000s-000s-000s-000000000004', 'pssssss-ssss-ssss-ssss-ssssssssssss', '55555555-5555-5555-5555-555555555555', 'SPICY', NOW() - INTERVAL '40 minutes'),
-  ('l000000s-000s-000s-000s-000000000005', 'pssssss-ssss-ssss-ssss-ssssssssssss', '66666666-6666-6666-6666-666666666666', 'BLOCKBUSTER', NOW() - INTERVAL '40 minutes')
+  ('l000000s-000s-000s-000s-000000000005', 'pssssss-ssss-ssss-ssss-ssssssssssss', '66666666-6666-6666-6666-666666666666', 'BLOCKBUSTER', NOW() - INTERVAL '40 minutes'),
+
+  -- Additional Shawshank posts reactions
+  -- pttttttt: 4 reactions (Single image post about poster)
+  ('l000000t-000t-000t-000t-000000000001', 'pttttttt-tttt-tttt-tttt-tttttttttttt', '11111111-1111-1111-1111-111111111111', 'THOUGHT_PROVOKING', NOW() - INTERVAL '2 hours'),
+  ('l000000t-000t-000t-000t-000000000002', 'pttttttt-tttt-tttt-tttt-tttttttttttt', '22222222-2222-2222-2222-222222222222', 'SPICY', NOW() - INTERVAL '2 hours'),
+  ('l000000t-000t-000t-000t-000000000003', 'pttttttt-tttt-tttt-tttt-tttttttttttt', '55555555-5555-5555-5555-555555555555', 'BLOCKBUSTER', NOW() - INTERVAL '2 hours'),
+  ('l000000t-000t-000t-000t-000000000004', 'pttttttt-tttt-tttt-tttt-tttttttttttt', '66666666-6666-6666-6666-666666666666', 'STAR_STUDDED', NOW() - INTERVAL '2 hours'),
+
+  -- puuuuuuu: 2 reactions (Image only post with emojis)
+  ('l000000u-000u-000u-000u-000000000001', 'puuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', '22222222-2222-2222-2222-222222222222', 'STAR_STUDDED', NOW() - INTERVAL '4 hours'),
+  ('l000000u-000u-000u-000u-000000000002', 'puuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', '77777777-7777-7777-7777-777777777777', 'BLOCKBUSTER', NOW() - INTERVAL '4 hours'),
+
+  -- pvvvvvvv: 8 reactions (LONG review WITH stars)
+  ('l000000v-000v-000v-000v-000000000001', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '11111111-1111-1111-1111-111111111111', 'THOUGHT_PROVOKING', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000002', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '22222222-2222-2222-2222-222222222222', 'BLOCKBUSTER', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000003', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '33333333-3333-3333-3333-333333333333', 'STAR_STUDDED', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000004', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '44444444-4444-4444-4444-444444444444', 'THOUGHT_PROVOKING', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000005', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '66666666-6666-6666-6666-666666666666', 'BLOCKBUSTER', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000006', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '77777777-7777-7777-7777-777777777777', 'SPICY', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000007', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '88888888-8888-8888-8888-888888888888', 'STAR_STUDDED', NOW() - INTERVAL '1 day'),
+  ('l000000v-000v-000v-000v-000000000008', 'pvvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '99999999-9999-9999-9999-999999999999', 'THOUGHT_PROVOKING', NOW() - INTERVAL '1 day'),
+
+  -- pwwwwwww: 6 reactions (LONG post WITHOUT stars - analysis)
+  ('l000000w-000w-000w-000w-000000000001', 'pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '11111111-1111-1111-1111-111111111111', 'THOUGHT_PROVOKING', NOW() - INTERVAL '20 hours'),
+  ('l000000w-000w-000w-000w-000000000002', 'pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '22222222-2222-2222-2222-222222222222', 'THOUGHT_PROVOKING', NOW() - INTERVAL '20 hours'),
+  ('l000000w-000w-000w-000w-000000000003', 'pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '44444444-4444-4444-4444-444444444444', 'SPICY', NOW() - INTERVAL '20 hours'),
+  ('l000000w-000w-000w-000w-000000000004', 'pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '55555555-5555-5555-5555-555555555555', 'THOUGHT_PROVOKING', NOW() - INTERVAL '20 hours'),
+  ('l000000w-000w-000w-000w-000000000005', 'pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '77777777-7777-7777-7777-777777777777', 'BLOCKBUSTER', NOW() - INTERVAL '20 hours'),
+  ('l000000w-000w-000w-000w-000000000006', 'pwwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'THOUGHT_PROVOKING', NOW() - INTERVAL '20 hours'),
+
+  -- pxxxxxxx: 5 reactions (Multiple images carousel)
+  ('l000000x-000x-000x-000x-000000000001', 'pxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '11111111-1111-1111-1111-111111111111', 'STAR_STUDDED', NOW() - INTERVAL '7 hours'),
+  ('l000000x-000x-000x-000x-000000000002', 'pxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '22222222-2222-2222-2222-222222222222', 'BLOCKBUSTER', NOW() - INTERVAL '7 hours'),
+  ('l000000x-000x-000x-000x-000000000003', 'pxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '33333333-3333-3333-3333-333333333333', 'SPICY', NOW() - INTERVAL '7 hours'),
+  ('l000000x-000x-000x-000x-000000000004', 'pxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '55555555-5555-5555-5555-555555555555', 'STAR_STUDDED', NOW() - INTERVAL '7 hours'),
+  ('l000000x-000x-000x-000x-000000000005', 'pxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '66666666-6666-6666-6666-666666666666', 'BLOCKBUSTER', NOW() - INTERVAL '7 hours'),
+
+  -- pyyyyyyy: 7 reactions (LONG post WITH spoiler tag)
+  ('l000000y-000y-000y-000y-000000000001', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '11111111-1111-1111-1111-111111111111', 'THOUGHT_PROVOKING', NOW() - INTERVAL '5 hours'),
+  ('l000000y-000y-000y-000y-000000000002', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '22222222-2222-2222-2222-222222222222', 'SPICY', NOW() - INTERVAL '5 hours'),
+  ('l000000y-000y-000y-000y-000000000003', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '33333333-3333-3333-3333-333333333333', 'BLOCKBUSTER', NOW() - INTERVAL '5 hours'),
+  ('l000000y-000y-000y-000y-000000000004', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '44444444-4444-4444-4444-444444444444', 'THOUGHT_PROVOKING', NOW() - INTERVAL '5 hours'),
+  ('l000000y-000y-000y-000y-000000000005', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '55555555-5555-5555-5555-555555555555', 'STAR_STUDDED', NOW() - INTERVAL '5 hours'),
+  ('l000000y-000y-000y-000y-000000000006', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '77777777-7777-7777-7777-777777777777', 'THOUGHT_PROVOKING', NOW() - INTERVAL '5 hours'),
+  ('l000000y-000y-000y-000y-000000000007', 'pyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '99999999-9999-9999-9999-999999999999', 'BLOCKBUSTER', NOW() - INTERVAL '5 hours')
 ON CONFLICT ("id") DO NOTHING;
 
 -- ============================================
--- Ratings
+-- Long Posts
 -- ============================================
-INSERT INTO "public"."Rating" (
+-- Movie Reviews as LONG Posts (converted from old Rating model)
+INSERT INTO "public"."Post" (
   "id",
   "userId",
   "movieId",
+  "content",
+  "type",
   "stars",
-  "comment",
+  "spoiler",
   "tags",
-  "date"
+  "createdAt",
+  "imageUrls",
+  "repostedPostId"
 ) VALUES
-  ('r1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'tt0111161', 5, 'Absolute masterpiece. Tim Robbins and Morgan Freeman are perfect.', ARRAY['inspirational', 'emotional'], NOW() - INTERVAL '10 days'),
-  ('r2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'tt0468569', 5, 'Heath Ledger''s Joker is iconic. Best superhero movie ever made.', ARRAY['dark', 'intense', 'action-packed'], NOW() - INTERVAL '8 days'),
-  ('r3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'tt1375666', 4, 'Mind-bending but sometimes confusing. Still worth multiple watches.', ARRAY['complex', 'visually-stunning'], NOW() - INTERVAL '5 days'),
-  ('r4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'tt0068646', 5, 'The definitive gangster film. Brando''s performance is legendary.', ARRAY['classic', 'violent', 'epic'], NOW() - INTERVAL '15 days'),
-  ('r5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'tt0245429', 5, 'Miyazaki''s imagination knows no bounds. Beautiful and touching.', ARRAY['magical', 'heartwarming', 'animated'], NOW() - INTERVAL '3 days'),
-  ('r6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'tt0114369', 5, 'Fincher at his best. Dark, twisted, unforgettable ending.', ARRAY['dark', 'psychological', 'thriller'], NOW() - INTERVAL '12 days'),
-  ('r7777777-7777-7777-7777-777777777777', '77777777-7777-7777-7777-777777777777', 'tt0076759', 5, 'Changed cinema forever. A true cultural phenomenon.', ARRAY['sci-fi', 'adventure', 'iconic'], NOW() - INTERVAL '20 days'),
-  ('r8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', 'tt6751668', 5, 'Brilliant social commentary. Every scene is meticulously crafted.', ARRAY['thought-provoking', 'tense', 'satirical'], NOW() - INTERVAL '7 days'),
-  ('r9999999-9999-9999-9999-999999999999', '99999999-9999-9999-9999-999999999999', 'tt0110912', 5, 'Tarantino''s best work. Dialogue is sharp, structure is perfect.', ARRAY['stylish', 'violent', 'quotable'], NOW() - INTERVAL '18 days'),
-  ('raaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt0133093', 5, 'Revolutionary special effects. The philosophical questions still resonate.', ARRAY['philosophical', 'action', 'groundbreaking'], NOW() - INTERVAL '6 days'),
-  ('rbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'tt0109830', 5, 'Tom Hanks gives the performance of a lifetime. Emotional journey.', ARRAY['heartwarming', 'emotional', 'inspiring'], NOW() - INTERVAL '14 days'),
-  ('rcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'tt0137523', 4, 'Thought-provoking critique of consumerism. Twist is great.', ARRAY['psychological', 'violent', 'subversive'], NOW() - INTERVAL '11 days'),
-  ('rdddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'tt0816692', 5, 'Christopher Nolan''s most ambitious film. Visually spectacular.', ARRAY['epic', 'emotional', 'sci-fi'], NOW() - INTERVAL '4 days'),
-  ('reeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', 'tt0099685', 5, 'Scorsese''s masterclass in storytelling. Ray Liotta is perfect.', ARRAY['gangster', 'violent', 'fast-paced'], NOW() - INTERVAL '16 days'),
-  ('rfffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'tt1853728', 4, 'Tarantino''s revisionist Western. Entertaining but long.', ARRAY['western', 'violent', 'stylized'], NOW() - INTERVAL '9 days'),
-  ('rgggggg-gggg-gggg-gggg-gggggggggggg', '66666666-6666-6666-6666-666666666666', 'tt0073486', 5, 'Jack Nicholson''s best performance. Powerful and disturbing.', ARRAY['psychological', 'rebellious', 'classic'], NOW() - INTERVAL '13 days'),
-  ('rhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '77777777-7777-7777-7777-777777777777', 'tt0167260', 5, 'The perfect conclusion to an epic trilogy. Extended edition is a must.', ARRAY['epic', 'fantasy', 'emotional'], NOW() - INTERVAL '22 days'),
-  ('riiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '88888888-8888-8888-8888-888888888888', 'tt0120737', 5, 'Peter Jackson brought Tolkien''s world to life perfectly.', ARRAY['adventure', 'fantasy', 'epic'], NOW() - INTERVAL '21 days'),
-  ('rjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', '99999999-9999-9999-9999-999999999999', 'tt0088763', 5, 'The most fun time travel movie ever. Perfect blend of comedy and adventure.', ARRAY['fun', 'nostalgic', 'adventure'], NOW() - INTERVAL '17 days'),
-  ('rkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt0050083', 5, 'Timeless courtroom drama. All takes place in one room but riveting.', ARRAY['tense', 'dialogue-driven', 'classic'], NOW() - INTERVAL '19 days'),
-  ('rllllll-llll-llll-llll-llllllllllll', '11111111-1111-1111-1111-111111111111', 'tt0068646', 5, 'An offer you can''t refuse. This film is perfection.', ARRAY['classic', 'family-saga'], NOW() - INTERVAL '25 days'),
-  ('rmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '22222222-2222-2222-2222-222222222222', 'tt0111161', 5, 'Hope is a powerful thing. This movie proves it.', ARRAY['hopeful', 'friendship'], NOW() - INTERVAL '23 days'),
-  ('rnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '33333333-3333-3333-3333-333333333333', 'tt0245429', 4, 'Beautiful animation but felt long at times.', ARRAY['animated', 'imaginative'], NOW() - INTERVAL '2 days'),
-  ('rooooooo-oooo-oooo-oooo-oooooooooooo', '44444444-4444-4444-4444-444444444444', 'tt0137523', 5, 'His name was Robert Paulson. Unforgettable.', ARRAY['cult-classic', 'mind-bending'], NOW() - INTERVAL '26 days'),
-  ('rpppppp-pppp-pppp-pppp-pppppppppppp', '55555555-5555-5555-5555-555555555555', 'tt0076759', 5, 'May the Force be with you. Always.', ARRAY['iconic', 'space-opera'], NOW() - INTERVAL '24 days'),
-  ('rqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '66666666-6666-6666-6666-666666666666', 'tt0109830', 4, 'Life is like a box of chocolates... sweet but predictable at times.', ARRAY['feel-good', 'heartwarming'], NOW() - INTERVAL '27 days'),
-  ('rrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '77777777-7777-7777-7777-777777777777', 'tt0110912', 5, 'English, do you speak it?! Iconic quotes galore.', ARRAY['quotable', 'violent'], NOW() - INTERVAL '28 days'),
-  ('rsssssss-ssss-ssss-ssss-ssssssssssss', '88888888-8888-8888-8888-888888888888', 'tt0133093', 4, 'Take the red pill. Mind-blowing when it came out.', ARRAY['sci-fi', 'philosophical'], NOW() - INTERVAL '29 days'),
-  ('rttttttt-tttt-tttt-tttt-tttttttttttt', '99999999-9999-9999-9999-999999999999', 'tt1375666', 5, 'We need to go deeper. Every layer is fascinating.', ARRAY['complex', 'thriller'], NOW() - INTERVAL '30 days'),
-  ('ruuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt6751668', 5, 'The stairs scene alone is worth the price of admission.', ARRAY['social-commentary', 'thriller'], NOW() - INTERVAL '31 days')
+  ('r1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'tt0111161', 'Absolute masterpiece. Tim Robbins and Morgan Freeman are perfect.', 'LONG', 10, false, ARRAY['inspirational', 'emotional'], NOW() - INTERVAL '10 days', ARRAY[]::text[], NULL),
+  ('r2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'tt0468569', 'Heath Ledger''s Joker is iconic. Best superhero movie ever made.', 'LONG', 10, false, ARRAY['dark', 'action'], NOW() - INTERVAL '8 days', ARRAY[]::text[], NULL),
+  ('r3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'tt1375666', 'Mind-bending but sometimes confusing. Still worth multiple watches.', 'LONG', 8, false, ARRAY['thriller'], NOW() - INTERVAL '5 days', ARRAY[]::text[], NULL),
+  ('r4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'tt0068646', 'The definitive gangster film. Brando''s performance is legendary.', 'LONG', 10, false, ARRAY['crime', 'drama'], NOW() - INTERVAL '15 days', ARRAY[]::text[], NULL),
+  ('r5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'tt0245429', 'Miyazaki''s imagination knows no bounds. Beautiful and touching.', 'LONG', 10, false, ARRAY['fantasy', 'family'], NOW() - INTERVAL '3 days', ARRAY[]::text[], NULL),
+  ('r6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'tt0114369', 'Fincher at his best. Dark, twisted, unforgettable ending.', 'LONG', 10, true, ARRAY['thriller', 'mystery'], NOW() - INTERVAL '12 days', ARRAY[]::text[], NULL),
+  ('r7777777-7777-7777-7777-777777777777', '77777777-7777-7777-7777-777777777777', 'tt0076759', 'Changed cinema forever. A true cultural phenomenon.', 'LONG', 10, false, ARRAY['fantasy', 'action'], NOW() - INTERVAL '20 days', ARRAY[]::text[], NULL),
+  ('r8888888-8888-8888-8888-888888888888', '88888888-8888-8888-8888-888888888888', 'tt6751668', 'Brilliant social commentary. Every scene is meticulously crafted.', 'LONG', 10, false, ARRAY['thriller', 'drama'], NOW() - INTERVAL '7 days', ARRAY[]::text[], NULL),
+  ('r9999999-9999-9999-9999-999999999999', '99999999-9999-9999-9999-999999999999', 'tt0110912', 'Tarantino''s best work. Dialogue is sharp, structure is perfect.', 'LONG', 10, false, ARRAY['crime', 'thriller'], NOW() - INTERVAL '18 days', ARRAY[]::text[], NULL),
+  ('raaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt0133093', 'Revolutionary special effects. The philosophical questions still resonate.', 'LONG', 10, false, ARRAY['action', 'fantasy'], NOW() - INTERVAL '6 days', ARRAY[]::text[], NULL),
+  ('rbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'tt0109830', 'Tom Hanks gives the performance of a lifetime. Emotional journey.', 'LONG', 10, false, ARRAY['drama', 'romance'], NOW() - INTERVAL '14 days', ARRAY[]::text[], NULL),
+  ('rcccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'tt0137523', 'Thought-provoking critique of consumerism. Twist is great.', 'LONG', 8, true, ARRAY['thriller', 'drama'], NOW() - INTERVAL '11 days', ARRAY[]::text[], NULL),
+  ('rdddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'tt0816692', 'Christopher Nolan''s most ambitious film. Visually spectacular.', 'LONG', 10, false, ARRAY['drama', 'fantasy'], NOW() - INTERVAL '4 days', ARRAY[]::text[], NULL),
+  ('reeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '44444444-4444-4444-4444-444444444444', 'tt0099685', 'Scorsese''s masterclass in storytelling. Ray Liotta is perfect.', 'LONG', 10, false, ARRAY['crime', 'drama'], NOW() - INTERVAL '16 days', ARRAY[]::text[], NULL),
+  ('rfffffff-ffff-ffff-ffff-ffffffffffff', '55555555-5555-5555-5555-555555555555', 'tt1853728', 'Tarantino''s revisionist Western. Entertaining but long.', 'LONG', 8, false, ARRAY['drama'], NOW() - INTERVAL '9 days', ARRAY[]::text[], NULL),
+  ('rgggggg-gggg-gggg-gggg-gggggggggggg', '66666666-6666-6666-6666-666666666666', 'tt0073486', 'Jack Nicholson''s best performance. Powerful and disturbing.', 'LONG', 10, false, ARRAY['drama'], NOW() - INTERVAL '13 days', ARRAY[]::text[], NULL),
+  ('rhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '77777777-7777-7777-7777-777777777777', 'tt0167260', 'The perfect conclusion to an epic trilogy. Extended edition is a must.', 'LONG', 10, false, ARRAY['fantasy', 'action'], NOW() - INTERVAL '22 days', ARRAY[]::text[], NULL),
+  ('riiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '88888888-8888-8888-8888-888888888888', 'tt0120737', 'Peter Jackson brought Tolkien''s world to life perfectly.', 'LONG', 10, false, ARRAY['fantasy', 'action'], NOW() - INTERVAL '21 days', ARRAY[]::text[], NULL),
+  ('rjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', '99999999-9999-9999-9999-999999999999', 'tt0088763', 'The most fun time travel movie ever. Perfect blend of comedy and adventure.', 'LONG', 10, false, ARRAY['comedy', 'fantasy'], NOW() - INTERVAL '17 days', ARRAY[]::text[], NULL),
+  ('rkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt0050083', 'Timeless courtroom drama. All takes place in one room but riveting.', 'LONG', 10, false, ARRAY['drama'], NOW() - INTERVAL '19 days', ARRAY[]::text[], NULL),
+  ('rllllll-llll-llll-llll-llllllllllll', '11111111-1111-1111-1111-111111111111', 'tt0068646', 'An offer you can''t refuse. This film is perfection.', 'LONG', 10, false, ARRAY['crime', 'drama'], NOW() - INTERVAL '25 days', ARRAY[]::text[], NULL),
+  ('rmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '22222222-2222-2222-2222-222222222222', 'tt0111161', 'Hope is a powerful thing. This movie proves it.', 'LONG', 10, false, ARRAY['drama'], NOW() - INTERVAL '23 days', ARRAY[]::text[], NULL),
+  ('rnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '33333333-3333-3333-3333-333333333333', 'tt0245429', 'Beautiful animation but felt long at times.', 'LONG', 8, false, ARRAY['fantasy', 'family'], NOW() - INTERVAL '2 days', ARRAY[]::text[], NULL),
+  ('rooooooo-oooo-oooo-oooo-oooooooooooo', '44444444-4444-4444-4444-444444444444', 'tt0137523', 'His name was Robert Paulson. Unforgettable.', 'LONG', 10, true, ARRAY['thriller', 'drama'], NOW() - INTERVAL '26 days', ARRAY[]::text[], NULL),
+  ('rpppppp-pppp-pppp-pppp-pppppppppppp', '55555555-5555-5555-5555-555555555555', 'tt0076759', 'May the Force be with you. Always.', 'LONG', 10, false, ARRAY['fantasy', 'action'], NOW() - INTERVAL '24 days', ARRAY[]::text[], NULL),
+  ('rqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '66666666-6666-6666-6666-666666666666', 'tt0109830', 'Life is like a box of chocolates... sweet but predictable at times.', 'LONG', 8, false, ARRAY['drama', 'romance'], NOW() - INTERVAL '27 days', ARRAY[]::text[], NULL),
+  ('rrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '77777777-7777-7777-7777-777777777777', 'tt0110912', 'English, do you speak it?! Iconic quotes galore.', 'LONG', 10, false, ARRAY['crime', 'thriller'], NOW() - INTERVAL '28 days', ARRAY[]::text[], NULL),
+  ('rsssssss-ssss-ssss-ssss-ssssssssssss', '88888888-8888-8888-8888-888888888888', 'tt0133093', 'Take the red pill. Mind-blowing when it came out.', 'LONG', 8, false, ARRAY['action', 'fantasy'], NOW() - INTERVAL '29 days', ARRAY[]::text[], NULL),
+  ('rttttttt-tttt-tttt-tttt-tttttttttttt', '99999999-9999-9999-9999-999999999999', 'tt1375666', 'We need to go deeper. Every layer is fascinating.', 'LONG', 10, false, ARRAY['thriller', 'fantasy'], NOW() - INTERVAL '30 days', ARRAY[]::text[], NULL),
+  ('ruuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tt6751668', 'The stairs scene alone is worth the price of admission.', 'LONG', 10, false, ARRAY['thriller', 'drama'], NOW() - INTERVAL '31 days', ARRAY[]::text[], NULL)
 ON CONFLICT ("id") DO NOTHING;
 
 -- ============================================
@@ -578,82 +651,81 @@ INSERT INTO "public"."Comment" (
   "id",
   "userId",
   "postId",
-  "ratingId",
   "content",
   "createdAt"
 ) VALUES
-  ('c1111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', 'p1111111-1111-1111-1111-111111111111', NULL, 'Totally agree! One of the best films ever made.', NOW() - INTERVAL '1 day'),
-  ('c2222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', 'p1111111-1111-1111-1111-111111111111', NULL, 'Morgan Freeman''s narration is iconic', NOW() - INTERVAL '1 day'),
-  ('c3333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444', 'p2222222-2222-2222-2222-222222222222', NULL, 'Heath Ledger deserved that Oscar', NOW() - INTERVAL '4 days'),
-  ('c4444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555', 'p3333333-3333-3333-3333-333333333333', NULL, 'Disagree! It''s a masterpiece', NOW() - INTERVAL '20 hours'),
-  ('c5555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666', 'p3333333-3333-3333-3333-333333333333', NULL, 'The ending alone makes it worth it', NOW() - INTERVAL '18 hours'),
-  ('c6666666-6666-6666-6666-666666666666', '77777777-7777-7777-7777-777777777777', 'p4444444-4444-4444-4444-444444444444', NULL, 'Great analysis! Never noticed that before', NOW() - INTERVAL '6 days'),
-  ('c7777777-7777-7777-7777-777777777777', '88888888-8888-8888-8888-888888888888', 'p5555555-5555-5555-5555-555555555555', NULL, 'Have fun! It''s magical on the big screen', NOW() - INTERVAL '2 hours'),
-  ('c8888888-8888-8888-8888-888888888888', '99999999-9999-9999-9999-999999999999', 'p8888888-8888-8888-8888-888888888888', NULL, 'Couldn''t agree more. Historic moment for cinema', NOW() - INTERVAL '9 days'),
-  ('c9999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'p9999999-9999-9999-9999-999999999999', NULL, 'Check out "13th" and "Won''t You Be My Neighbor"', NOW() - INTERVAL '5 hours'),
-  ('caaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', NULL, 'Count me in! 🎬', NOW() - INTERVAL '30 minutes'),
-  ('cbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', NULL, 'r1111111-1111-1111-1111-111111111111', 'The tunnel scene gives me chills every time', NOW() - INTERVAL '9 days'),
-  ('ccccccc-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', NULL, 'r2222222-2222-2222-2222-222222222222', 'RIP Heath Ledger. Gone too soon.', NOW() - INTERVAL '7 days'),
-  ('cdddddd-dddd-dddd-dddd-dddddddddddd', '44444444-4444-4444-4444-444444444444', NULL, 'r5555555-5555-5555-5555-555555555555', 'Studio Ghibli never misses', NOW() - INTERVAL '2 days'),
-  ('ceeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '55555555-5555-5555-5555-555555555555', NULL, 'r8888888-8888-8888-8888-888888888888', 'The stairs metaphor is brilliant', NOW() - INTERVAL '6 days'),
-  ('cfffffff-ffff-ffff-ffff-ffffffffffff', '66666666-6666-6666-6666-666666666666', NULL, 'r9999999-9999-9999-9999-999999999999', 'Royale with cheese 🍔', NOW() - INTERVAL '17 days'),
-  ('cgggggg-gggg-gggg-gggg-gggggggggggg', '77777777-7777-7777-7777-777777777777', 'pcccccc-cccc-cccc-cccc-cccccccccccc', NULL, 'Extended editions or theatrical?', NOW() - INTERVAL '1 hour'),
-  ('chhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '88888888-8888-8888-8888-888888888888', 'phhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', NULL, 'Original trilogy forever ⭐', NOW() - INTERVAL '7 hours'),
-  ('ciiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '99999999-9999-9999-9999-999999999999', NULL, 'rhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', 'The Battle of Pelennor Fields is cinema at its finest', NOW() - INTERVAL '21 days'),
-  ('cjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NULL, 'rjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', 'Great Scott! This movie is perfect', NOW() - INTERVAL '16 days'),
-  ('ckkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', '11111111-1111-1111-1111-111111111111', 'piiiiii-iiii-iiii-iiii-iiiiiiiiiiii', NULL, '1.21 gigawatts!', NOW() - INTERVAL '8 days'),
-  ('clllllll-llll-llll-llll-llllllllllll', '22222222-2222-2222-2222-222222222222', 'pjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', NULL, 'Great picks! Also check out The Big Sleep', NOW() - INTERVAL '10 days'),
-  ('cmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '33333333-3333-3333-3333-333333333333', NULL, 'raaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'The Wachowskis were ahead of their time', NOW() - INTERVAL '5 days'),
-  ('cnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '44444444-4444-4444-4444-444444444444', NULL, 'rdddddd-dddd-dddd-dddd-dddddddddddd', 'That docking scene with the music 🎵', NOW() - INTERVAL '3 days'),
-  ('cooooooo-oooo-oooo-oooo-oooooooooooo', '55555555-5555-5555-5555-555555555555', 'pgggggg-gggg-gggg-gggg-gggggggggggg', NULL, 'What''s in the box?!', NOW() - INTERVAL '4 days'),
-  ('cpppppp-pppp-pppp-pppp-pppppppppppp', '66666666-6666-6666-6666-666666666666', NULL, 'rllllll-llll-llll-llll-llllllllllll', 'Leave the gun, take the cannoli', NOW() - INTERVAL '24 days'),
+  ('c1111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', 'p1111111-1111-1111-1111-111111111111', 'Totally agree! One of the best films ever made.', NOW() - INTERVAL '1 day'),
+  ('c2222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', 'p1111111-1111-1111-1111-111111111111', 'Morgan Freeman''s narration is iconic', NOW() - INTERVAL '1 day'),
+  ('c3333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444', 'p2222222-2222-2222-2222-222222222222', 'Heath Ledger deserved that Oscar', NOW() - INTERVAL '4 days'),
+  ('c4444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555', 'p3333333-3333-3333-3333-333333333333', 'Disagree! It''s a masterpiece', NOW() - INTERVAL '20 hours'),
+  ('c5555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666', 'p3333333-3333-3333-3333-333333333333', 'The ending alone makes it worth it', NOW() - INTERVAL '18 hours'),
+  ('c6666666-6666-6666-6666-666666666666', '77777777-7777-7777-7777-777777777777', 'p4444444-4444-4444-4444-444444444444', 'Great analysis! Never noticed that before', NOW() - INTERVAL '6 days'),
+  ('c7777777-7777-7777-7777-777777777777', '88888888-8888-8888-8888-888888888888', 'p5555555-5555-5555-5555-555555555555', 'Have fun! It''s magical on the big screen', NOW() - INTERVAL '2 hours'),
+  ('c8888888-8888-8888-8888-888888888888', '99999999-9999-9999-9999-999999999999', 'p8888888-8888-8888-8888-888888888888', 'Couldn''t agree more. Historic moment for cinema', NOW() - INTERVAL '9 days'),
+  ('c9999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'p9999999-9999-9999-9999-999999999999', 'Check out "13th" and "Won''t You Be My Neighbor"', NOW() - INTERVAL '5 hours'),
+  ('caaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'pbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Count me in! 🎬', NOW() - INTERVAL '30 minutes'),
+  ('cbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 'r1111111-1111-1111-1111-111111111111', 'The tunnel scene gives me chills every time', NOW() - INTERVAL '9 days'),
+  ('ccccccc-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', 'r2222222-2222-2222-2222-222222222222', 'RIP Heath Ledger. Gone too soon.', NOW() - INTERVAL '7 days'),
+  ('cdddddd-dddd-dddd-dddd-dddddddddddd', '44444444-4444-4444-4444-444444444444', 'r5555555-5555-5555-5555-555555555555', 'Studio Ghibli never misses', NOW() - INTERVAL '2 days'),
+  ('ceeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', '55555555-5555-5555-5555-555555555555', 'r8888888-8888-8888-8888-888888888888', 'The stairs metaphor is brilliant', NOW() - INTERVAL '6 days'),
+  ('cfffffff-ffff-ffff-ffff-ffffffffffff', '66666666-6666-6666-6666-666666666666', 'r9999999-9999-9999-9999-999999999999', 'Royale with cheese 🍔', NOW() - INTERVAL '17 days'),
+  ('cgggggg-gggg-gggg-gggg-gggggggggggg', '77777777-7777-7777-7777-777777777777', 'pcccccc-cccc-cccc-cccc-cccccccccccc', 'Extended editions or theatrical?', NOW() - INTERVAL '1 hour'),
+  ('chhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', '88888888-8888-8888-8888-888888888888', 'phhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', 'Original trilogy forever ⭐', NOW() - INTERVAL '7 hours'),
+  ('ciiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '99999999-9999-9999-9999-999999999999', 'rhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh', 'The Battle of Pelennor Fields is cinema at its finest', NOW() - INTERVAL '21 days'),
+  ('cjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'rjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', 'Great Scott! This movie is perfect', NOW() - INTERVAL '16 days'),
+  ('ckkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', '11111111-1111-1111-1111-111111111111', 'piiiiii-iiii-iiii-iiii-iiiiiiiiiiii', '1.21 gigawatts!', NOW() - INTERVAL '8 days'),
+  ('clllllll-llll-llll-llll-llllllllllll', '22222222-2222-2222-2222-222222222222', 'pjjjjjj-jjjj-jjjj-jjjj-jjjjjjjjjjjj', 'Great picks! Also check out The Big Sleep', NOW() - INTERVAL '10 days'),
+  ('cmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', '33333333-3333-3333-3333-333333333333', 'raaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'The Wachowskis were ahead of their time', NOW() - INTERVAL '5 days'),
+  ('cnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', '44444444-4444-4444-4444-444444444444', 'rdddddd-dddd-dddd-dddd-dddddddddddd', 'That docking scene with the music 🎵', NOW() - INTERVAL '3 days'),
+  ('cooooooo-oooo-oooo-oooo-oooooooooooo', '55555555-5555-5555-5555-555555555555', 'pgggggg-gggg-gggg-gggg-gggggggggggg', 'What''s in the box?!', NOW() - INTERVAL '4 days'),
+  ('cpppppp-pppp-pppp-pppp-pppppppppppp', '66666666-6666-6666-6666-666666666666', 'rllllll-llll-llll-llll-llllllllllll', 'Leave the gun, take the cannoli', NOW() - INTERVAL '24 days'),
   
   -- Additional comments for better coverage
-  ('cqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '11111111-1111-1111-1111-111111111111', 'p6666666-6666-6666-6666-666666666666', NULL, 'Welcome to the indie world! So much hidden talent here', NOW() - INTERVAL '11 hours'),
-  ('crrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '22222222-2222-2222-2222-222222222222', 'p6666666-6666-6666-6666-666666666666', NULL, 'Check out A24 films, they''re amazing!', NOW() - INTERVAL '10 hours'),
-  ('cssssss-ssss-ssss-ssss-ssssssssssss', '33333333-3333-3333-3333-333333333333', 'p6666666-6666-6666-6666-666666666666', NULL, 'Indie films have the best storytelling', NOW() - INTERVAL '9 hours'),
+  ('cqqqqqqq-qqqq-qqqq-qqqq-qqqqqqqqqqqq', '11111111-1111-1111-1111-111111111111', 'p6666666-6666-6666-6666-666666666666', 'Welcome to the indie world! So much hidden talent here', NOW() - INTERVAL '11 hours'),
+  ('crrrrrr-rrrr-rrrr-rrrr-rrrrrrrrrrrr', '22222222-2222-2222-2222-222222222222', 'p6666666-6666-6666-6666-666666666666', 'Check out A24 films, they''re amazing!', NOW() - INTERVAL '10 hours'),
+  ('cssssss-ssss-ssss-ssss-ssssssssssss', '33333333-3333-3333-3333-333333333333', 'p6666666-6666-6666-6666-666666666666', 'Indie films have the best storytelling', NOW() - INTERVAL '9 hours'),
   
-  ('cttttttt-tttt-tttt-tttt-tttttttttttt', '44444444-4444-4444-4444-444444444444', 'p7777777-7777-7777-7777-777777777777', NULL, 'Strong disagree! It''s still relevant', NOW() - INTERVAL '3 days'),
-  ('cuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', '55555555-5555-5555-5555-555555555555', 'p7777777-7777-7777-7777-777777777777', NULL, 'The twist still holds up though', NOW() - INTERVAL '3 days'),
+  ('cttttttt-tttt-tttt-tttt-tttttttttttt', '44444444-4444-4444-4444-444444444444', 'p7777777-7777-7777-7777-777777777777', 'Strong disagree! It''s still relevant', NOW() - INTERVAL '3 days'),
+  ('cuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu', '55555555-5555-5555-5555-555555555555', 'p7777777-7777-7777-7777-777777777777', 'The twist still holds up though', NOW() - INTERVAL '3 days'),
   
-  ('cvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '66666666-6666-6666-6666-666666666666', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NULL, 'Bullet time was revolutionary', NOW() - INTERVAL '7 days'),
-  ('cwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '77777777-7777-7777-7777-777777777777', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NULL, 'The philosophy still resonates today', NOW() - INTERVAL '7 days'),
-  ('cxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '88888888-8888-8888-8888-888888888888', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', NULL, 'Red pill or blue pill? 💊', NOW() - INTERVAL '7 days'),
+  ('cvvvvvv-vvvv-vvvv-vvvv-vvvvvvvvvvvv', '66666666-6666-6666-6666-666666666666', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Bullet time was revolutionary', NOW() - INTERVAL '7 days'),
+  ('cwwwwww-wwww-wwww-wwww-wwwwwwwwwwww', '77777777-7777-7777-7777-777777777777', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'The philosophy still resonates today', NOW() - INTERVAL '7 days'),
+  ('cxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', '88888888-8888-8888-8888-888888888888', 'paaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Red pill or blue pill? 💊', NOW() - INTERVAL '7 days'),
   
-  ('cyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '99999999-9999-9999-9999-999999999999', 'pdddddd-dddd-dddd-dddd-dddddddddddd', NULL, 'Tarantino is a genius with structure', NOW() - INTERVAL '2 days'),
-  ('czzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pdddddd-dddd-dddd-dddd-dddddddddddd', NULL, 'The diner scene is perfect', NOW() - INTERVAL '2 days'),
+  ('cyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy', '99999999-9999-9999-9999-999999999999', 'pdddddd-dddd-dddd-dddd-dddddddddddd', 'Tarantino is a genius with structure', NOW() - INTERVAL '2 days'),
+  ('czzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pdddddd-dddd-dddd-dddd-dddddddddddd', 'The diner scene is perfect', NOW() - INTERVAL '2 days'),
   
-  ('c000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', NULL, 'Seeing it in IMAX was life-changing', NOW() - INTERVAL '5 days'),
-  ('c111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', 'peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', NULL, 'That black hole sequence 🤯', NOW() - INTERVAL '5 days'),
-  ('c222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', 'peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', NULL, 'Hans Zimmer''s score is incredible', NOW() - INTERVAL '5 days'),
+  ('c000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Seeing it in IMAX was life-changing', NOW() - INTERVAL '5 days'),
+  ('c111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', 'peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'That black hole sequence 🤯', NOW() - INTERVAL '5 days'),
+  ('c222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', 'peeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Hans Zimmer''s score is incredible', NOW() - INTERVAL '5 days'),
   
-  ('c333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444', 'pffffff-ffff-ffff-ffff-ffffffffffff', NULL, 'Totoro is the best! 🌳', NOW() - INTERVAL '3 hours'),
-  ('c444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555', 'pffffff-ffff-ffff-ffff-ffffffffffff', NULL, 'Miyazaki marathons are the best', NOW() - INTERVAL '3 hours'),
+  ('c333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444', 'pffffff-ffff-ffff-ffff-ffffffffffff', 'Totoro is the best! 🌳', NOW() - INTERVAL '3 hours'),
+  ('c444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555', 'pffffff-ffff-ffff-ffff-ffffffffffff', 'Miyazaki marathons are the best', NOW() - INTERVAL '3 hours'),
   
-  ('c555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666', 'pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', NULL, 'Single room, pure acting perfection', NOW() - INTERVAL '4 hours'),
-  ('c666666-6666-6666-6666-666666666666', '77777777-7777-7777-7777-777777777777', 'pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', NULL, 'Every character has depth', NOW() - INTERVAL '4 hours'),
-  ('c777777-7777-7777-7777-777777777777', '88888888-8888-8888-8888-888888888888', 'pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', NULL, 'Peak courtroom drama', NOW() - INTERVAL '4 hours'),
+  ('c555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666', 'pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'Single room, pure acting perfection', NOW() - INTERVAL '4 hours'),
+  ('c666666-6666-6666-6666-666666666666', '77777777-7777-7777-7777-777777777777', 'pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'Every character has depth', NOW() - INTERVAL '4 hours'),
+  ('c777777-7777-7777-7777-777777777777', '88888888-8888-8888-8888-888888888888', 'pkkkkkk-kkkk-kkkk-kkkk-kkkkkkkkkkkk', 'Peak courtroom drama', NOW() - INTERVAL '4 hours'),
   
-  ('c888888-8888-8888-8888-888888888888', '99999999-9999-9999-9999-999999999999', 'plllllll-llll-llll-llll-llllllllllll', NULL, 'Nice setup! What projector?', NOW() - INTERVAL '9 hours'),
-  ('c999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'plllllll-llll-llll-llll-llllllllllll', NULL, 'Goals! 🎬', NOW() - INTERVAL '8 hours'),
-  ('caa0000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'plllllll-llll-llll-llll-llllllllllll', NULL, 'That screen size though 😍', NOW() - INTERVAL '8 hours'),
+  ('c888888-8888-8888-8888-888888888888', '99999999-9999-9999-9999-999999999999', 'plllllll-llll-llll-llll-llllllllllll', 'Nice setup! What projector?', NOW() - INTERVAL '9 hours'),
+  ('c999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'plllllll-llll-llll-llll-llllllllllll', 'Goals! 🎬', NOW() - INTERVAL '8 hours'),
+  ('caa0000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'plllllll-llll-llll-llll-llllllllllll', 'That screen size though 😍', NOW() - INTERVAL '8 hours'),
   
-  ('cbb0000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', NULL, 'What a find! How much?', NOW() - INTERVAL '14 hours'),
-  ('ccc0000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', NULL, 'Vintage posters are so cool', NOW() - INTERVAL '13 hours'),
-  ('cdd0000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', NULL, 'I need to hit up flea markets more', NOW() - INTERVAL '13 hours'),
-  ('cee0000-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', NULL, 'Gorgeous artwork!', NOW() - INTERVAL '12 hours'),
+  ('cbb0000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', 'What a find! How much?', NOW() - INTERVAL '14 hours'),
+  ('ccc0000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', 'Vintage posters are so cool', NOW() - INTERVAL '13 hours'),
+  ('cdd0000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', 'I need to hit up flea markets more', NOW() - INTERVAL '13 hours'),
+  ('cee0000-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'pmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm', 'Gorgeous artwork!', NOW() - INTERVAL '12 hours'),
   
-  ('cff0000-0000-0000-0000-000000000000', '66666666-6666-6666-6666-666666666666', 'pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', NULL, 'Old theaters have so much character', NOW() - INTERVAL '22 hours'),
-  ('cgg0000-0000-0000-0000-000000000000', '77777777-7777-7777-7777-777777777777', 'pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', NULL, 'The architecture is stunning', NOW() - INTERVAL '21 hours'),
+  ('cff0000-0000-0000-0000-000000000000', '66666666-6666-6666-6666-666666666666', 'pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', 'Old theaters have so much character', NOW() - INTERVAL '22 hours'),
+  ('cgg0000-0000-0000-0000-000000000000', '77777777-7777-7777-7777-777777777777', 'pnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn', 'The architecture is stunning', NOW() - INTERVAL '21 hours'),
   
-  ('chh0000-0000-0000-0000-000000000000', '88888888-8888-8888-8888-888888888888', 'pooooooo-oooo-oooo-oooo-oooooooooooo', NULL, 'Criterion Collection is life 📚', NOW() - INTERVAL '1 day'),
-  ('cii0000-0000-0000-0000-000000000000', '99999999-9999-9999-9999-999999999999', 'pooooooo-oooo-oooo-oooo-oooooooooooo', NULL, 'Which titles do you have?', NOW() - INTERVAL '1 day'),
-  ('cjj0000-0000-0000-0000-000000000000', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pooooooo-oooo-oooo-oooo-oooooooooooo', NULL, 'My wallet hurts looking at this 😅', NOW() - INTERVAL '1 day'),
-  ('ckk0000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'pooooooo-oooo-oooo-oooo-oooooooooooo', NULL, 'Beautiful collection!', NOW() - INTERVAL '1 day'),
+  ('chh0000-0000-0000-0000-000000000000', '88888888-8888-8888-8888-888888888888', 'pooooooo-oooo-oooo-oooo-oooooooooooo', 'Criterion Collection is life 📚', NOW() - INTERVAL '1 day'),
+  ('cii0000-0000-0000-0000-000000000000', '99999999-9999-9999-9999-999999999999', 'pooooooo-oooo-oooo-oooo-oooooooooooo', 'Which titles do you have?', NOW() - INTERVAL '1 day'),
+  ('cjj0000-0000-0000-0000-000000000000', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'pooooooo-oooo-oooo-oooo-oooooooooooo', 'My wallet hurts looking at this 😅', NOW() - INTERVAL '1 day'),
+  ('ckk0000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'pooooooo-oooo-oooo-oooo-oooooooooooo', 'Beautiful collection!', NOW() - INTERVAL '1 day'),
   
-  ('cll0000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'ppppppp-pppp-pppp-pppp-pppppppppppp', NULL, 'Perfect spot! Enjoy the film', NOW() - INTERVAL '25 minutes'),
-  ('cmm0000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'ppppppp-pppp-pppp-pppp-pppppppppppp', NULL, 'Center seats are always the best', NOW() - INTERVAL '20 minutes'),
-  ('cnn0000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'ppppppp-pppp-pppp-pppp-pppppppppppp', NULL, 'What movie are you seeing?', NOW() - INTERVAL '18 minutes')
+  ('cll0000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'ppppppp-pppp-pppp-pppp-pppppppppppp', 'Perfect spot! Enjoy the film', NOW() - INTERVAL '25 minutes'),
+  ('cmm0000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'ppppppp-pppp-pppp-pppp-pppppppppppp', 'Center seats are always the best', NOW() - INTERVAL '20 minutes'),
+  ('cnn0000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'ppppppp-pppp-pppp-pppp-pppppppppppp', 'What movie are you seeing?', NOW() - INTERVAL '18 minutes')
 ON CONFLICT ("id") DO NOTHING;
 
 -- ============================================

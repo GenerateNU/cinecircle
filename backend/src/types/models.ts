@@ -126,21 +126,31 @@ export type ReactionType = 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLO
 export type Post = {
   id: string;
   userId: string;
+  movieId: string;
   content: string;
   type: 'SHORT' | 'LONG';
+  stars: number | null;
+  spoiler: boolean;
+  tags: string[];
   createdAt: string;
   imageUrls: string[];
-  parentPostId: string | null;
+  repostedPostId: string | null; // References the original post being shared
   UserProfile?: {
     userId: string;
     username: string | null;
   };
+  movie?: {
+    movieId: string;
+    title: string | null;
+    imageUrl: string | null;
+  };
+  OriginalPost?: Post; // The post that was reposted (if this is a repost)
   PostReaction?: Array<{ id: string; userId: string; reactionType: ReactionType }>;
   Comment?: Array<{ id: string }>;
-  Replies?: Array<{ id: string }>;
+  Reposts?: Array<{ id: string }>; // Posts that have reposted this one
   // Computed fields
   commentCount?: number;
-  replyCount?: number;
+  repostCount?: number;
   reactionCount?: number;
   reactionCounts?: Record<ReactionType, number>;
   userReactions?: ReactionType[];

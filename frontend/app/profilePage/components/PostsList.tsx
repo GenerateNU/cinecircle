@@ -53,7 +53,7 @@ const PostsList = ({ user, userId }: Props) => {
       setError(null);
       const res = await getPosts({
         userId: resolvedUserId,
-        parentPostId: null,
+        repostedPostId: null, // Only show original posts, not reposts
         limit: 50,
       });
       setPosts(res);
