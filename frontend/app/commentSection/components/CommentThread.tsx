@@ -17,8 +17,8 @@ interface CommentThreadProps {
   targetId: string;
 }
 
-const INITIAL_VISIBLE_REPLIES = 2;
-const MAX_DEPTH = 2; // only render one level of replies under each root
+const INITIAL_VISIBLE_REPLIES = 1;
+const MAX_DEPTH = 1; // only render one level of replies under each root
 
 function CommentThread({ node, depth, onReply, targetType, targetId }: CommentThreadProps) {
   const totalReplies = node.replies.length;

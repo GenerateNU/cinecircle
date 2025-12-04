@@ -21,6 +21,38 @@ export function buildCommentTree(flat: ApiComment[]): CommentNode[] {
 }
 
 /**
+ * Find a comment node by ID within a tree structure.
+ * Searches recursively through all nodes and their replies.
+ */
+export function findCommentById(nodes: CommentNode[], id: string): CommentNode | null {
+  for (const node of nodes) {
+    if (node.id === id) {
+      return node;
+    }
+    const found = findCommentById(node.replies, id);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the root ancestor of a comment in the tree.
+ * Traverses up the tree using parentId references.
+ */
+export function findRootAncestor(flat: ApiComment[], commentId: string): string {
+  const map = new Map<string, ApiComment>();
+  flat.forEach((c) => map.set(c.id, c));
+
+  let current = map.get(commentId);
+  while (current?.parentId && map.has(current.parentId)) {
+    current = map.get(current.parentId);
+  }
+  return current?.id ?? commentId;
+}
+
+/**
  * Format a Date or ISO string into a short relative time label.
  * Examples: "now", "5m", "3h", "2d", "1w", "3mo", "2y".
  */
