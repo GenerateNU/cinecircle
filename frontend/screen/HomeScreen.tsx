@@ -98,7 +98,7 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
               <SectionHeader title="For You" size="large" />
               {/* Hardcoded clickable post for testing navigation */}
               <TouchableOpacity
-                onPress={() => router.push('/postDetail/test-post-123')}
+                onPress={() => router.push('/postDetail/1348bdf8asfqwer')}
                 style={tw`mt-4`}
                 activeOpacity={0.7}
               >

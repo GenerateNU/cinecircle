@@ -9,170 +9,172 @@ import CommentThread from './components/CommentThread';
 import CommentInput from './components/CommentInput';
 import { commentSectionStyles } from './styles/CommentSection.styles';
 
-interface CommentSectionProps { 
-  targetType: 'post' | 'rating';
-  targetId: string;
+interface CommentSectionProps {
+    targetType: 'post' | 'rating';
+    targetId: string;
 }
 
 interface GetCommentsResponse {
-  message?: string;
-  comments: ApiComment[];
+    message?: string;
+    comments: ApiComment[];
 }
 
 interface CreateCommentResponse {
-  message: string;
-  comment: ApiComment;
+    message: string;
+    comment: ApiComment;
 }
 
 const MAX_INITIAL_THREADS = 4;
 const THREAD_INCREMENT = 8;
 
 const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
-  const { profile } = useAuth();
-  const [comments, setComments] = useState<ApiComment[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [replyTarget, setReplyTarget] = useState<CommentNode | null>(null);
-  const [visibleThreadCount, setVisibleThreadCount] = useState(MAX_INITIAL_THREADS);
+    const { profile } = useAuth();
+    const [comments, setComments] = useState<ApiComment[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [replyTarget, setReplyTarget] = useState<CommentNode | null>(null);
+    const [visibleThreadCount, setVisibleThreadCount] = useState(MAX_INITIAL_THREADS);
 
-  const endpoint = useMemo(
-    () =>
-      targetType === 'post'
-        ? `/api/comments/post/${targetId}`
-        : `/api/comments/rating/${targetId}`,
-    [targetId, targetType]
-  );
-
-  const loadComments = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await api.get<GetCommentsResponse>(endpoint);
-      setComments(response.comments ?? []);
-      setVisibleThreadCount(MAX_INITIAL_THREADS);
-    } catch (err) {
-      console.error('Failed to load comments', err);
-      setError('Failed to load comments');
-    } finally {
-      setLoading(false);
-    }
-  }, [endpoint]);
-
-  // Re-fetch comments every time this screen/component gains focus
-  useFocusEffect(
-    useCallback(() => {
-      loadComments();
-      // no cleanup needed; we rely on latest state when refocused
-      return undefined;
-    }, [loadComments])
-  );
-
-  const tree = useMemo(() => buildCommentTree(comments), [comments]);
-  const visibleThreads = tree.slice(0, visibleThreadCount);
-  const hasMoreThreads = tree.length > visibleThreadCount;
-
-  const handleSubmitComment = useCallback(async (content: string) => {
-    const body: { content: string; postId?: string; ratingId?: string; parentId?: string } = {
-      content,
-    };
-
-    if (targetType === 'post') {
-      body.postId = targetId;
-    } else {
-      body.ratingId = targetId;
-    }
-
-    if (replyTarget) {
-      body.parentId = replyTarget.id;
-    }
-
-    try {
-      const response = await api.post<CreateCommentResponse>('/api/comment', body);
-      setReplyTarget(null);
-      
-      // Optimistically add the new comment to the state without showing loading
-      if (response.comment) {
-        setComments((prevComments) => [...prevComments, response.comment]);
-      } else {
-        // Fallback: reload if response doesn't include the comment
-        await loadComments();
-      }
-    } catch (error) {
-      console.error('Failed to submit comment:', error);
-      // Reload on error to ensure consistency
-      await loadComments();
-    }
-  }, [targetType, targetId, replyTarget, loadComments]);
-
-  const handleCancelReply = useCallback(() => {
-    setReplyTarget(null);
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={commentSectionStyles.loadingContainer}>
-        <Text style={commentSectionStyles.loadingText}>Loading comments…</Text>
-      </View>
+    const endpoint = useMemo(
+        () =>
+            targetType === 'post'
+                ? `/api/comments/post/${targetId}`
+                : `/api/comments/rating/${targetId}`,
+        [targetId, targetType]
     );
-  }
 
-  if (error) {
-    return (
-      <View style={commentSectionStyles.errorContainer}>
-        <Text style={commentSectionStyles.errorText}>{error}</Text>
-      </View>
+    const loadComments = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.get<GetCommentsResponse>(endpoint);
+            setComments(response.comments ?? []);
+            setVisibleThreadCount(MAX_INITIAL_THREADS);
+        } catch (err) {
+            console.error('Failed to load comments', err);
+            setError('Failed to load comments');
+        } finally {
+            setLoading(false);
+        }
+    }, [endpoint]);
+
+    // Re-fetch comments every time this screen/component gains focus
+    useFocusEffect(
+        useCallback(() => {
+            loadComments();
+            return undefined;
+        }, [loadComments])
     );
-  }
 
-  return (
-    <KeyboardAvoidingView
-      style={commentSectionStyles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <Text style={commentSectionStyles.header}>
-        {comments.length} Comments
-      </Text>
+    const tree = useMemo(() => buildCommentTree(comments), [comments]);
+    const visibleThreads = tree.slice(0, visibleThreadCount);
+    const hasMoreThreads = tree.length > visibleThreadCount;
 
-      <ScrollView
-        contentContainerStyle={commentSectionStyles.threadContainer}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {visibleThreads.map((node) => (
-          <CommentThread
-            key={node.id}
-            node={node}
-            depth={0}
-            onReply={setReplyTarget}
-            targetType={targetType}
-            targetId={targetId}
-          />
-        ))}
+    const handleSubmitComment = useCallback(async (content: string) => {
+        const body: { content: string; postId?: string; ratingId?: string; parentId?: string } = {
+            content,
+        };
 
-        {hasMoreThreads && (
-          <TouchableOpacity
-            onPress={() =>
-              setVisibleThreadCount((prev) => Math.min(prev + THREAD_INCREMENT, tree.length))
+        if (targetType === 'post') {
+            body.postId = targetId;
+        } else {
+            body.ratingId = targetId;
+        }
+
+        if (replyTarget) {
+            body.parentId = replyTarget.id;
+        }
+
+        try {
+            const response = await api.post<CreateCommentResponse>('/api/comment', body);
+            setReplyTarget(null);
+
+            // Optimistically add the new comment to the state without showing loading
+            if (response.comment) {
+                setComments((prevComments) => [...prevComments, response.comment]);
+            } else {
+                // Fallback: reload if response doesn't include the comment
+                await loadComments();
             }
-            style={commentSectionStyles.viewMoreButton}
-          >
-            <Text style={commentSectionStyles.viewMoreText}>
-              View more comments ({tree.length - visibleThreadCount} more)
-            </Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
+        } catch (error) {
+            console.error('Failed to submit comment:', error);
+            // Reload on error to ensure consistency
+            await loadComments();
+        }
+    }, [targetType, targetId, replyTarget, loadComments]);
 
-      <CommentInput
-        onSubmit={handleSubmitComment}
-        replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
-        onCancelReply={handleCancelReply}
-        userProfilePicture={profile?.profilePicture}
-        username={profile?.username}
-      />
-    </KeyboardAvoidingView>
-  );
+    const handleCancelReply = useCallback(() => {
+        setReplyTarget(null);
+    }, []);
+
+    if (loading) {
+        return (
+            <View style={commentSectionStyles.loadingContainer}>
+                <Text style={commentSectionStyles.loadingText}>Loading comments…</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={commentSectionStyles.errorContainer}>
+                <Text style={commentSectionStyles.errorText}>{error}</Text>
+            </View>
+        );
+    }
+
+    return (
+        <KeyboardAvoidingView
+            style={commentSectionStyles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        >
+            <Text style={commentSectionStyles.header}>
+                {comments.length} Comments
+            </Text>
+
+            <ScrollView
+                style={commentSectionStyles.scrollView}
+                contentContainerStyle={commentSectionStyles.threadContainer}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+            >
+                {visibleThreads.map((node) => (
+                    <CommentThread
+                        key={node.id}
+                        node={node}
+                        depth={0}
+                        onReply={setReplyTarget}
+                        targetType={targetType}
+                        targetId={targetId}
+                    />
+                ))}
+
+                {hasMoreThreads && (
+                    <TouchableOpacity
+                        onPress={() =>
+                            setVisibleThreadCount((prev) => Math.min(prev + THREAD_INCREMENT, tree.length))
+                        }
+                        style={commentSectionStyles.viewMoreButton}
+                    >
+                        <Text style={commentSectionStyles.viewMoreText}>
+                            View more comments ({tree.length - visibleThreadCount} more)
+                        </Text>
+                    </TouchableOpacity>
+                )}
+            </ScrollView>
+
+            <View style={commentSectionStyles.inputContainer}>
+                <CommentInput
+                    onSubmit={handleSubmitComment}
+                    replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
+                    onCancelReply={handleCancelReply}
+                    userProfilePicture={profile?.profilePicture}
+                    username={profile?.username}
+                />
+            </View>
+        </KeyboardAvoidingView>
+    );
 };
 
 export default CommentSection;
