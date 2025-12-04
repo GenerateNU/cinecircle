@@ -397,9 +397,8 @@ model auth_users {
 }
 
 model Comment {
-  id              String        @id @default(uuid())
-  userId          String        @db.Uuid
-  ratingId        String?
+  id              String      @id @default(uuid())
+  userId          String      @db.Uuid
   postId          String?
   content         String
   createdAt       DateTime      @default(now())
@@ -407,7 +406,6 @@ model Comment {
   parent_comment  Comment?      @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
   child_comment   Comment[]     @relation("CommentToComment")
   Post            Post?         @relation(fields: [postId], references: [id])
-  Rating          Rating?       @relation(fields: [ratingId], references: [id])
   UserProfile     UserProfile   @relation(fields: [userId], references: [userId])
   CommentLike     CommentLike[]
 
@@ -426,19 +424,28 @@ model CommentLike {
   @@schema("public")
 }
 
+
+// Post model supports both SHORT and LONG posts about movies
+// SHORT posts: <=280 chars, no stars
+// LONG posts: >280 chars, optional stars (reviews)
 model Post {
   id              String         @id @default(uuid())
   userId          String         @db.Uuid
+  movieId         String         // Required - all posts must reference a movie
   content         String
-  type            PostType
+  type            PostType       // SHORT or LONG
+  stars           Int?           // Optional star rating (0-10), only for LONG posts
+  spoiler         Boolean        @default(false) // Spoiler flag
+  tags            String[]       @default([]) // Movie tags from preset list
   createdAt       DateTime       @default(now())
   imageUrls       String[]       @default([])
-  parentPostId    String?        // For threading/replies
+  repostedPostId  String?        // For reposts/shares - references original post
   Comment         Comment[]
   UserProfile     UserProfile    @relation(fields: [userId], references: [userId])
   PostReaction    PostReaction[] // Track individual reactions
-  ParentPost      Post?          @relation("PostReplies", fields: [parentPostId], references: [id], onDelete: SetNull)
-  Replies         Post[]         @relation("PostReplies")
+  OriginalPost    Post?          @relation("PostReposts", fields: [repostedPostId], references: [id], onDelete: SetNull)
+  Reposts         Post[]         @relation("PostReposts")
+  movie           movie          @relation(fields: [movieId], references: [movieId])
 
   @@schema("public")
 }
@@ -456,18 +463,19 @@ model PostReaction {
   @@schema("public")
 }
 
+// DEPRECATED: Use Post model instead for all movie content
+// This model is kept for backward compatibility only
+// All relations removed - this is a standalone legacy model
+// DO NOT USE THIS MODEL
 model Rating {
-  id          String      @id @default(uuid())
-  userId      String      @db.Uuid
-  movieId     String
-  stars       Int
-  comment     String?
-  tags        String[]    @default([])
-  date        DateTime
-  votes       Int         @default(0)
-  Comment     Comment[]
-  UserProfile UserProfile @relation(fields: [userId], references: [userId])
-  movie       movie        @relation(fields: [movieId], references: [movieId])
+  id       String   @id @default(uuid())
+  userId   String   @db.Uuid
+  movieId  String
+  stars    Int
+  comment  String?
+  tags     String[] @default([])
+  date     DateTime
+  votes    Int      @default(0)
 
   @@schema("public")
 }
@@ -500,7 +508,6 @@ model UserProfile {
   CommentLike                                    CommentLike[]
   Post                                           Post[]
   PostReaction                                   PostReaction[]
-  Rating                                         Rating[]
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[]   @relation("UserFollow_followerIdToUserProfile")
   UserFollow_UserFollow_followingIdToUserProfile UserFollow[]   @relation("UserFollow_followingIdToUserProfile")
   event_rsvp                                     event_rsvp[]
@@ -549,7 +556,7 @@ model event_rsvp {
 }
 
 model movie {
-  movieId     String  @id
+  movieId     String   @id
   localRating String?
   imdbRating  BigInt?
   languages   Json?
@@ -559,7 +566,7 @@ model movie {
   imageUrl    String?
   releaseYear Int?
   director    String?
-  Rating      Rating[]
+  Post        Post[]   // All movie posts (SHORT and LONG)
 
   @@schema("public")
 }

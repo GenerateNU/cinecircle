@@ -4,9 +4,48 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { View, Text, ActivityIndicator } from 'react-native';
 import tw from 'twrnc';
+import { supabase } from '../lib/supabase';
+import { useURL } from 'expo-linking';
+import { useEffect } from 'react';
 
 function RootNavigator() {
   const { user, profile, loading, profileLoading } = useAuth();
+  const url = useURL();
+
+  useEffect(() => {
+    if (!url) return;
+  
+    console.log("Deep link received:", url);
+  
+    const hashIndex = url.indexOf('#');
+  
+    if (hashIndex === -1) {
+      console.log("No hash detected in URL.");
+      return;
+    }
+  
+    // get everything after #
+    const hash = url.substring(hashIndex + 1);
+    const params = Object.fromEntries(new URLSearchParams(hash));
+  
+    const access_token = params.access_token;
+    const refresh_token = params.refresh_token;
+  
+  
+    if (access_token && refresh_token) {
+      supabase.auth
+        .setSession({ access_token, refresh_token })
+        .then(({ data, error }) => {
+          if (error) console.error("Session set error:", error);
+          else console.log("Session restored:", data.session);
+  
+        });
+    } else {
+      console.log("No tokens found in hash params.");
+    }
+  }, [url]);
+  
+
 
   // Show loading screen while checking auth
   if (loading || profileLoading) {

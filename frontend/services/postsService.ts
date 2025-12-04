@@ -5,7 +5,9 @@ type Post = components['schemas']['Post'];
 
 type GetPostsParams = {
   userId?: string;
-  parentPostId?: string | null;
+  movieId?: string;
+  repostedPostId?: string | null; // Filter by reposted post ID
+  currentUserId?: string; // For getting user's reactions
   limit?: number;
   offset?: number;
 };
@@ -16,13 +18,13 @@ type PostsResponse = {
 };
 
 /**
- * Fetch posts with optional filters. Passing parentPostId=null returns only top-level posts.
+ * Fetch posts with optional filters. Passing repostedPostId=null returns only original posts (not reposts).
  */
 export async function getPosts(params?: GetPostsParams): Promise<Post[]> {
   const normalizedParams = params
     ? {
         ...params,
-        parentPostId: params.parentPostId === null ? 'null' : params.parentPostId,
+        repostedPostId: params.repostedPostId === null ? 'null' : params.repostedPostId,
       }
     : undefined;
   const res = await api.get<PostsResponse>('/api/posts', normalizedParams);

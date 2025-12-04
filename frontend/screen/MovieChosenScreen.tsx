@@ -16,15 +16,19 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import TagList from '../components/TagList';
 import ReviewPost from '../components/ReviewPost';
+import TextPost from '../components/TextPost';
+import PicturePost from '../components/PicturePost';
+import InteractionBar from '../components/InteractionBar';
 import UserBar from '../components/UserBar';
 import StarRating from '../components/StarRating';
 import {
-  getMovieRatings,
-  getMovieComments,
   // getMovieSummary,
   getMovieByCinecircleId,
 } from '../services/moviesService';
+import { getPosts } from '../services/postsService';
+import { togglePostReaction } from '../services/feedService';
 import { getMoviePosterUrl } from '../services/imageService';
+import { useAuth } from '../context/AuthContext';
 import type { components } from '../types/api-generated';
 import { t } from '../il8n/_il8n';
 import { UiTextKey } from '../il8n/_keys';
@@ -33,20 +37,19 @@ type MovieChosenScreenProps = {
   movieId: string;
 };
 
-type Rating = components['schemas']['Rating'];
-type Comment = components['schemas']['Comment'];
+type Post = components['schemas']['Post'];
 type Movie = components['schemas']['Movie'];
 // type Summary = components["schemas"]["Summary"];
 
 type FeedItem = {
-  type: 'rating' | 'comment';
-  data: Rating | Comment;
+  type: 'post';
+  data: Post;
   date: string;
 };
 
 export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
-  const [ratings, setRatings] = useState<Rating[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,11 +87,12 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           console.log('Failed to fetch movie meta (non-fatal):', metaErr);
         }
 
-        const ratingsResponse = await getMovieRatings(movieId);
-        const commentsResponse = await getMovieComments(movieId);
+        const postsResponse = await getPosts({
+          movieId,
+          currentUserId: user?.id, // Pass current user ID for reactions
+        });
 
-        setRatings(ratingsResponse.ratings || []);
-        setComments(commentsResponse.comments || []);
+        setPosts(postsResponse || []);
 
         // setSummaryLoading(true);
         // try {
@@ -126,13 +130,17 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   }, [showSpoilers]);
 
   const calculateAverageRating = () => {
-    if (ratings.length === 0) return 0;
-    const sum = ratings.reduce((acc, r) => acc + r.stars, 0);
-    return Number((sum / ratings.length).toFixed(1));
+    // Only calculate average from posts that have star ratings (reviews)
+    const postsWithStars = posts.filter(
+      p => p.stars !== null && p.stars !== undefined
+    );
+    if (postsWithStars.length === 0) return 0;
+    const sum = postsWithStars.reduce((acc, p) => acc + (p.stars || 0), 0);
+    return Number((sum / postsWithStars.length).toFixed(1));
   };
 
   const getAllTags = () => {
-    const allTags = ratings.flatMap(r => r.tags || []);
+    const allTags = posts.flatMap(p => p.tags || []);
     const uniqueTags = [...new Set(allTags)].slice(0, 5);
     const capitalizedTags = uniqueTags.map(tag =>
       tag
@@ -156,10 +164,30 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     ? Number(movieEnvelope.numRatings)
     : null;
 
-  const handleReviewPress = (rating: Rating) => {
-    // TODO: Navigate to review detail page
-    console.log('Review pressed:', rating.id, 'Movie:', rating.movieId);
-    // navigation.navigate('ReviewDetail', { reviewId: rating.id, movieId: rating.movieId });
+  const handleReviewPress = (post: Post) => {
+    // TODO: Navigate to post detail page (review)
+    console.log('Review pressed:', post.id, 'Movie:', post.movieId);
+    console.log('Would navigate to PostDetail with:', {
+      postId: post.id,
+      movieId: post.movieId,
+      type: 'LONG',
+      hasStars: true,
+    });
+    // navigation.navigate('PostDetail', { postId: post.id, movieId: post.movieId });
+  };
+
+  const handlePostPress = (post: Post) => {
+    // TODO: Navigate to post detail page (short post or long post without stars)
+    console.log('Post pressed:', post.id, 'Movie:', post.movieId);
+    console.log('Would navigate to PostDetail with:', {
+      postId: post.id,
+      movieId: post.movieId,
+      type: post.type,
+      hasStars: post.stars !== null && post.stars !== undefined,
+      hasImages: post.imageUrls && post.imageUrls.length > 0,
+      imageCount: post.imageUrls?.length || 0,
+    });
+    // navigation.navigate('PostDetail', { postId: post.id, movieId: post.movieId });
   };
 
   const formatDate = (dateString: string) => {
@@ -177,86 +205,204 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     return count.toString();
   };
 
-  // Combine ratings and comments into a single feed, sorted by most recent
-  const getFeedItems = (): FeedItem[] => {
-    const ratingItems: FeedItem[] = ratings.map(rating => ({
-      type: 'rating' as const,
-      data: rating,
-      date: rating.date,
-    }));
-
-    const commentItems: FeedItem[] = comments.map(comment => ({
-      type: 'comment' as const,
-      data: comment,
-      date: comment.createdAt,
-    }));
-
-    const allItems = [...ratingItems, ...commentItems];
-
-    // Sort by date, most recent first
-    allItems.sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return dateB - dateA; // Descending order
+  const handleComment = (post: Post) => {
+    // TODO: Navigate to post detail page to view/add comments
+    console.log('Comment button pressed for post:', post.id);
+    console.log('Would navigate to PostDetail with:', {
+      postId: post.id,
+      movieId: post.movieId,
+      type: post.type,
+      focusCommentInput: true, // Auto-focus comment input when navigating from comment button
     });
+    // navigation.navigate('PostDetail', { postId: post.id, movieId: post.movieId, focusCommentInput: true });
+  };
 
-    return allItems;
+  // Return all posts about this movie (already sorted by createdAt desc from backend)
+  const getFeedItems = (): FeedItem[] => {
+    return posts.map(post => ({
+      type: 'post' as const,
+      data: post,
+      date: post.createdAt,
+    }));
   };
 
   const renderFeedItem = (item: FeedItem, index: number) => {
-    if (item.type === 'rating') {
-      const rating = item.data as Rating;
-      const username = rating.UserProfile?.username || 'Unknown';
-      const movieImagePath =
-        (rating as any).movie?.imageUrl || movieEnvelope?.imageUrl;
+    if (item.type === 'post') {
+      const post = item.data as Post;
+      const username = post.UserProfile?.username || 'Unknown';
+      const movieImagePath = post.movie?.imageUrl || movieEnvelope?.imageUrl;
       const moviePosterUrl = getMoviePosterUrl(movieImagePath);
 
-      return (
-        <React.Fragment key={`rating-${rating.id}`}>
-          <View style={styles.reviewItemContainer}>
-            <UserBar
-              name={username}
-              username={username}
-              userId={rating.userId}
-            />
-            <Text style={styles.reviewShareText}>
-              Check out this new review that I just dropped!
-            </Text>
-            <ReviewPost
-              userName={username}
-              username={username}
-              date={formatDate(rating.date)}
-              reviewerName={username}
-              movieTitle={title}
-              rating={rating.stars}
-              userId={rating.userId}
-              reviewerUserId={rating.userId}
-              movieImageUrl={moviePosterUrl}
-              onPress={() => handleReviewPress(rating)}
-            />
-          </View>
-          {index < getFeedItems().length - 1 && <View style={styles.divider} />}
-        </React.Fragment>
-      );
-    } else {
-      const comment = item.data as Comment;
-      return (
-        <React.Fragment key={`comment-${comment.id}`}>
-          <View style={styles.commentItemContainer}>
-            <UserBar
-              name={comment.UserProfile?.username || 'Unknown'}
-              username={comment.UserProfile?.username || 'unknown'}
-              userId={comment.userId}
-            />
-            <Text style={styles.commentContent}>{comment.content}</Text>
-            <Text style={styles.commentDate}>
-              {formatDate(comment.createdAt)}
-            </Text>
-          </View>
-          {index < getFeedItems().length - 1 && <View style={styles.divider} />}
-        </React.Fragment>
-      );
+      // If post has stars, render it as a review
+      if (post.stars !== null && post.stars !== undefined) {
+        return (
+          <React.Fragment key={`post-${post.id}`}>
+            <View style={styles.reviewItemContainer}>
+              <UserBar
+                name={username}
+                username={username}
+                userId={post.userId}
+              />
+              <Text style={styles.reviewShareText}>
+                Check out this new review that I just dropped!
+              </Text>
+              <ReviewPost
+                userName={username}
+                username={username}
+                date={formatDate(post.createdAt)}
+                reviewerName={username}
+                movieTitle={title}
+                rating={post.stars}
+                userId={post.userId}
+                reviewerUserId={post.userId}
+                movieImageUrl={moviePosterUrl}
+                onPress={() => handleReviewPress(post)}
+              />
+            </View>
+            {index < getFeedItems().length - 1 && (
+              <View style={styles.divider} />
+            )}
+          </React.Fragment>
+        );
+      } else {
+        // Render as a regular post (SHORT post) with proper components
+        const hasImage = post.imageUrls && post.imageUrls.length > 0;
+
+        // Map backend reaction data to InteractionBar format
+        const reactions = [
+          {
+            emoji: '🌶️',
+            count: post.reactionCounts?.SPICY || 0,
+            selected: post.userReactions?.includes('SPICY') || false,
+          },
+          {
+            emoji: '✨',
+            count: post.reactionCounts?.STAR_STUDDED || 0,
+            selected: post.userReactions?.includes('STAR_STUDDED') || false,
+          },
+          {
+            emoji: '🧠',
+            count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
+            selected:
+              post.userReactions?.includes('THOUGHT_PROVOKING') || false,
+          },
+          {
+            emoji: '🧨',
+            count: post.reactionCounts?.BLOCKBUSTER || 0,
+            selected: post.userReactions?.includes('BLOCKBUSTER') || false,
+          },
+        ];
+
+        const handleReaction = async (reactionIndex: number) => {
+          if (!user?.id) return;
+
+          const reactionTypes: Array<
+            'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+          > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
+          const reactionType = reactionTypes[reactionIndex];
+
+          try {
+            // Optimistically update UI
+            setPosts(prevPosts =>
+              prevPosts.map(p => {
+                if (p.id === post.id) {
+                  const wasSelected =
+                    p.userReactions?.includes(reactionType) || false;
+
+                  // Update reaction counts
+                  const newReactionCounts = { ...p.reactionCounts };
+                  if (wasSelected) {
+                    newReactionCounts[reactionType] = Math.max(
+                      0,
+                      (newReactionCounts[reactionType] || 0) - 1
+                    );
+                  } else {
+                    newReactionCounts[reactionType] =
+                      (newReactionCounts[reactionType] || 0) + 1;
+                  }
+
+                  // Update user reactions
+                  let newUserReactions = [...(p.userReactions || [])];
+                  if (wasSelected) {
+                    newUserReactions = newUserReactions.filter(
+                      r => r !== reactionType
+                    );
+                  } else {
+                    newUserReactions.push(reactionType);
+                  }
+
+                  return {
+                    ...p,
+                    reactionCounts: newReactionCounts,
+                    userReactions: newUserReactions,
+                  } as Post;
+                }
+                return p;
+              })
+            );
+
+            // Call API in background
+            await togglePostReaction(post.id, user.id, reactionType);
+          } catch (error) {
+            console.error('Error toggling reaction:', error);
+            // Reload on error to get correct state
+            try {
+              const postsResponse = await getPosts({
+                movieId,
+                currentUserId: user?.id,
+              });
+              setPosts(postsResponse || []);
+            } catch (reloadError) {
+              console.error('Error reloading posts:', reloadError);
+            }
+          }
+        };
+
+        return (
+          <React.Fragment key={`post-${post.id}`}>
+            <View style={styles.postContainer}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => handlePostPress(post)}
+              >
+                {hasImage ? (
+                  <PicturePost
+                    userName={username}
+                    username={username}
+                    date={formatDate(post.createdAt)}
+                    content={post.content}
+                    imageUrls={post.imageUrls || []}
+                    userId={post.userId}
+                  />
+                ) : (
+                  <TextPost
+                    userName={username}
+                    username={username}
+                    date={formatDate(post.createdAt)}
+                    content={post.content}
+                    userId={post.userId}
+                  />
+                )}
+              </TouchableOpacity>
+              <View style={styles.interactionWrapper}>
+                <InteractionBar
+                  initialComments={post.commentCount || 0}
+                  reactions={reactions}
+                  onCommentPress={() => handleComment(post)}
+                  onReactionPress={handleReaction}
+                />
+              </View>
+            </View>
+            {index < getFeedItems().length - 1 && (
+              <View style={styles.divider} />
+            )}
+          </React.Fragment>
+        );
+      }
     }
+
+    // Should never reach here since all FeedItems are now posts
+    return null;
   };
 
   const feedItems = getFeedItems();
@@ -341,7 +487,10 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                   size={24}
                 />
                 <Text style={styles.ratingCount}>
-                  {formatCount(ratings.length)}
+                  {formatCount(
+                    posts.filter(p => p.stars !== null && p.stars !== undefined)
+                      .length
+                  )}
                 </Text>
               </View>
               {imdbRating !== null && (
@@ -530,7 +679,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       ) : (
         <View style={styles.emptyContainer}>
           <Text style={styles.placeholderText}>
-            No reviews or comments yet. Be the first!
+            No posts or reviews yet. Be the first!
           </Text>
         </View>
       )}
@@ -774,28 +923,19 @@ const styles = StyleSheet.create({
     paddingTop: width * 0.04,
     paddingBottom: width * 0.04,
   },
+  postContainer: {
+    backgroundColor: '#FFF',
+    paddingTop: width * 0.04,
+  },
+  interactionWrapper: {
+    paddingHorizontal: width * 0.04,
+    paddingBottom: width * 0.04,
+  },
   reviewShareText: {
     fontSize: width * 0.04,
     color: '#000',
     marginTop: width * 0.03,
     marginBottom: width * 0.04,
-  },
-  commentItemContainer: {
-    backgroundColor: '#FFF',
-    paddingHorizontal: width * 0.04,
-    paddingTop: width * 0.04,
-    paddingBottom: width * 0.04,
-  },
-  commentContent: {
-    fontSize: 15,
-    color: '#333',
-    marginTop: width * 0.03,
-    marginBottom: width * 0.02,
-    lineHeight: 22,
-  },
-  commentDate: {
-    fontSize: 13,
-    color: '#999',
   },
   divider: {
     height: 1,
