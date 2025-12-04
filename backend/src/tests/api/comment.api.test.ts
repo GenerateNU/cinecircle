@@ -11,6 +11,7 @@ jest.mock("../../services/db", () => {
   const ratings = new Map<string, any>();
   const posts = new Map<string, any>();
   const comments = new Map<string, any>();
+  const commentLikes = new Map<string, any>();
 
   const clone = (record: any) => (record ? { ...record } : record);
 
@@ -164,6 +165,42 @@ jest.mock("../../services/db", () => {
     }
   };
 
+  const commentLikeModel = {
+    create: jest.fn(async ({ data }: any) => {
+      const id = data.id ?? crypto.randomUUID();
+      const record = { ...data, id };
+      commentLikes.set(id, record);
+      return clone(record);
+    }),
+    findUnique: jest.fn(async ({ where }: any) => {
+      if (where.commentId_userId) {
+        const { commentId, userId } = where.commentId_userId;
+        const like = Array.from(commentLikes.values()).find(
+          (l) => l.commentId === commentId && l.userId === userId
+        );
+        return like ? clone(like) : null;
+      }
+      if (where.id) {
+        return clone(commentLikes.get(where.id) ?? null);
+      }
+      return null;
+    }),
+    delete: jest.fn(async ({ where: { id } }: any) => {
+      const record = commentLikes.get(id);
+      ensureRecordExists(record);
+      commentLikes.delete(id);
+      return clone(record);
+    }),
+    count: jest.fn(async ({ where }: any = {}) => {
+      if (where?.commentId) {
+        return Array.from(commentLikes.values()).filter(
+          (like) => like.commentId === where.commentId
+        ).length;
+      }
+      return commentLikes.size;
+    }),
+  };
+
   const commentModel = {
     create: jest.fn(async ({ data }: any) => {
       const id = data.id ?? crypto.randomUUID();
@@ -197,10 +234,12 @@ jest.mock("../../services/db", () => {
         );
       }
 
-      // Handle includes (UserProfile)
-      if (include?.UserProfile) {
-        const selectFields = include.UserProfile.select;
-        results = results.map((record) => {
+      // Handle includes (UserProfile and CommentLike)
+      results = results.map((record) => {
+        const result = { ...record };
+        
+        if (include?.UserProfile) {
+          const selectFields = include.UserProfile.select;
           const userProfile = userProfiles.get(record.userId);
           const profileData: any = {};
           if (selectFields) {
@@ -210,9 +249,19 @@ jest.mock("../../services/db", () => {
               }
             }
           }
-          return { ...record, UserProfile: userProfile ? profileData : null };
-        });
-      }
+          result.UserProfile = userProfile ? profileData : null;
+        }
+        
+        if (include?.CommentLike) {
+          // Return all likes for this comment
+          const likes = Array.from(commentLikes.values()).filter(
+            (like) => like.commentId === record.id
+          );
+          result.CommentLike = likes;
+        }
+        
+        return result;
+      });
 
       return results.map(clone);
     }),
@@ -249,11 +298,13 @@ jest.mock("../../services/db", () => {
       rating: ratingModel,
       post: postModel,
       comment: commentModel,
+      commentLike: commentLikeModel,
       $disconnect: jest.fn(async () => {
         userProfiles.clear();
         ratings.clear();
         posts.clear();
         comments.clear();
+        commentLikes.clear();
       }),
     },
   };
