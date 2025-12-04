@@ -9,7 +9,9 @@ import {
   FlatList,
 } from "react-native";
 
-import { getAllTags } from "../services/tagsService"; // <-- You will need this service
+import Tag from "./Tag";
+import TagList from "./TagList";
+//import { getAllTags } from "../services/tagsService";
 
 interface Props {
   visible: boolean;
@@ -33,7 +35,13 @@ export default function TagSelectorModal({
         try {
           const tags = await getAllTags();
           console.log("Tags API returned:", tags);
-          setAllTags(tags);
+
+          const names =
+            tags && typeof tags[0] === "string"
+              ? tags
+              : tags.map((t: any) => t.name || t.label || String(t));
+
+          setAllTags(names);
         } catch (err) {
           console.log("Error fetching tags:", err);
         }
@@ -41,36 +49,37 @@ export default function TagSelectorModal({
     }
   }, [visible]);
 
-const toggleTag = (tag: string) => {
-  let newTags = [...selected];
+  const toggleTag = (tag: string) => {
+    let updated = [...selected];
 
-  if (newTags.includes(tag)) {
-    newTags = newTags.filter(t => t !== tag);
-  } else if (newTags.length < 8) {
-    newTags.push(tag);
-  }
+    if (updated.includes(tag)) {
+      updated = updated.filter((t) => t !== tag);
+    } else if (updated.length < 8) {
+      updated.push(tag);
+    }
 
-  onChangeSelected(newTags);
-};
+    onChangeSelected(updated);
+  };
 
   const filtered = allTags.filter((t) =>
     t.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      {/* Tap outside to close */}
-      <TouchableOpacity
-        activeOpacity={1}
-        style={{ flex: 1 }}
-        onPress={onClose}
-      />
-
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalContainer}>
+        <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
+
         <View style={styles.sheet}>
           <View style={styles.dragHandle} />
 
           <Text style={styles.label}>Add Tags</Text>
+
+          {selected.length > 0 && (
+            <View style={{ marginBottom: 10 }}>
+              <TagList tags={selected} />
+            </View>
+          )}
 
           <TextInput
             style={styles.input}
@@ -83,20 +92,16 @@ const toggleTag = (tag: string) => {
           <FlatList
             data={filtered}
             keyExtractor={(item) => item}
-            contentContainerStyle={styles.pillContainer}
+            contentContainerStyle={styles.tagList}
+            keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => {
-              const isSelected = selected.includes(item);
+              const isPressed = selected.includes(item);
               return (
-                <TouchableOpacity
-                  style={[styles.pill, isSelected && styles.pillSelected]}
+                <Tag
+                  label={item}
+                  pressed={isPressed}
                   onPress={() => toggleTag(item)}
-                >
-                  <Text
-                    style={[styles.pillText, isSelected && styles.pillTextSelected]}
-                  >
-                    {item}
-                  </Text>
-                </TouchableOpacity>
+                />
               );
             }}
           />
@@ -112,13 +117,20 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.4)",
   },
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
   sheet: {
     backgroundColor: "white",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 40,
     paddingHorizontal: 20,
-    paddingTop: 18,
+    paddingTop: 16,
     minHeight: "45%",
   },
   dragHandle: {
@@ -127,40 +139,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccc",
     alignSelf: "center",
     borderRadius: 3,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   label: {
-    fontFamily: "Figtree_600SemiBold",
     fontSize: 16,
-    marginBottom: 8,
+    fontWeight: "600",
+    marginBottom: 12,
   },
   input: {
     backgroundColor: "#f2f2f2",
     borderRadius: 10,
     padding: 12,
-    fontFamily: "Figtree_400Regular",
-    marginBottom: 20,
+    marginBottom: 16,
     fontSize: 15,
   },
-  pillContainer: {
+  tagList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
-  },
-  pill: {
-    alignSelf: "flex-start",
-    backgroundColor: "#d5ecef",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 18,
-    marginBottom: 10,
-  },
-  pillSelected: {
-    backgroundColor: "#e66a4e",
-  },
-  pillText: {
-    fontFamily: "Figtree_500Medium",
-    color: "#333",
-  },
-  pillTextSelected: {
-    color: "white",
+    paddingBottom: 40,
   },
 });
