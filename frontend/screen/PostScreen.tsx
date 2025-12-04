@@ -3,6 +3,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  View,
+  StyleSheet
 } from "react-native";
 import { router } from "expo-router";
 
@@ -58,7 +60,7 @@ export default function PostScreen({
   };
 
   return (
-    <>
+    <View style={styles.container}>
       <CreatePostBar
         title={postType === "long" ? "Create Long" : "Create Short"}
         onBack={() => router.back()}
@@ -84,6 +86,14 @@ export default function PostScreen({
         </ScrollView>
         
       </KeyboardAvoidingView>
-    </>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 50,
+    width: "100%",
+  },
+});
