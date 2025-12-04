@@ -58,12 +58,12 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
           })
         }
       />
-      <CommentSection targetType="post" targetId="1348bdf8asfqwer" />
       <ScrollView
         style={tw`flex-1`}
         contentContainerStyle={[tw`pb-28`]}
         showsVerticalScrollIndicator={false}
       >
+        <CommentSection targetType="post" targetId="1348bdf8asfqwer" />
         {/* Hero image */}
         <View style={{ paddingBottom: 16 }}>
           <View style={{ position: 'relative' }}>

@@ -4,8 +4,8 @@ const { width, height } = Dimensions.get('window');
 
 export const commentSectionStyles = StyleSheet.create({
   container: {
-    flex: 1,
     marginHorizontal: width * 0.025,
+    minHeight: height * 0.5,
   },
   header: {
     fontWeight: '400',
