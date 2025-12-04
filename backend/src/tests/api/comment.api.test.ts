@@ -179,6 +179,43 @@ jest.mock("../../services/db", () => {
       }
       return clone(record);
     }),
+    findMany: jest.fn(async ({ where, orderBy, include }: any = {}) => {
+      let results = Array.from(comments.values()).filter((record) =>
+        matchesWhere(record, where),
+      );
+
+      // Handle ordering
+      if (orderBy?.createdAt === 'asc') {
+        results = results.sort(
+          (a, b) =>
+            new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime(),
+        );
+      } else if (orderBy?.createdAt === 'desc') {
+        results = results.sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+        );
+      }
+
+      // Handle includes (UserProfile)
+      if (include?.UserProfile) {
+        const selectFields = include.UserProfile.select;
+        results = results.map((record) => {
+          const userProfile = userProfiles.get(record.userId);
+          const profileData: any = {};
+          if (selectFields) {
+            for (const field of Object.keys(selectFields)) {
+              if (selectFields[field] && userProfile) {
+                profileData[field] = userProfile[field] ?? null;
+              }
+            }
+          }
+          return { ...record, UserProfile: userProfile ? profileData : null };
+        });
+      }
+
+      return results.map(clone);
+    }),
     update: jest.fn(async ({ where: { id }, data }: any) => {
       const record = comments.get(id);
       ensureRecordExists(record);
@@ -896,6 +933,205 @@ describe("Comment API Tests", () => {
       // Clean up orphaned children
       await prisma.comment.delete({ where: { id: child1.id } });
       await prisma.comment.delete({ where: { id: child2.id } });
+    });
+  });
+
+  describe("GET /api/comments/post/:postId (getCommentsTree)", () => {
+    it("should retrieve all comments for a post with user profile info", async () => {
+      const res = await request(app)
+        .get(`/api/comments/post/${testPostId}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK)
+        .expect("Content-Type", /json/);
+
+      expect(res.body).toHaveProperty("message", "Comments retrieved");
+      expect(res.body).toHaveProperty("comments");
+      expect(Array.isArray(res.body.comments)).toBe(true);
+      expect(res.body.comments.length).toBeGreaterThanOrEqual(1);
+
+      // Verify the test comment is in the response
+      const testComment = res.body.comments.find((c: any) => c.id === testCommentId);
+      expect(testComment).toBeDefined();
+      expect(testComment).toMatchObject({
+        id: testCommentId,
+        userId: TEST_USER_ID,
+        content: "This is a test comment!",
+        postId: testPostId,
+      });
+
+      // Verify UserProfile is included
+      expect(testComment).toHaveProperty("UserProfile");
+      expect(testComment.UserProfile).toHaveProperty("userId", TEST_USER_ID);
+      expect(testComment.UserProfile).toHaveProperty("username", "testuser");
+    });
+
+    it("should return empty array for post with no comments", async () => {
+      // Create a new post with no comments
+      const emptyPost = await prisma.post.create({
+        data: {
+          userId: TEST_USER_ID,
+          type: "SHORT",
+          content: "Post with no comments",
+          createdAt: new Date(),
+        },
+      });
+
+      const res = await request(app)
+        .get(`/api/comments/post/${emptyPost.id}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.comments).toEqual([]);
+
+      // Clean up
+      await prisma.post.delete({ where: { id: emptyPost.id } });
+    });
+
+    it("should return comments ordered by createdAt ascending", async () => {
+      // Create additional comments with different timestamps
+      const olderComment = await prisma.comment.create({
+        data: {
+          userId: TEST_USER_ID,
+          postId: testPostId,
+          content: "Older comment",
+          createdAt: new Date(Date.now() - 10000), // 10 seconds ago
+        },
+      });
+
+      const newerComment = await prisma.comment.create({
+        data: {
+          userId: TEST_USER_ID,
+          postId: testPostId,
+          content: "Newer comment",
+          createdAt: new Date(Date.now() + 10000), // 10 seconds in future
+        },
+      });
+
+      const res = await request(app)
+        .get(`/api/comments/post/${testPostId}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      const commentIds = res.body.comments.map((c: any) => c.id);
+      const olderIndex = commentIds.indexOf(olderComment.id);
+      const newerIndex = commentIds.indexOf(newerComment.id);
+
+      // Older comment should come before newer comment
+      expect(olderIndex).toBeLessThan(newerIndex);
+
+      // Clean up
+      await prisma.comment.delete({ where: { id: olderComment.id } });
+      await prisma.comment.delete({ where: { id: newerComment.id } });
+    });
+
+    it("should include threaded comments with parentId for tree building", async () => {
+      // Create a reply to the test comment
+      const replyComment = await prisma.comment.create({
+        data: {
+          userId: OTHER_USER_ID,
+          postId: testPostId,
+          content: "This is a reply",
+          parentId: testCommentId,
+          createdAt: new Date(),
+        },
+      });
+
+      const res = await request(app)
+        .get(`/api/comments/post/${testPostId}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      // Both parent and reply should be in the flat list
+      const parentComment = res.body.comments.find((c: any) => c.id === testCommentId);
+      const reply = res.body.comments.find((c: any) => c.id === replyComment.id);
+
+      expect(parentComment).toBeDefined();
+      expect(parentComment.parentId).toBeUndefined();
+
+      expect(reply).toBeDefined();
+      expect(reply.parentId).toBe(testCommentId);
+      expect(reply.content).toBe("This is a reply");
+
+      // Clean up
+      await prisma.comment.delete({ where: { id: replyComment.id } });
+    });
+  });
+
+  describe("GET /api/comments/rating/:ratingId (getCommentsTree)", () => {
+    it("should retrieve all comments for a rating with user profile info", async () => {
+      const res = await request(app)
+        .get(`/api/comments/rating/${testRatingId}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK)
+        .expect("Content-Type", /json/);
+
+      expect(res.body).toHaveProperty("message", "Comments retrieved");
+      expect(res.body).toHaveProperty("comments");
+      expect(Array.isArray(res.body.comments)).toBe(true);
+
+      // The test comment is associated with both the post and rating
+      const testComment = res.body.comments.find((c: any) => c.id === testCommentId);
+      expect(testComment).toBeDefined();
+      expect(testComment.ratingId).toBe(testRatingId);
+    });
+
+    it("should return empty array for rating with no comments", async () => {
+      // Create a new rating with no comments
+      const emptyRating = await prisma.rating.create({
+        data: {
+          userId: TEST_USER_ID,
+          movieId: "empty-rating-movie",
+          stars: 4,
+          date: new Date(),
+        },
+      });
+
+      const res = await request(app)
+        .get(`/api/comments/rating/${emptyRating.id}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body.comments).toEqual([]);
+
+      // Clean up
+      await prisma.rating.delete({ where: { id: emptyRating.id } });
+    });
+
+    it("should only return comments for the specific rating", async () => {
+      // Create another rating with its own comment
+      const otherRating = await prisma.rating.create({
+        data: {
+          userId: TEST_USER_ID,
+          movieId: "other-movie",
+          stars: 3,
+          date: new Date(),
+        },
+      });
+
+      const otherComment = await prisma.comment.create({
+        data: {
+          userId: TEST_USER_ID,
+          ratingId: otherRating.id,
+          content: "Comment on other rating",
+          createdAt: new Date(),
+        },
+      });
+
+      // Fetch comments for original rating
+      const res = await request(app)
+        .get(`/api/comments/rating/${testRatingId}`)
+        .set(authHeader())
+        .expect(HTTP_STATUS.OK);
+
+      // Should not include the other rating's comment
+      const otherCommentInResponse = res.body.comments.find(
+        (c: any) => c.id === otherComment.id
+      );
+      expect(otherCommentInResponse).toBeUndefined();
+
+      // Clean up
+      await prisma.comment.delete({ where: { id: otherComment.id } });
+      await prisma.rating.delete({ where: { id: otherRating.id } });
     });
   });
 });

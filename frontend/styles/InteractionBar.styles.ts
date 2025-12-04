@@ -6,26 +6,13 @@ export const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    gap: width * 0.03,
+    justifyContent: "space-between",
     paddingVertical: height * 0.01,
+    paddingLeft: width * 0.03,
   },
-  button: {
+  reactionsContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: width * 0.015,
-    minWidth: width * 0.03,
-  },
-  icon: {
-    fontSize: width * 0.05,
-    color: "#666",
-  },
-  likedIcon: {
-    fontSize: width * 0.05,
-    color: "#9A0169",
-  },
-  count: {
-    fontSize: width * 0.0325,
-    color: "#666",
-    fontWeight: "500",
+    gap: width * 0.03,
   },
 });

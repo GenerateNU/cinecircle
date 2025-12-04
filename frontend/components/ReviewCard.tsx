@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import StarRating from './StarRating';
 
 export default function ReviewCard() {
     return (
@@ -18,9 +19,7 @@ export default function ReviewCard() {
                 </View>
                 <Text style={styles.reviewTitle}>Lalala This is the title wow</Text>
                 <View style={styles.reviewStarsContainer}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                        <Text key={star} style={styles.reviewStar}>★</Text>
-                    ))}
+                    <StarRating rating={5} maxStars={5} size={16} />
                     <TouchableOpacity style={styles.bookmarkIcon}>
                         <Text>:bookmark:</Text>
                     </TouchableOpacity>
@@ -105,11 +104,6 @@ const styles = StyleSheet.create({
     reviewStarsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-    },
-    reviewStar: {
-        fontSize: 18,
-        color: '#000',
-        marginRight: 2,
     },
     bookmarkIcon: {
         marginLeft: 'auto',

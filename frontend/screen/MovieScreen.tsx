@@ -7,10 +7,8 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-  Modal,
   ActivityIndicator,
 } from 'react-native';
-import MovieChosenScreen from './MovieChosenScreen';
 import RecByFriendsScreen from './RecByFriendsScreen';
 import SearchBar from '../components/SearchBar';
 import { getAllMovies } from '../services/moviesService';
@@ -87,13 +85,10 @@ export default function MoviesScreen() {
     'forYou'
   );
   const [searchText, setSearchText] = useState('');
-  const [showMovieDetail, setShowMovieDetail] = useState(false);
 
   const [newReleases, setNewReleases] = useState<MovieCard[]>([]);
   const [loadingNewReleases, setLoadingNewReleases] = useState(false);
   const [newReleasesError, setNewReleasesError] = useState<string | null>(null);
-
-  const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
 
   const handleSearchSubmit = (text: string): void => {
     const query = (text || '').trim();
@@ -176,8 +171,10 @@ export default function MoviesScreen() {
   }, []);
 
   const handleMoviePress = (movieId: string) => {
-    setSelectedMovieId(movieId);
-    setShowMovieDetail(true);
+    router.push({
+      pathname: '/movies/[movieId]',
+      params: { movieId },
+    });
   };
 
   const renderMovieCard = (movie: MovieCard) => (
@@ -269,10 +266,15 @@ export default function MoviesScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <SearchBar
-        placeholder="Enter search text"
+        placeholder="Search movies..."
         value={searchText}
         onChangeText={setSearchText}
-        onSubmitEditing={handleSearchSubmit}
+        onPress={() =>
+          router.push({
+            pathname: '/search',
+            params: { origin: 'movies', defaultCategory: 'movies' },
+          })
+        }
       />
 
       <View style={styles.tabsContainer}>
@@ -319,38 +321,6 @@ export default function MoviesScreen() {
       ) : (
         <RecByFriendsScreen />
       )}
-
-      <Modal
-        visible={showMovieDetail}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowMovieDetail(false)}
-      >
-        <SafeAreaView style={{ flex: 1 }}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity
-              onPress={() => setShowMovieDetail(false)}
-              style={styles.closeButton}
-            >
-              <Text style={styles.closeText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          {selectedMovieId ? (
-            <MovieChosenScreen movieId={selectedMovieId} />
-          ) : (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Text>No movie selected.</Text>
-            </View>
-          )}
-        </SafeAreaView>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -407,19 +377,4 @@ const styles = StyleSheet.create({
   badgeNew: { backgroundColor: '#fff', borderColor: '#E91E63' },
   badgeHot: { backgroundColor: '#fff', borderColor: '#000' },
   badgeText: { fontSize: 14, fontWeight: '600', color: '#000' },
-  modalHeader: {
-    padding: 16,
-    alignItems: 'flex-end',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-  },
-  closeText: { fontSize: 24, color: '#000' },
 });
