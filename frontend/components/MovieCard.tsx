@@ -68,13 +68,13 @@ export default function MovieCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: (width - (width * 0.08) - (width * 0.03)) / 2, // (TotalWidth - LeftPadding - RightPadding - Gap) / 2
-    marginBottom: width * 0.04, // Use bottom margin for spacing
+    width: (width - (width * 0.04 * 2) - (width * 0.03)) / 2,  // Calculate proper width for 2 columns with gap
+    marginRight: width * 0.03,
+    marginBottom: width * 0.04,
   },
   image: {
-    // Height adjusted to maintain a standard 2:3 poster aspect ratio (1.5 * width)
     width: '100%',
-    height: ((width - (width * 0.08) - (width * 0.03)) / 2) * 1.5,
+    aspectRatio: 2/3, 
     borderRadius: width * 0.02,
     backgroundColor: '#E0E0E0',
   },
