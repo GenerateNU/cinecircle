@@ -38,9 +38,11 @@ function CommentThread({ node, depth, onReply, targetType, targetId }: CommentTh
 
   // At max depth: render the comment itself and, if it has deeper replies,
   // show a "Continue Thread" link that navigates to the dedicated page.
+  const isRoot = depth === 0;
+  
   if (isAtMaxDepth) {
     return (
-      <View style={commentThreadStyles.container}>
+      <View style={[commentThreadStyles.container, { marginLeft: isRoot ? 0 : width * 0.045 }]}>
         <Comment
           comment={node}
           depth={depth}
@@ -57,7 +59,7 @@ function CommentThread({ node, depth, onReply, targetType, targetId }: CommentTh
   const hasMoreReplies = totalReplies > visibleReplies;
 
   return (
-    <View style={commentThreadStyles.container}>
+    <View style={[commentThreadStyles.container, { marginLeft: isRoot ? 0 : width * 0.045 }]}>
       {node.replies.length > 0 && <View style={[commentThreadStyles.threadLine, { left: GUTTER_WIDTH * depth }]} />}
       <View style={commentThreadStyles.threadContainer}>
         <Comment comment={node} depth={depth} onReply={onReply} />

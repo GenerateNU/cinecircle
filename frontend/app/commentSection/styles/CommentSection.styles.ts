@@ -5,10 +5,10 @@ const { width, height } = Dimensions.get('window');
 export const commentSectionStyles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: width * 0.025,
+    marginHorizontal: width * 0.025,
   },
   header: {
-    fontWeight: 'bold',
+    fontWeight: '400',
     marginBottom: height * 0.01,
   },
   threadContainer: {

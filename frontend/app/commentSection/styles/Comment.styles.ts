@@ -7,7 +7,7 @@ export const INDENT_PER_LEVEL = width * 0.05;
 export const commentStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginVertical: height * 0.01,
+    marginVertical: height * 0.005,
   },
   content: {
     flex: 1,

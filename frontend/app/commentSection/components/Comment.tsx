@@ -14,7 +14,7 @@ type CommentProps = {
   onContinueThread?: () => void;
 };
 
-const MAX_PREVIEW_CHARS = 280;
+const MAX_PREVIEW_CHARS = 400;
 
 const Comment: React.FC<CommentProps> = ({
   comment,

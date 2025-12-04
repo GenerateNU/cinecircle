@@ -82,24 +82,23 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
   return (
     <View style={commentSectionStyles.container}>
       <Text style={commentSectionStyles.header}>
-        Comments ({comments.length})
+        {comments.length} Comments
       </Text>
 
       <ScrollView
+        contentContainerStyle={commentSectionStyles.threadContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={commentSectionStyles.threadContainer}>
-            {visibleThreads.map((node) => (
-            <CommentThread
-                key={node.id}
-                node={node}
-                depth={0}
-                onReply={setReplyTarget}
-                targetType={targetType}
-                targetId={targetId}
-            />
-            ))}
-        </View>
+        {visibleThreads.map((node) => (
+          <CommentThread
+            key={node.id}
+            node={node}
+            depth={0}
+            onReply={setReplyTarget}
+            targetType={targetType}
+            targetId={targetId}
+          />
+        ))}
 
 
         {hasMoreThreads && (

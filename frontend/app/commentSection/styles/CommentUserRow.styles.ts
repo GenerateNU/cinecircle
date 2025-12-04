@@ -8,7 +8,6 @@ export const commentUserRowStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: width * 0.02,
   },
   avatar: {
     justifyContent: 'center',
@@ -27,7 +26,7 @@ export const commentUserRowStyles = StyleSheet.create({
   },
   username: {
     fontSize: width * 0.035,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#111',
   },
   timestamp: {

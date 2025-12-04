@@ -1,13 +1,13 @@
 import { StyleSheet } from 'react-native';
 import { Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export const commentInteractionBarStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 4,
+    paddingTop: height * 0.01,
     gap: width * 0.05,
   },
   button: {
