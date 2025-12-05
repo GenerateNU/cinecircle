@@ -16,18 +16,14 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { getUserProfile, updateUserProfile } from '../../services/userService';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
-import ImagePicker from '../../components/PhotoPicker';
 
 export default function Settings() {
   const [displayName, setDisplayName] = useState('');
-  const [bio, setBio] = useState('South Asian cinema enthusiast 🎬 | SRK forever ❤️');
-  const [whatsapp, setWhatsapp] = useState('+1 (555) 555-5555');
+  const [bio, setBio] = useState('');
   const [photoUri, setPhotoUri] = useState('https://i.pravatar.cc/150?img=3');
   const [hasCustomPhoto, setHasCustomPhoto] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  
   const { height: SCREEN_HEIGHT } = Dimensions.get('window');
   const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2);
   const AVATAR_SIZE = 100;
@@ -41,10 +37,12 @@ export default function Settings() {
       setLoading(true);
       const res = await getUserProfile();
       const username = res.userProfile?.username?.trim() || 'user';
-      setDisplayName(username);
+      const profileDisplayName = res.userProfile?.displayName?.trim() || '';
+      setDisplayName(profileDisplayName);
       const storedBio =
-        res.userProfile?.favoriteMovies?.[0] ||
-        'South Asian cinema enthusiast 🎬 | SRK forever ❤️';
+        res.userProfile?.bio ??
+        res.userProfile?.favoriteMovies?.[0] ??
+        '';
       setBio(storedBio);
       const customPhoto = !!res.userProfile?.profilePicture;
       setHasCustomPhoto(customPhoto);
@@ -78,32 +76,20 @@ export default function Settings() {
     }
   }, [displayName, hasCustomPhoto]);
 
-  const handleImageSelected = (uri: string) => {
-    if (uri) {
-      setPhotoUri(uri);
-      setHasCustomPhoto(true);
-      setShowImagePicker(false);
-      console.log('New profile picture selected:', uri);
-      // need to implement backend upload
-    } else {
-      setShowImagePicker(false);
-    }
-  };
-
   const handleSave = async () => {
     if (saving) return;
     try {
       setSaving(true);
-      const normalizedName = displayName.trim() || 'user';
+      const normalizedDisplayName = displayName.trim() || null;
       await updateUserProfile({
-        username: normalizedName,
-        favoriteMovies: bio.trim() ? [bio.trim()] : [],
-        
+        displayName: normalizedDisplayName,
+        bio: bio.trim() || null,
       });
+      const nameForAvatar = normalizedDisplayName || 'user';
       if (!hasCustomPhoto) {
         setPhotoUri(
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            normalizedName
+            nameForAvatar
           )}&size=200&background=667eea&color=fff`
         );
       }
@@ -202,7 +188,7 @@ export default function Settings() {
                       borderRadius: AVATAR_RADIUS,
                     },
                   ]}
-                  onPress={() => setShowImagePicker(true)}
+                  onPress={() => {/* hook up image picker here */}}
                 >
                   <Image
                     source={{ uri: photoUri }}
@@ -261,44 +247,9 @@ export default function Settings() {
                 ]}
               />
             </View>
-
-            {/* WhatsApp Section */}
-            <View style={tw`w-[92%] self-center rounded-[8px] p-4 mb-5`}>
-              <Text style={[tw`text-base font-semibold mb-2`, { color: '#D62E05' }]}>WhatsApp Number</Text>
-              <TextInput
-                value={whatsapp}
-                onChangeText={setWhatsapp}
-                keyboardType="phone-pad"
-                placeholder="+1 (___) ___-____"
-                style={[
-                  tw`rounded-[6px] px-3 py-2`,
-                  { borderWidth: 1, borderColor: '#D62E05' },
-                ]}
-              />
-            </View>
           </>
         )}
       </ScrollView>
-
-      {showImagePicker && (
-        <View style={tw`absolute inset-0 bg-white`}>
-          <View style={tw`flex-1 items-center justify-center`}>
-            <ImagePicker
-              onImageSelected={handleImageSelected}
-              currentImage={photoUri}
-              size="large"
-              shape="circle"
-              enableCropping={true}
-            />
-            <TouchableOpacity
-              style={tw`mt-5 px-6 py-3 bg-gray-200 rounded-lg`}
-              onPress={() => setShowImagePicker(false)}
-            >
-              <Text style={tw`font-semibold`}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
 
       {/* Bottom nav to keep tabs visible in settings */}
       <View

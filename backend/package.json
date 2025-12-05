@@ -21,6 +21,7 @@
     "db:push:supabase": "sh scripts/push-schema-to-supabase.sh",
     "db:seed": "sh scripts/seed-supabase.sh --local",
     "db:seed:supabase": "sh scripts/seed-supabase.sh --prod",
+    "import:tmdb": "tsx scripts/import-tmdb-ids.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -39,6 +40,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
+    "openai": "^6.9.1",
     "pg": "^8.16.3",
     "prisma": "^6.15.0",
     "swagger-autogen": "^2.23.7"

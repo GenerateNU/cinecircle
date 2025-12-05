@@ -42,8 +42,10 @@ describe("Post Controller Unit Tests", () => {
 
     it("should create a post successfully", async () => {
       const mockUserId = "user-123";
+      const mockMovieId = "tt1234567";
       const mockPostData = {
         userId: mockUserId,
+        movieId: mockMovieId, // Required field
         content: "This is a test post",
         type: "SHORT",
       };
@@ -53,16 +55,23 @@ describe("Post Controller Unit Tests", () => {
       const mockCreatedPost = {
         id: "post-123",
         userId: mockUserId,
+        movieId: mockMovieId,
         content: "This is a test post",
         type: "SHORT",
-        votes: 0,
-        parentPostId: null,
+        stars: null,
+        spoiler: false,
+        tags: [],
+        repostedPostId: null,
         imageUrls: [],
         createdAt: new Date(),
-        updatedAt: new Date(),
         UserProfile: {
           userId: mockUserId,
           username: "testuser",
+        },
+        movie: {
+          movieId: mockMovieId,
+          title: "Test Movie",
+          imageUrl: null,
         },
       };
 
@@ -81,6 +90,7 @@ describe("Post Controller Unit Tests", () => {
     it("should return 400 for invalid postType", async () => {
       mockRequest.body = {
         userId: "user-123",
+        movieId: "tt1234567", // Required field
         content: "Test",
         type: "INVALID_TYPE",
       };
@@ -126,18 +136,25 @@ describe("Post Controller Unit Tests", () => {
       const mockPost = {
         id: mockPostId,
         userId: "user-123",
+        movieId: "tt1234567",
         content: "Test post",
         type: "SHORT",
-        votes: 5,
-        parentPostId: null,
+        stars: null,
+        spoiler: false,
+        tags: [],
+        repostedPostId: null,
         imageUrls: [],
         createdAt: new Date(),
-        updatedAt: new Date(),
         UserProfile: {
           userId: "user-123",
           username: "testuser",
         },
-        Replies: [{ postId: "reply-1" }, { postId: "reply-2" }],
+        movie: {
+          movieId: "tt1234567",
+          title: "Test Movie",
+          imageUrl: null,
+        },
+        other_Post: [{ id: "repost-1" }, { id: "repost-2" }],
         PostReaction: [
           { id: "reaction-1", reactionType: "SPICY" }, 
           { id: "reaction-2", reactionType: "BLOCKBUSTER" }, 
@@ -152,12 +169,29 @@ describe("Post Controller Unit Tests", () => {
 
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Post found successfully",
-        data: {
-          ...mockPost,
-          likeCount: 5,
+        data: expect.objectContaining({
+          id: mockPostId,
+          userId: "user-123",
+          content: "Test post",
+          type: "SHORT",
+          UserProfile: expect.objectContaining({
+            userId: "user-123",
+            username: "testuser",
+          }),
+          Comment: [],
+          PostReaction: expect.arrayContaining([
+            expect.objectContaining({ reactionType: "SPICY" }),
+            expect.objectContaining({ reactionType: "BLOCKBUSTER" }),
+            expect.objectContaining({ reactionType: "STAR_STUDDED" }),
+          ]),
+          Reposts: expect.arrayContaining([
+            expect.objectContaining({ id: "repost-1" }),
+            expect.objectContaining({ id: "repost-2" }),
+          ]),
+          reactionCount: 3,
           commentCount: 0,
-          replyCount: 2,
-        },
+          repostCount: 2,
+        }),
       });
     });
   });
@@ -183,16 +217,23 @@ describe("Post Controller Unit Tests", () => {
       const mockUpdatedPost = {
         id: mockPostId,
         userId: "user-123",
+        movieId: "tt1234567",
         content: "Updated content",
         type: "SHORT",
-        votes: 0,
-        parentPostId: null,
+        stars: null,
+        spoiler: false,
+        tags: [],
+        repostedPostId: null,
         imageUrls: [],
         createdAt: new Date(),
-        updatedAt: new Date(),
         UserProfile: {
           userId: "user-123",
           username: "testuser",
+        },
+        movie: {
+          movieId: "tt1234567",
+          title: "Test Movie",
+          imageUrl: null,
         },
       };
 

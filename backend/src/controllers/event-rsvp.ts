@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import { prisma } from "../services/db.js";
+import { randomUUID } from "crypto";
 
 /**
  * Create or update an RSVP for an event
@@ -42,9 +43,11 @@ export const createOrUpdateRsvp = async (req: AuthenticatedRequest, res: Respons
         updatedAt: new Date(),
       },
       create: {
+        id: randomUUID(),
         eventId,
         userId,
         status,
+        updatedAt: new Date(),
       },
       include: {
         UserProfile: {

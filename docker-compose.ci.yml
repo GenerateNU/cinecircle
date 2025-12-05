@@ -14,6 +14,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=dummy-secret-access-key-for-ci-tests
       - AWS_REGION=dummy-region-for-ci-tests
       - AWS_BUCKET_NAME=dummy-bucket-name-for-ci-tests
+      - OPENAI_API_KEY=dummy-openai-api-key-for-ci-tests
     depends_on:
       postgres:
         condition: service_healthy

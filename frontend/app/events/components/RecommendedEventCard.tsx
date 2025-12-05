@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
-import { styles } from '../styles/RecommendedEventCard.styles';
+import { styles } from '../../../styles/events/RecommendedEventCard.styles';
 import type { LocalEvent } from '../../../services/eventsService';
 
 interface RecommendedEventCardProps {

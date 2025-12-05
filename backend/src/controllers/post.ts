@@ -5,12 +5,18 @@ import { Prisma } from "@prisma/client";
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
     try {
-      const { userId, content, type, imageUrls, parentPostId } = req.body;
+      const { userId, content, type, imageUrls, repostedPostId, movieId, stars, spoiler, tags } = req.body;
   
       // Validation
       if (!userId || !content) {
         return res.status(400).json({ 
           message: "userId and content are required" 
+        });
+      }
+
+      if (!movieId) {
+        return res.status(400).json({
+          message: "movieId is required - all posts must reference a movie"
         });
       }
   
@@ -20,29 +26,57 @@ export const createPost = async (req: Request, res: Response) => {
         });
       }
 
-      // If it's a reply, verify parent post exists
-      if (parentPostId) {
-        const parentPost = await prisma.post.findUnique({
-          where: { id: parentPostId },
+      // Validate stars if provided
+      if (stars !== undefined && stars !== null) {
+        const starsNum = parseInt(stars, 10);
+        if (isNaN(starsNum) || starsNum < 0 || starsNum > 10) {
+          return res.status(400).json({
+            message: "Stars must be between 0 and 10"
+          });
+        }
+        
+        // SHORT posts cannot have stars
+        if (type === "SHORT" || (!type && content.length <= 280)) {
+          return res.status(400).json({
+            message: "SHORT posts cannot have star ratings"
+          });
+        }
+      }
+
+      // If it's a repost, verify original post exists
+      if (repostedPostId) {
+        const originalPost = await prisma.post.findUnique({
+          where: { id: repostedPostId },
         });
-        if (!parentPost) {
-          return res.status(404).json({ message: "Parent post not found" });
+        if (!originalPost) {
+          return res.status(404).json({ message: "Original post not found" });
         }
       }
   
       const newPost = await prisma.post.create({
         data: {
           userId,
+          movieId,
           content,
           type: type || "SHORT",
+          stars: stars ? parseInt(stars, 10) : null,
+          spoiler: spoiler || false,
+          tags: tags || [],
           imageUrls: imageUrls || [],
-          parentPostId,
+          repostedPostId,
         },
         include: {
           UserProfile: {
             select: {
               userId: true,
               username: true,
+            },
+          },
+          movie: {
+            select: {
+              movieId: true,
+              title: true,
+              imageUrl: true,
             },
           },
         },
@@ -79,6 +113,13 @@ export const getPostById = async (req: Request, res: Response) => {
               username: true,
             },
           },
+          movie: {
+            select: {
+              movieId: true,
+              title: true,
+              imageUrl: true,
+            },
+          },
           Comment: {
             include: {
               UserProfile: {
@@ -93,7 +134,7 @@ export const getPostById = async (req: Request, res: Response) => {
             },
           },
           PostReaction: true,
-          Replies: {
+          other_Post: {
             include: {
               UserProfile: {
                 select: {
@@ -117,9 +158,10 @@ export const getPostById = async (req: Request, res: Response) => {
         message: "Post found successfully",
         data: {
           ...post,
-          likeCount: post.votes,
+          Reposts: post.other_Post,
+          reactionCount: post.PostReaction.length,
           commentCount: post.Comment.length,
-          replyCount: post.Replies.length,
+          repostCount: post.other_Post.length,
         },
       });
     } catch (err) {
@@ -135,22 +177,40 @@ export const getPostById = async (req: Request, res: Response) => {
 // GET POSTS (with filters)
 export const getPosts = async (req: Request, res: Response) => {
     try {
-      const { 
+      const {
         userId, 
         type,
-        parentPostId, 
+        movieId,
+        repostedPostId, 
         limit = "20", 
-        offset = "0" 
+        offset = "0",
+        currentUserId // Optional: for getting user's reactions
       } = req.query;
   
       const where: Prisma.PostWhereInput = {};
       
       if (userId) where.userId = userId as string;
       if (type) where.type = type as "LONG" | "SHORT";
-      if (parentPostId === "null") {
-        where.parentPostId = null; // Top-level posts only
-      } else if (parentPostId) {
-        where.parentPostId = parentPostId as string;
+      if (movieId) where.movieId = movieId as string;
+      if (repostedPostId === "null") {
+        where.repostedPostId = null; // Original posts only (not reposts)
+      } else if (repostedPostId) {
+        where.repostedPostId = repostedPostId as string; // Get reposts of a specific post
+      }
+
+      // Get current user's reactions if provided
+      let userReactionsByPost = new Map<string, string[]>();
+      if (currentUserId) {
+        const userReactions = await prisma.postReaction.findMany({
+          where: { userId: currentUserId as string },
+          select: { postId: true, reactionType: true },
+        });
+        
+        userReactions.forEach(reaction => {
+          const existing = userReactionsByPost.get(reaction.postId) || [];
+          existing.push(reaction.reactionType);
+          userReactionsByPost.set(reaction.postId, existing);
+        });
       }
   
       const posts = await prisma.post.findMany({
@@ -162,13 +222,24 @@ export const getPosts = async (req: Request, res: Response) => {
               username: true,
             },
           },
-          PostReaction: true,
+          movie: {
+            select: {
+              movieId: true,
+              title: true,
+              imageUrl: true,
+            },
+          },
+          PostReaction: {
+            select: {
+              reactionType: true,
+            },
+          },
           Comment: {
             select: {
               id: true,
             },
           },
-          Replies: {
+          other_Post: {
             select: {
               id: true,
             },
@@ -181,12 +252,23 @@ export const getPosts = async (req: Request, res: Response) => {
         skip: parseInt(offset as string),
       });
   
-      const postsWithCounts = posts.map((post) => ({
-        ...post,
-        likeCount: post.votes,
-        commentCount: post.Comment.length,
-        replyCount: post.Replies.length,
-      }));
+      const postsWithCounts = posts.map((post) => {
+        // Count reactions by type
+        const reactionCounts = post.PostReaction.reduce((acc: Record<string, number>, r: any) => {
+          acc[r.reactionType] = (acc[r.reactionType] || 0) + 1;
+          return acc;
+        }, {});
+
+        return {
+          ...post,
+          Reposts: post.other_Post,
+          reactionCount: post.PostReaction.length,
+          reactionCounts,
+          userReactions: userReactionsByPost.get(post.id) || [],
+          commentCount: post.Comment.length,
+          repostCount: post.other_Post.length,
+        };
+      });
   
       res.json({
         message: "Posts retrieved successfully",
@@ -422,8 +504,8 @@ export const getPostReactions = async (req: Request, res: Response) => {
     }
   };
 
-// GET POST REPLIES
-export const getPostReplies = async (req: Request, res: Response) => {
+// GET POST REPOSTS - Get all reposts/shares of a specific post
+export const getPostReposts = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
   
@@ -431,8 +513,8 @@ export const getPostReplies = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Post ID is required" });
       }
   
-      const replies = await prisma.post.findMany({
-        where: { parentPostId: postId },
+      const reposts = await prisma.post.findMany({
+        where: { repostedPostId: postId },
         include: {
           UserProfile: {
             select: {
@@ -441,7 +523,7 @@ export const getPostReplies = async (req: Request, res: Response) => {
             },
           },
           PostReaction: true,
-          Replies: {
+          other_Post: {
             select: {
               id: true,
             },
@@ -452,21 +534,22 @@ export const getPostReplies = async (req: Request, res: Response) => {
         },
       });
   
-      const repliesWithCounts = replies.map((reply) => ({
-        ...reply,
-        likeCount: reply.votes,
-        replyCount: reply.Replies.length,
+      const repostsWithCounts = reposts.map((repost) => ({
+        ...repost,
+        Reposts: repost.other_Post,
+        reactionCount: repost.PostReaction?.length || 0,
+        repostCount: repost.other_Post.length,
       }));
   
       res.json({
-        message: "Replies retrieved successfully",
-        data: repliesWithCounts,
-        count: replies.length,
+        message: "Reposts retrieved successfully",
+        data: repostsWithCounts,
+        count: reposts.length,
       });
     } catch (err) {
-      console.error("getPostReplies error:", err);
+      console.error("getPostReposts error:", err);
       res.status(500).json({
-        message: "Failed to retrieve replies",
+        message: "Failed to retrieve reposts",
         error: err instanceof Error ? err.message : "Unknown error",
       });
     }

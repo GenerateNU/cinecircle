@@ -1,7 +1,8 @@
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import NextButton from '../../components/NextButton';
+import BackButton from '../../components/BackButton';
 import Tag from '../../components/Tag';
 import { useOnboarding } from './_layout';
 
@@ -35,6 +36,9 @@ export default function SecondaryLanguageSelect() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButtonContainer}>
+        <BackButton onPress={() => router.back()}/>
+      </TouchableOpacity>
       <View style={styles.inputWrapper}>
         <Text style={styles.title}>Any other languages? (Optional)</Text>
         
@@ -74,6 +78,12 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 'auto',
     alignItems: 'center',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    top: height * 0.06,
+    left: width * 0.05,
+    zIndex: 10,
   },
   title: {
     fontSize: width * 0.06,

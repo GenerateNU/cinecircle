@@ -2,8 +2,9 @@ import NextButton from "../../components/NextButton";
 import TextInputComponent from "../../components/TextInputComponent";
 import { router } from "expo-router"
 import { useState } from 'react';
-import { Text, View, StyleSheet, Dimensions } from "react-native";
+import { Text, View, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { supabase } from '../../lib/supabase';
+import BackButton from "../../components/BackButton";
 
 const { width, height } = Dimensions.get('window');
 
@@ -46,7 +47,6 @@ const SignUp = () => {
             }
 
             if (data.user) {
-                // OnboardingGuard will handle navigation
                 return { success: true };
             }
 
@@ -61,6 +61,9 @@ const SignUp = () => {
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    emailRedirectTo: "cinecircle://username",
+                  }
             });
 
             if (error) {
@@ -106,7 +109,6 @@ const SignUp = () => {
             
             if (signInResult.success) {
                 setMessage('Signed in successfully!');
-                // OnboardingGuard will redirect based on profile.onboardingCompleted
                 return;
             }
 
@@ -116,11 +118,9 @@ const SignUp = () => {
             if (signUpResult.success) {
                 if (signUpResult.emailConfirmed) {
                     setMessage('Account created successfully!');
-                    // OnboardingGuard will redirect to onboarding
                 } else {
                     // Need email confirmation
                     setMessage('Please check your email to confirm your account');
-                    router.replace("/(auth)/confirmEmail");
                 }
             } else {
                 // Sign up failed
@@ -142,6 +142,9 @@ const SignUp = () => {
 
     return (
         <View style={styles.container}>
+            <TouchableOpacity style={styles.backButtonContainer}>
+                <BackButton onPress={() => router.back()}/>
+            </TouchableOpacity>
             <View style={styles.inputWrapper}>
                 <TextInputComponent 
                     title="Create Your Account"
@@ -151,6 +154,8 @@ const SignUp = () => {
                     onChangeText={setEmail}
                     value={email}
                     keyboardType="email-address"
+                    autoComplete="off"
+                    textContentType="none"
                 />
                 <TextInputComponent
                     field="Password"
@@ -159,6 +164,8 @@ const SignUp = () => {
                     onChangeText={setPassword}
                     value={password}
                     secureTextEntry={true}
+                    autoComplete="off"
+                    textContentType="none"
                 />
                 <TextInputComponent
                     field="Confirm Password"
@@ -167,6 +174,8 @@ const SignUp = () => {
                     onChangeText={setConfirmPassword}
                     value={confirmPassword}
                     secureTextEntry={true}
+                    autoComplete="off"
+                    textContentType="none"
                 />
                 <Text style={styles.message}>{'*'+ message|| ' '}</Text>
             </View>
@@ -188,6 +197,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         paddingHorizontal: width * 0.05,
+    },
+    backButtonContainer: {
+        position: 'absolute',
+        top: height * 0.06,
+        left: width * 0.05,
+        zIndex: 10,
     },
     inputWrapper: {
         width: '100%',
