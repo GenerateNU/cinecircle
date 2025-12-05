@@ -39,7 +39,7 @@ type MovieChosenScreenProps = {
 
 type Post = components['schemas']['Post'];
 type Movie = components['schemas']['Movie'];
-type Summary = components['schemas']['Summary'];
+type Summary = components['schemas']['MovieSummary'];
 
 type FeedItem = {
   type: 'post';
@@ -723,11 +723,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                     <Text style={styles.summarySubheader}>
                       {t(UiTextKey.PeopleLiked)}
                     </Text>
-                    {summary.pros.slice(0, 3).map((item, idx) => (
-                      <Text key={`pro-${idx}`} style={styles.summaryBullet}>
-                        • {item}
-                      </Text>
-                    ))}
+                    {summary.pros
+                      .slice(0, 3)
+                      .map((item: string, idx: number) => (
+                        <Text key={`pro-${idx}`} style={styles.summaryBullet}>
+                          • {item}
+                        </Text>
+                      ))}
                   </View>
                 )}
 
@@ -736,11 +738,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                     <Text style={styles.summarySubheader}>
                       {t(UiTextKey.CommonComplaints)}
                     </Text>
-                    {summary.cons.slice(0, 3).map((item, idx) => (
-                      <Text key={`con-${idx}`} style={styles.summaryBullet}>
-                        • {item}
-                      </Text>
-                    ))}
+                    {summary.cons
+                      .slice(0, 3)
+                      .map((item: string, idx: number) => (
+                        <Text key={`con-${idx}`} style={styles.summaryBullet}>
+                          • {item}
+                        </Text>
+                      ))}
                   </View>
                 )}
               </View>

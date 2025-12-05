@@ -135,6 +135,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/movies/{movieId}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    movieId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/swagger-output.json": {
         parameters: {
             query?: never;
@@ -3452,21 +3494,6 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
-
-        Summary:  {
-            movieId: string;
-            overall: string;        
-            pros: string[];        
-            cons: string[];         
-            stats: {
-                positive: number;
-                neutral: number;
-                negative: number;
-                total: number;
-            };
-            quotes: string[];      
-        };
-
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
             username?: string;
@@ -3806,6 +3833,29 @@ export interface components {
                 userId: string;
                 username: string | null;
             };
+        };
+        SentimentStats: {
+            positive: number;
+            neutral: number;
+            negative: number;
+            total: number;
+        };
+        MovieSummary: {
+            movieId: string;
+            overall: string;
+            pros: string[];
+            cons: string[];
+            stats: components["schemas"]["SentimentStats"];
+            quotes: string[];
+        };
+        GetMovieSummaryEnvelope: {
+            summary: components["schemas"]["MovieSummary"];
+        };
+        ChunkSummary: {
+            pros: string[];
+            cons: string[];
+            stats: components["schemas"]["SentimentStats"];
+            quotes: string[];
         };
     };
     responses: never;
