@@ -4,6 +4,7 @@ import { DeviceEventEmitter } from 'react-native';
 import ProfilePage from '../index';
 import { followUser, unfollowUser, getFollowers, getFollowing } from './followServiceProxy';
 import { getUserProfile } from '../../../services/userService';
+import { searchUsers } from '../../../services/searchService';
 import type { User } from '../_types';
 
 /**
@@ -18,22 +19,59 @@ export default function OtherUserProfile() {
     bio?: string;
     followers?: string;
     following?: string;
+    profilePic?: string;
   }>();
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const userId = params.userId ?? 'demo-user';
+  const initialUserId = params.userId ?? 'demo-user';
+  const [resolvedUserId, setResolvedUserId] = useState(initialUserId);
+  const isValidUuid = (val: string | null | undefined) =>
+    !!val &&
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      val
+    );
 
   const usernameFromParams =
     params.username?.trim() || params.userId || params.name || 'user';
 
+  useEffect(() => {
+    const maybeResolve = async () => {
+      if (isValidUuid(initialUserId)) {
+        setResolvedUserId(initialUserId);
+        return;
+      }
+      const query = params.username || params.userId || params.name;
+      if (!query) return;
+      try {
+        const results = await searchUsers(String(query), 5);
+        const normalized = String(query).toLowerCase();
+        const match =
+          results.find((u) => (u.username || '').toLowerCase() === normalized) ||
+          results[0];
+        if (match?.userId && isValidUuid(match.userId)) {
+          setResolvedUserId(match.userId);
+        }
+      } catch (err) {
+        console.error('Failed to resolve userId from username search:', err);
+      }
+    };
+    maybeResolve();
+  }, [initialUserId, params.name, params.userId, params.username]);
+
   const loadCounts = useCallback(async () => {
+    if (!isValidUuid(resolvedUserId)) {
+      setFollowersCount(0);
+      setFollowingCount(0);
+      setIsFollowing(false);
+      return;
+    }
     try {
       const [followersRes, followingRes] = await Promise.all([
-        getFollowers(userId),
-        getFollowing(userId),
+        getFollowers(resolvedUserId),
+        getFollowing(resolvedUserId),
       ]);
       setFollowersCount(followersRes.followers?.length || 0);
       setFollowingCount(followingRes.following?.length || 0);
@@ -47,7 +85,7 @@ export default function OtherUserProfile() {
     } catch (err) {
       console.error('Failed to load counts for user profile:', err);
     }
-  }, [userId, currentUserId]);
+  }, [resolvedUserId, currentUserId, isValidUuid]);
 
   useEffect(() => {
     loadCounts();
@@ -75,15 +113,18 @@ export default function OtherUserProfile() {
       bio: params.bio || 'Movie enthusiast',
       followers: followersCount,
       following: followingCount,
-      profilePic: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        username || 'User'
-      )}&size=200&background=667eea&color=fff`,
+      profilePic:
+        params.profilePic ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          username || 'User'
+        )}&size=200&background=667eea&color=fff`,
     };
   }, [params, followersCount, followingCount, usernameFromParams]);
 
   const handleFollow = async () => {
+    if (!isValidUuid(resolvedUserId)) return;
     try {
-      await followUser(userId);
+      await followUser(resolvedUserId);
       setIsFollowing(true);
       setFollowersCount((prev) => prev + 1);
       DeviceEventEmitter.emit('followStatusChanged');
@@ -93,8 +134,9 @@ export default function OtherUserProfile() {
   };
 
   const handleUnfollow = async () => {
+    if (!isValidUuid(resolvedUserId)) return;
     try {
-      await unfollowUser(userId);
+      await unfollowUser(resolvedUserId);
       setIsFollowing(false);
       setFollowersCount((prev) => Math.max(0, prev - 1));
       DeviceEventEmitter.emit('followStatusChanged');
@@ -108,9 +150,9 @@ export default function OtherUserProfile() {
       user={displayUser}
       isMe={false}
       isFollowing={isFollowing}
-      onFollow={handleFollow}
-      onUnfollow={handleUnfollow}
-      profileUserId={userId}
+      onFollow={isValidUuid(resolvedUserId) ? handleFollow : undefined}
+      onUnfollow={isValidUuid(resolvedUserId) ? handleUnfollow : undefined}
+      profileUserId={resolvedUserId}
     />
   );
 }

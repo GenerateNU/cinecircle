@@ -39,6 +39,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
+    "openai": "^6.9.1",
     "pg": "^8.16.3",
     "prisma": "^6.15.0",
     "swagger-autogen": "^2.23.7"

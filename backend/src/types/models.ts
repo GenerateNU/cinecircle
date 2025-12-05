@@ -7,6 +7,8 @@ export type Movie = {
   localRating?: number | string | null; 
   numRatings?: number | string | null;  
   imageUrl?: string | null;
+  releaseYear?: number | null;
+  director?: string | null;
 };
 
 export type UserProfileBasic = {
@@ -52,13 +54,17 @@ export type Comment = {
   ratingId?: string | null;
   postId?: string | null;
   content: string;
+  parentId?: string | null;
   createdAt: string;
   UserProfile?: {
     userId: string;
     username: string | null;
+    profilePicture: string | null;
   };
   rating?: unknown;
   post?: unknown;
+  parentComment?: unknown;
+  childComments?: unknown[];
 };
 
 export type FollowEdge = {
@@ -69,7 +75,19 @@ export type FollowEdge = {
   following?: UserProfile;
 };
 
-// Keep LocalEvent from HEAD
+export type EventAttendee = {
+  userId: string;
+  username: string | null;
+  profilePicture: string | null;
+};
+
+export type RsvpCounts = {
+  yes: number;
+  maybe: number;
+  no: number;
+  total: number;
+};
+
 export type LocalEvent = {
   id: string;
   title: string;
@@ -83,16 +101,24 @@ export type LocalEvent = {
   languages: string[];
   lat: number | null;
   lon: number | null;
+  imageUrl: string | null;
+  attendees: EventAttendee[];
+  attendeeCount: number;
+  rsvpCounts: RsvpCounts;
 };
 
-export type GetLocalEventsResponse = {
-  message: string;
-  data: LocalEvent[];
-};
-
-export type GetLocalEventResponse = {
-  message: string;
-  data: LocalEvent;
+export type EventRsvp = {
+  id: string;
+  eventId: string;
+  userId: string;
+  status: 'yes' | 'maybe' | 'no';
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    userId: string;
+    username: string | null;
+    profilePicture: string | null;
+  };
 };
 
 export type ReactionType = 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER';
@@ -100,21 +126,31 @@ export type ReactionType = 'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLO
 export type Post = {
   id: string;
   userId: string;
+  movieId: string;
   content: string;
   type: 'SHORT' | 'LONG';
+  stars: number | null;
+  spoiler: boolean;
+  tags: string[];
   createdAt: string;
   imageUrls: string[];
-  parentPostId: string | null;
+  repostedPostId: string | null; // References the original post being shared
   UserProfile?: {
     userId: string;
     username: string | null;
   };
+  movie?: {
+    movieId: string;
+    title: string | null;
+    imageUrl: string | null;
+  };
+  OriginalPost?: Post; // The post that was reposted (if this is a repost)
   PostReaction?: Array<{ id: string; userId: string; reactionType: ReactionType }>;
   Comment?: Array<{ id: string }>;
-  Replies?: Array<{ id: string }>;
+  Reposts?: Array<{ id: string }>; // Posts that have reposted this one
   // Computed fields
   commentCount?: number;
-  replyCount?: number;
+  repostCount?: number;
   reactionCount?: number;
   reactionCounts?: Record<ReactionType, number>;
   userReactions?: ReactionType[];
@@ -131,3 +167,37 @@ export type PostReaction = {
     username: string | null;
   };
 };
+
+// backend/src/types/summary.ts
+
+export type SentimentStats = {
+  positive: number;
+  neutral: number;
+  negative: number;
+  total: number;
+  positivePercent: number;
+  neutralPercent: number;
+  negativePercent: number;
+};
+
+export type MovieSummary = {
+  movieId: string;
+  overall: string;
+  pros: string[];
+  cons: string[];
+  stats: SentimentStats;
+  quotes: string[];
+};
+
+export type GetMovieSummaryEnvelope = {
+  summary: MovieSummary;
+};
+
+// For chunk-level aggregation
+export type ChunkSummary = {
+  pros: string[];
+  cons: string[];
+  stats: SentimentStats;
+  quotes: string[];
+};
+

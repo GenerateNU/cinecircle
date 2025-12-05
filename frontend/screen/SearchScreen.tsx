@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   TextInput,
@@ -14,6 +14,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SearchToggle from '../components/SearchToggle';
 import SearchBar from '../components/SearchBar';
+import { searchUsers } from '../services/searchService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ export default function SearchScreen() {
   const [selectedCategory, setSelectedCategory] = useState<SearchCategory>(
     (params.defaultCategory as SearchCategory) || 'movies'
   );
+  const [statusMessage, setStatusMessage] = useState<string>('');
 
   const searchCategories = [
     { value: 'movies' as SearchCategory, label: 'Movies' },
@@ -39,20 +41,60 @@ export default function SearchScreen() {
   ];
 
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/(tabs)/home');
+    }
   };
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      router.push({
-        pathname: '/search/results',
-        params: {
-          query: searchQuery,
-          category: selectedCategory,
-          origin: params.origin,
-        },
-      });
+  useEffect(() => {
+    setStatusMessage('');
+  }, [selectedCategory, searchQuery]);
+
+  const handleSearch = async () => {
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    if (selectedCategory === 'users') {
+      try {
+        setStatusMessage('');
+        const results = await searchUsers(query, 5);
+        const normalized = query.toLowerCase();
+        const match =
+          results.find((u) => (u.username || '').toLowerCase() === normalized) ||
+          results[0];
+
+        if (!match?.userId) {
+          setStatusMessage('No user found for that username.');
+          return;
+        }
+
+        router.push({
+          pathname: '/profilePage/user/[userId]',
+          params: {
+            userId: match.userId,
+            username: match.username || query,
+            name: match.name || match.username || query,
+            profilePic: match.profilePicture || '',
+            origin: params.origin,
+          },
+        });
+      } catch (err: any) {
+        console.error('Failed to search users', err);
+        setStatusMessage(err?.message || 'Failed to search users.');
+      }
+      return;
     }
+
+    router.push({
+      pathname: '/search/results',
+      params: {
+        query,
+        category: selectedCategory,
+        origin: params.origin,
+      },
+    });
   };
 
   return (
@@ -61,12 +103,11 @@ export default function SearchScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        {/* Back button in top-left corner
         <View style={styles.backButtonContainer}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={width * 0.06} color="#000" />
           </TouchableOpacity>
-        </View> */}
+        </View>
 
         <View style={styles.searchBarWrapper}>
           <SearchBar
@@ -74,6 +115,7 @@ export default function SearchScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             editable={true}
+            onSubmitEditing={handleSearch}
           />
         </View>
 
@@ -94,6 +136,9 @@ export default function SearchScreen() {
               ? 'Press enter to search'
               : `Search for ${selectedCategory}`}
           </Text>
+          {!!statusMessage && (
+            <Text style={styles.statusText}>{statusMessage}</Text>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -135,5 +180,11 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'center',
     paddingHorizontal: width * 0.08,
+  },
+  statusText: {
+    marginTop: 8,
+    color: '#d62e05',
+    textAlign: 'center',
+    paddingHorizontal: width * 0.1,
   },
 });

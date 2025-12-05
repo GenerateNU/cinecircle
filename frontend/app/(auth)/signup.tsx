@@ -61,6 +61,9 @@ const SignUp = () => {
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    emailRedirectTo: "cinecircle://username",
+                  }
             });
 
             if (error) {
@@ -120,7 +123,7 @@ const SignUp = () => {
                 } else {
                     // Need email confirmation
                     setMessage('Please check your email to confirm your account');
-                    router.replace("/(auth)/confirmEmail");
+                    // router.replace("/(auth)/confirmEmail");
                 }
             } else {
                 // Sign up failed

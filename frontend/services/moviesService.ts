@@ -10,7 +10,7 @@ type DeleteMovieResponse = components["schemas"]["DeleteMovieResponse"];
 type Movie = components["schemas"]["Movie"];
 type Rating = components["schemas"]["Rating"];
 type Comment = components["schemas"]["Comment"];
-// type Summary = components["schemas"]["Summary"]; 
+type Summary = components["schemas"]["MovieSummary"]; 
 
 export function fetchAndSaveByTmdbId(tmdbId: string) {
   return api.get<GetMovieEnvelope>(`/movies/${tmdbId}`);
@@ -60,11 +60,17 @@ export async function getMovieRatings(
 }
 
 
-// AI semantic summary endpoint
-// export async function getMovieSummary(movieId: string): Promise<Summary> {
-//   return api.get<Summary>(`/movies/${encodeURIComponent(movieId)}/summary`);
-// }
+type GetMovieSummaryEnvelope = {
+  summary: Summary;
+};
 
+export async function getMovieSummary(movieId: string): Promise<Summary> {
+  const res = await api.get<GetMovieSummaryEnvelope>(
+    `/movies/${movieId}/summary`
+  );
+  // backend returns { summary: { ... } }
+  return res.summary;
+}
 // Movie comments: GET /api/:movieId/comments
 export async function getMovieComments(
   movieId: string

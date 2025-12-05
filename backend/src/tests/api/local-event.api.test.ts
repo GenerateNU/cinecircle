@@ -104,6 +104,9 @@ describe("Local Event API Tests", () => {
       const event = response.body.data;
       expect(event.title).toBe("Tony fan meetup");
       expect(event.genre).toBe("Fan behavior");
+      expect(event.attendees).toBeDefined();
+      expect(Array.isArray(event.attendees)).toBe(true);
+      expect(event.attendeeCount).toBeDefined();
     });
 
     it("should return 404 if the event does not exist", async () => {
@@ -258,6 +261,7 @@ describe("Local Event API Tests", () => {
 jest.mock('../../services/db', () => {
   const localEvents = new Map<string, any>();
   const userProfiles = new Map<string, any>();
+  const eventRsvps = new Map<string, any>();
 
   const clone = (record: any) => (record ? { ...record } : record);
   const matchesWhere = (record: any, where: Record<string, any> = {}) =>
@@ -278,7 +282,15 @@ jest.mock('../../services/db', () => {
       });
       return { count: data.length };
     }),
-    findUnique: jest.fn(async ({ where: { id } }: any) => clone(localEvents.get(id) ?? null)),
+    findUnique: jest.fn(async ({ where: { id }, include }: any) => {
+      const event = localEvents.get(id);
+      if (!event) return null;
+      const result = clone(event);
+      if (include?.event_rsvp) {
+        result.event_rsvp = [];
+      }
+      return result;
+    }),
     findMany: jest.fn(async ({ where }: any = {}) =>
       Array.from(localEvents.values())
         .filter((record) => !where || matchesWhere(record, where))
@@ -339,13 +351,26 @@ jest.mock('../../services/db', () => {
     ),
   };
 
+  const eventRsvpModel = {
+    findMany: jest.fn(async () => []),
+    upsert: jest.fn(async ({ create }: any) => {
+      const id = create.id ?? crypto.randomUUID();
+      const record = { ...create, id };
+      eventRsvps.set(id, record);
+      return clone(record);
+    }),
+    deleteMany: jest.fn(async () => ({ count: 0 })),
+  };
+
   return {
     prisma: {
       local_event: localEventModel,
       userProfile: userProfileModel,
+      event_rsvp: eventRsvpModel,
       $disconnect: jest.fn(async () => {
         localEvents.clear();
         userProfiles.clear();
+        eventRsvps.clear();
       }),
     },
   };

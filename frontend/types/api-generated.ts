@@ -135,6 +135,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/movies/{movieId}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    movieId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/swagger-output.json": {
         parameters: {
             query?: never;
@@ -1349,6 +1391,122 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/comments/post/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    postId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comments/rating/{ratingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    ratingId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ratings": {
         parameters: {
             query?: never;
@@ -1807,6 +1965,8 @@ export interface paths {
                         lat?: unknown;
                         /** @example any */
                         lon?: unknown;
+                        /** @example any */
+                        imageUrl?: unknown;
                     };
                 };
             };
@@ -1943,6 +2103,8 @@ export interface paths {
                         lat?: unknown;
                         /** @example any */
                         lon?: unknown;
+                        /** @example any */
+                        imageUrl?: unknown;
                     };
                 };
             };
@@ -1977,6 +2139,252 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/event-rsvp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @example any */
+                        eventId?: unknown;
+                        /** @example any */
+                        status?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/event-rsvp/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/event-rsvp/event/{eventId}/attendees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2265,7 +2673,15 @@ export interface paths {
                         /** @example any */
                         imageUrls?: unknown;
                         /** @example any */
-                        parentPostId?: unknown;
+                        repostedPostId?: unknown;
+                        /** @example any */
+                        movieId?: unknown;
+                        /** @example any */
+                        stars?: unknown;
+                        /** @example any */
+                        spoiler?: unknown;
+                        /** @example any */
+                        tags?: unknown;
                     };
                 };
             };
@@ -2325,9 +2741,11 @@ export interface paths {
                 query?: {
                     userId?: string;
                     type?: string;
-                    parentPostId?: string;
+                    movieId?: string;
+                    repostedPostId?: string;
                     limit?: string;
                     offset?: string;
+                    currentUserId?: string;
                 };
                 header?: {
                     authorization?: string;
@@ -2674,7 +3092,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/post/{postId}/replies": {
+    "/api/post/{postId}/reposts": {
         parameters: {
             query?: never;
             header?: never;
@@ -3124,13 +3542,21 @@ export interface components {
             ratingId?: string | null;
             postId?: string | null;
             content: string;
+            parentId?: string | null;
             createdAt: string;
             UserProfile?: {
                 userId: string;
                 username: string | null;
+                profilePicture: string | null;
             };
             rating?: unknown;
             post?: unknown;
+            parentComment?: unknown;
+            childComments?: unknown[];
+        };
+        GetCommentsTreeResponse: {
+            message: string;
+            comments: components["schemas"]["Comment"][];
         };
         /** @description -------- Follows -------- */
         FollowBody: {
@@ -3170,6 +3596,8 @@ export interface components {
             localRating?: number | string | null;
             numRatings?: number | string | null;
             imageUrl?: string | null;
+            releaseYear?: number | null;
+            director?: string | null;
         };
         UpdateMovieInput: {
             title?: string | null;
@@ -3178,6 +3606,9 @@ export interface components {
             imdbRating?: number | null;
             localRating?: number | string | null;
             numRatings?: number | string | null;
+            imageUrl?: string | null;
+            releaseYear?: number | null;
+            director?: string | null;
         };
         UpdateMovieEnvelope: components["schemas"]["ApiEnvelope<Movie>"];
         DeleteMovieResponse: {
@@ -3196,16 +3627,26 @@ export interface components {
         Post: {
             id: string;
             userId: string;
+            movieId: string;
             content: string;
             /** @enum {string} */
             type: "SHORT" | "LONG";
+            stars: number | null;
+            spoiler: boolean;
+            tags: string[];
             createdAt: string;
             imageUrls: string[];
-            parentPostId: string | null;
+            repostedPostId: string | null;
             UserProfile?: {
                 userId: string;
                 username: string | null;
             };
+            movie?: {
+                movieId: string;
+                title: string | null;
+                imageUrl: string | null;
+            };
+            OriginalPost?: components["schemas"]["Post"];
             PostReaction?: {
                 id: string;
                 userId: string;
@@ -3214,11 +3655,11 @@ export interface components {
             Comment?: {
                 id: string;
             }[];
-            Replies?: {
+            Reposts?: {
                 id: string;
             }[];
             commentCount?: number;
-            replyCount?: number;
+            repostCount?: number;
             reactionCount?: number;
             reactionCounts?: {
                 SPICY: number;
@@ -3236,11 +3677,15 @@ export interface components {
         };
         CreatePostInput: {
             userId: string;
+            movieId: string;
             content: string;
             /** @enum {string} */
             type?: "SHORT" | "LONG";
+            stars?: number;
+            spoiler?: boolean;
+            tags?: string[];
             imageUrls?: string[];
-            parentPostId?: string;
+            repostedPostId?: string;
         };
         CreatePostResponse: {
             message: string;
@@ -3250,6 +3695,9 @@ export interface components {
             content?: string;
             /** @enum {string} */
             type?: "SHORT" | "LONG";
+            stars?: number;
+            spoiler?: boolean;
+            tags?: string[];
             imageUrls?: string[];
         };
         UpdatePostResponse: {
@@ -3295,6 +3743,11 @@ export interface components {
             rating?: components["schemas"]["Rating"];
             movie?: components["schemas"]["Movie"];
         };
+        /** @description -------- Local Events -------- */
+        GetLocalEventsResponse: {
+            message: string;
+            data: components["schemas"]["LocalEvent"][];
+        };
         LocalEvent: {
             id: string;
             title: string;
@@ -3308,14 +3761,67 @@ export interface components {
             languages: string[];
             lat: number | null;
             lon: number | null;
+            imageUrl: string | null;
+            attendees: components["schemas"]["EventAttendee"][];
+            attendeeCount: number;
+            rsvpCounts: components["schemas"]["RsvpCounts"];
         };
-        GetLocalEventsResponse: {
-            message: string;
-            data: components["schemas"]["LocalEvent"][];
+        EventAttendee: {
+            userId: string;
+            username: string | null;
+            profilePicture: string | null;
+        };
+        RsvpCounts: {
+            yes: number;
+            maybe: number;
+            no: number;
+            total: number;
         };
         GetLocalEventResponse: {
             message: string;
             data: components["schemas"]["LocalEvent"];
+        };
+        /** @description -------- Event RSVP -------- */
+        CreateRsvpRequest: {
+            eventId: string;
+            /** @enum {string} */
+            status: "yes" | "maybe" | "no";
+        };
+        CreateRsvpResponse: {
+            message: string;
+            data: components["schemas"]["EventRsvp"];
+        };
+        EventRsvp: {
+            id: string;
+            eventId: string;
+            userId: string;
+            /** @enum {string} */
+            status: "yes" | "maybe" | "no";
+            createdAt: string;
+            updatedAt: string;
+            user?: {
+                userId: string;
+                username: string | null;
+                profilePicture: string | null;
+            };
+        };
+        GetRsvpResponse: {
+            message: string;
+            data: components["schemas"]["EventRsvp"];
+        };
+        GetEventAttendeesResponse: {
+            message: string;
+            data: {
+                attendees: {
+                    id: string;
+                    userId: string;
+                    status: string;
+                    createdAt: string;
+                    username: string | null;
+                    profilePicture: string | null;
+                }[];
+                counts: components["schemas"]["RsvpCounts"];
+            };
         };
         PostReaction: {
             id: string;
@@ -3327,6 +3833,32 @@ export interface components {
                 userId: string;
                 username: string | null;
             };
+        };
+        SentimentStats: {
+            positive: number;
+            neutral: number;
+            negative: number;
+            total: number;
+            positivePercent: number;
+            neutralPercent: number;
+            negativePercent: number;
+        };
+        MovieSummary: {
+            movieId: string;
+            overall: string;
+            pros: string[];
+            cons: string[];
+            stats: components["schemas"]["SentimentStats"];
+            quotes: string[];
+        };
+        GetMovieSummaryEnvelope: {
+            summary: components["schemas"]["MovieSummary"];
+        };
+        ChunkSummary: {
+            pros: string[];
+            cons: string[];
+            stats: components["schemas"]["SentimentStats"];
+            quotes: string[];
         };
     };
     responses: never;

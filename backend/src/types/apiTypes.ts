@@ -7,6 +7,10 @@ import type {
   Comment,
   FollowEdge,
   Post,
+  LocalEvent,
+  EventRsvp,
+  EventAttendee,
+  RsvpCounts,
 } from "./models";
 
 /** -------- Health -------- */
@@ -57,6 +61,7 @@ export type DeleteUserProfileResponse = { message: string };
 /** -------- Ratings & Comments (query returns arrays) -------- */
 export type GetUserRatingsResponse = { message: string; ratings: Rating[] };
 export type GetUserCommentsResponse = { message: string; comments: Comment[] };
+export type GetCommentsTreeResponse = { message: string; comments: Comment[] };
 
 /** -------- Follows -------- */
 export type FollowBody = { followingId: string };
@@ -73,6 +78,9 @@ export type UpdateMovieInput = {
   imdbRating?: number | null;
   localRating?: number | string | null;
   numRatings?: number | string | null;
+  imageUrl?: string | null;
+  releaseYear?: number | null;
+  director?: string | null;
 };
 export type UpdateMovieEnvelope = ApiEnvelope<Movie>;
 export type DeleteMovieResponse = { message: string };
@@ -95,10 +103,14 @@ export type GetPostByIdResponse = {
 
 export type CreatePostInput = {
   userId: string;
+  movieId: string;
   content: string;
   type?: 'SHORT' | 'LONG';
+  stars?: number;
+  spoiler?: boolean;
+  tags?: string[];
   imageUrls?: string[];
-  parentPostId?: string;
+  repostedPostId?: string; // Optional reference to original post if this is a repost
 };
 
 export type CreatePostResponse = {
@@ -109,6 +121,9 @@ export type CreatePostResponse = {
 export type UpdatePostInput = {
   content?: string;
   type?: 'SHORT' | 'LONG';
+  stars?: number;
+  spoiler?: boolean;
+  tags?: string[];
   imageUrls?: string[];
 };
 
@@ -156,4 +171,46 @@ export type FeedItem = {
   post?: Post;
   rating?: Rating;
   movie?: Movie;
+};
+
+/** -------- Local Events -------- */
+export type GetLocalEventsResponse = {
+  message: string;
+  data: LocalEvent[];
+};
+
+export type GetLocalEventResponse = {
+  message: string;
+  data: LocalEvent;
+};
+
+/** -------- Event RSVP -------- */
+export type CreateRsvpRequest = {
+  eventId: string;
+  status: 'yes' | 'maybe' | 'no';
+};
+
+export type CreateRsvpResponse = {
+  message: string;
+  data: EventRsvp;
+};
+
+export type GetRsvpResponse = {
+  message: string;
+  data: EventRsvp;
+};
+
+export type GetEventAttendeesResponse = {
+  message: string;
+  data: {
+    attendees: Array<{
+      id: string;
+      userId: string;
+      status: string;
+      createdAt: string;
+      username: string | null;
+      profilePicture: string | null;
+    }>;
+    counts: RsvpCounts;
+  };
 };

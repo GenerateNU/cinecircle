@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
-import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, { Path, Defs, RadialGradient, Stop, ClipPath, Rect, G } from "react-native-svg";
 import { styles } from "../styles/StarRating.styles";
 
 interface StarRatingProps {
@@ -8,13 +8,15 @@ interface StarRatingProps {
   initialRating?: number;
   rating?: number;
   onRatingChange?: (rating: number) => void;
+  size?: 16 | 24; // Size in pixels (16x16 or 24x24)
 }
 
 export default function StarRating({ 
   maxStars = 5, 
   initialRating = 0, 
   rating: controlledRating, 
-  onRatingChange 
+  onRatingChange,
+  size = 24
 }: StarRatingProps) {
   const [internalRating, setInternalRating] = useState(initialRating);
 
@@ -36,21 +38,54 @@ export default function StarRating({
     return (rating - (starNumber - 1)) * 100;
   };
 
-  const StarIcon = ({ fillPercentage }: { fillPercentage: number }) => {
-    const starPath = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z";
+  const StarIcon = ({ fillPercentage, index }: { fillPercentage: number; index: number }) => {
+    const starPath = "M8.62402 0.767822C8.84878 0.0774778 9.82505 0.0774786 10.0498 0.767822L11.5684 5.44165C11.7357 5.95668 12.2163 6.30591 12.7578 6.30591H17.6719C18.3984 6.30591 18.7001 7.2353 18.1123 7.66235L14.1367 10.551C13.6988 10.8693 13.5154 11.4336 13.6826 11.9485L15.2012 16.6223C15.4256 17.3131 14.6356 17.8876 14.0479 17.4612L10.0713 14.5725C9.63324 14.2543 9.04059 14.2543 8.60254 14.5725L4.62598 17.4612C4.03824 17.8876 3.2482 17.3131 3.47266 16.6223L4.99121 11.9485C5.15844 11.4336 4.97504 10.8693 4.53711 10.551L0.561523 7.66235C-0.0262619 7.2353 0.275411 6.30591 1.00195 6.30591H5.91602C6.45755 6.30591 6.93813 5.95668 7.10547 5.44165L8.62402 0.767822Z";
+    
+    const radialGradientId = `radial-gradient-${index}`;
+    const clipPathId = `clip-${index}`;
+    const viewBoxWidth = 19;
+    const clipWidth = (viewBoxWidth * fillPercentage) / 100;
     
     return (
-      <Svg width={32} height={32} viewBox="0 0 24 24">
+      <Svg width={size} height={size} viewBox="0 0 19 18">
         <Defs>
-          <LinearGradient id={`grad-${fillPercentage}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset={`${fillPercentage}%`} stopColor="#FFD700" stopOpacity="1" />
-            <Stop offset={`${fillPercentage}%`} stopColor="#D1D5DB" stopOpacity="1" />
-          </LinearGradient>
+          {/* Radial gradient for filled stars */}
+          <RadialGradient 
+            id={radialGradientId}
+            cx="50%" 
+            cy="50%" 
+            r="50%"
+            gradientUnits="objectBoundingBox"
+          >
+            <Stop offset="0%" stopColor="#FEF0C1" />
+            <Stop offset="100%" stopColor="#F6BF01" />
+          </RadialGradient>
+          
+          {/* Clip path for partial fills - left to right */}
+          <ClipPath id={clipPathId}>
+            <Rect x="0" y="0" width={clipWidth} height="18" />
+          </ClipPath>
         </Defs>
+        
+        {/* Background star (gray/empty) */}
         <Path
           d={starPath}
-          fill={`url(#grad-${fillPercentage})`}
+          fill="#E5E7EB"
+          stroke="#CF9D06"
+          strokeWidth="0.5"
         />
+        
+        {/* Foreground star (gold/filled) - clipped to show partial */}
+        {fillPercentage > 0 && (
+          <G clipPath={`url(#${clipPathId})`}>
+            <Path
+              d={starPath}
+              fill={`url(#${radialGradientId})`}
+              stroke="#CF9D06"
+              strokeWidth="0.5"
+            />
+          </G>
+        )}
       </Svg>
     );
   };
@@ -68,7 +103,7 @@ export default function StarRating({
             onPress={isInteractive ? () => handleStarPress(starNumber) : undefined}
             activeOpacity={isInteractive ? 0.7 : 1}
           >
-            <StarIcon fillPercentage={fillPercentage} />
+            <StarIcon fillPercentage={fillPercentage} index={index} />
           </StarContainer>
         );
       })}

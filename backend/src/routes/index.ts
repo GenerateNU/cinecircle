@@ -10,19 +10,23 @@ import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, 
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent, getLocalEvents } from "../controllers/local-events"
+import { createOrUpdateRsvp, getUserRsvp, deleteRsvp, getEventAttendees } from "../controllers/event-rsvp"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
-import { getComment, createComment, updateComment, deleteComment, getMovieComments} from "../controllers/comment"
+import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree} from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
 import { getAllMovies } from "../controllers/movies";
-import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReplies, toggleReaction, getPostReactions } from "../controllers/post.js";
+import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReposts, toggleReaction, getPostReactions } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
+import { getMovieSummaryHandler } from "../controllers/movies.js";
 // backend/src/routes/index.ts
 
 const router = Router();
 
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
+router.get('/movies/:movieId/summary', getMovieSummaryHandler);
+
 
 // Legacy endpoint
 router.get("/swagger-output.json", serveSwagger);  
@@ -66,6 +70,9 @@ router.get("/api/comment/:id", getComment)
 router.put("/api/comment/:id", updateComment);
 router.delete("/api/comment/:id", deleteComment);
 router.get("/api/:movieId/comments", getMovieComments);
+router.get("/api/comments/post/:postId", getCommentsTree);
+router.get("/api/comments/rating/:ratingId", getCommentsTree);
+
 // Ratings routes
 router.post('/api/ratings', createRating);
 router.get('/api/ratings', getRatings);
@@ -81,6 +88,13 @@ router.get("/api/local-event/:id", getLocalEvent);
 router.post("/api/local-event", createLocalEvent);
 router.delete("/api/local-event/:id", deleteLocalEvent);
 router.put("/api/local-event/:id", updateLocalEvent);
+
+// Event RSVP routes
+router.post("/api/event-rsvp", createOrUpdateRsvp);
+router.get("/api/event-rsvp/:eventId", getUserRsvp);
+router.delete("/api/event-rsvp/:eventId", deleteRsvp);
+router.get("/api/event-rsvp/event/:eventId/attendees", getEventAttendees);
+
 //Ratings routes
 router.post('api/ratings', createRating);
 router.get('api/ratings', getRatings);
@@ -98,7 +112,7 @@ router.delete("/api/post/:postId", deletePost);
 // Reaction routes
 router.post("/api/post/:postId/reaction", toggleReaction);
 router.get("/api/post/:postId/reactions", getPostReactions);
-router.get("/api/post/:postId/replies", getPostReplies);
+router.get("/api/post/:postId/reposts", getPostReposts);
 
 // Search routes
 router.get("/api/search/movies", searchMovies)
