@@ -8,14 +8,14 @@ type ProtectedResponse = components["schemas"]["ProtectedResponse"];
 type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"] & {
   userProfile: (components["schemas"]["UserProfile"] & {
     privateAccount?: boolean;
-    spoilers?: boolean;
+    spoiler?: boolean;
     secondaryLanguage?: string[];
   }) | null;
 };
 type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
 type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"] & {
   privateAccount?: boolean;
-  spoilers?: boolean;
+  spoiler?: boolean;
   secondaryLanguage?: string[];
   username?: string;
 };
