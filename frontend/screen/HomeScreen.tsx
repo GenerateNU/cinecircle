@@ -14,6 +14,7 @@ import tw from 'twrnc';
 import SearchBar from '../components/SearchBar';
 import TabToggle from '../components/TabToggle';
 import SectionHeader from '../components/SectionHeader';
+import TextPost from '../components/TextPost';
 
 export type HomeScreenProps = {
   user?: any;
@@ -95,9 +96,24 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
           {activeNav === 'For You' ? (
             <View>
               <SectionHeader title="For You" size="large" />
-              <Text style={tw`text-sm text-gray-500 mt-2`}>
-                Your personalized feed will appear here soon.
-              </Text>
+              {/* Hardcoded post for now */}
+              <TouchableOpacity
+                onPress={() => router.push('/postDetail/test-post-comments-001')}
+                style={tw`mt-4`}
+                activeOpacity={0.7}
+              >
+                <TextPost
+                  userName="Sample User"
+                  username="sample_user"
+                  date={new Date().toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                  content="This is a sample post. Tap anywhere on this post to navigate to the post details page!"
+                  userId="user-123"
+                />
+              </TouchableOpacity>
             </View>
           ) : (
             <View>

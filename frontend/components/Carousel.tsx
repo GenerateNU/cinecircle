@@ -25,6 +25,7 @@ export default function MyCarousel({ components, width, height }: CarouselProps)
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        nestedScrollEnabled={true}
         onMomentumScrollEnd={(event) => {
           const newIndex = Math.round(
             event.nativeEvent.contentOffset.x / carouselWidth
