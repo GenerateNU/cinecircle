@@ -39,8 +39,6 @@ export default function RecByFriendsScreen() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // 🔽 Same spoiler behavior as MovieChosenScreen
   const [showSpoilers, setShowSpoilers] = useState(false);
   const [revealedPostIds, setRevealedPostIds] = useState<string[]>([]);
 
@@ -52,7 +50,6 @@ export default function RecByFriendsScreen() {
     loadFeed();
   }, []);
 
-  // Initialize spoiler toggle from user profile
   // Initialize spoiler toggle from user profile
   useEffect(() => {
     const loadSpoilerPreference = async () => {
@@ -95,7 +92,7 @@ export default function RecByFriendsScreen() {
   };
 
   const openPostDetail = (post: Post, options?: { focusComment?: boolean }) => {
-    // You can change this path once your PostDetail route is ready
+    // TODO: Hook up to post detail page
     router.push({
       pathname: '/post/[postId]',
       params: {
@@ -122,8 +119,8 @@ export default function RecByFriendsScreen() {
 
     const containsSpoilers = Boolean(
       (post as any).containsSpoilers ??
-        (post as any).hasSpoilers ??
-        (post as any).spoiler
+      (post as any).hasSpoilers ??
+      (post as any).spoiler
     );
     const isRevealed = showSpoilers || isPostRevealed(post.id);
 
@@ -207,7 +204,7 @@ export default function RecByFriendsScreen() {
       }
     };
 
-    // 🔒 If spoiler + not revealed ⇒ show the spoiler overlay (same pattern as MovieChosen)
+    // If spoiler + not revealed -> show the spoiler overlay
     if (containsSpoilers && !isRevealed) {
       return (
         <React.Fragment key={post.id}>
@@ -233,7 +230,7 @@ export default function RecByFriendsScreen() {
       );
     }
 
-    // ✅ Revealed or non-spoiler: show normal post
+    // Revealed or non-spoiler -> show normal post
     return (
       <React.Fragment key={post.id}>
         <View style={styles.postContainer}>
@@ -284,8 +281,8 @@ export default function RecByFriendsScreen() {
 
     const containsSpoilers = Boolean(
       (post as any).containsSpoilers ??
-        (post as any).hasSpoilers ??
-        (post as any).spoiler
+      (post as any).hasSpoilers ??
+      (post as any).spoiler
     );
     const isRevealed = showSpoilers || isPostRevealed(post.id);
 
@@ -383,11 +380,6 @@ export default function RecByFriendsScreen() {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
-      {/* 🔘 Same toggle behavior as MovieChosenScreen */}
-      <View style={styles.filterBar}>
-        <SpoilerButton isSpoiler={showSpoilers} onToggle={setShowSpoilers} />
-      </View>
-
       {feedItems.map((item, index) => renderFeedItem(item, index))}
     </ScrollView>
   );
@@ -447,7 +439,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
   },
-  // 🔶 Spoiler overlay styles copied from MovieChosen-style behavior
   spoilerOverlayCard: {
     marginTop: 12,
     padding: 16,
