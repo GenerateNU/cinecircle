@@ -95,7 +95,6 @@ export const createPost = async (req: Request, res: Response) => {
     }
   };
 
-
 // GET POST BY ID
 export const getPostById = async (req: Request, res: Response) => {
     try {
