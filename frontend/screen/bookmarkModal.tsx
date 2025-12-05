@@ -6,7 +6,10 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
+  Image,
 } from 'react-native';
+import watched from '../assets/watched.png';
+import toWatch from '../assets/wanttowatch.png';
 
 export type BookmarkStatus = 'TO_WATCH' | 'WATCHED' | null;
 
@@ -52,6 +55,14 @@ export default function BookmarkModal({
   const isToWatch = selection === 'TO_WATCH';
   const isWatched = selection === 'WATCHED';
 
+  const selectedImageStyle = {
+    transform: [{ scale: 1.07 }],
+    shadowColor: '#7B3DF0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  };
+
   const handleSavePress = () => {
     onSave();
   };
@@ -75,53 +86,24 @@ export default function BookmarkModal({
           <TouchableOpacity
             onPress={() => toggleSelect('TO_WATCH')}
             activeOpacity={0.9}
-            style={[styles.ticketOuter, isToWatch && styles.ticketOuterActive]}
           >
-            <View
-              style={[
-                styles.ticketInner,
-                isToWatch && styles.ticketInnerActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.ticketText,
-                  isToWatch && styles.ticketTextActive,
-                ]}
-              >
-                Want to{'\n'}Watch
-              </Text>
-            </View>
+            <Image
+              source={toWatch}
+              resizeMode="contain"
+              style={[styles.ticketImage, isToWatch && selectedImageStyle]}
+            />
           </TouchableOpacity>
 
-          {/* Watched */}
           <TouchableOpacity
             onPress={() => toggleSelect('WATCHED')}
             activeOpacity={0.9}
-            style={[styles.ticketOuter, isWatched && styles.ticketOuterActive]}
           >
-            <View
-              style={[
-                styles.ticketInner,
-                isWatched && styles.ticketInnerActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.ticketText,
-                  isWatched && styles.ticketTextActive,
-                ]}
-              >
-                Watched
-              </Text>
-            </View>
+            <Image
+              source={watched}
+              resizeMode="contain"
+              style={[styles.ticketImage, isWatched && selectedImageStyle]}
+            />
           </TouchableOpacity>
-        </View>
-
-        {/* Optional row for sublabels (like your Take / Review labels) */}
-        <View style={styles.labelRow}>
-          <Text style={styles.label}>To Be Watched</Text>
-          <Text style={styles.label}>Already Watched</Text>
         </View>
 
         {/* Actions */}

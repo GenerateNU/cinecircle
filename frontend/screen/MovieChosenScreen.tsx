@@ -559,13 +559,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               </Svg>
               <Text
                 style={{
-                  marginLeft: 8,
+                  marginLeft: 2,
                   color: isBookmarked ? '#FBEAE6' : '#561202',
                   fontWeight: '600',
                 }}
               >
                 {bookmarkStatus === 'TO_WATCH'
-                  ? 'Want to Watch'
+                  ? ' Want to \n  Watch'
                   : bookmarkStatus === 'WATCHED'
                     ? 'Watched'
                     : 'Save'}

@@ -26,7 +26,10 @@ type Props = {
   userId?: string | null;
 };
 
-const MoviesGrid = ({ userId }: Props) => {
+const MoviesGrid = (props: Props | undefined) => {
+  // ✅ safely read userId even if props is undefined
+  const userId = props?.userId ?? null;
+
   const [activeSubTab, setActiveSubTab] = useState<'toWatch' | 'completed'>(
     'toWatch'
   );
@@ -40,14 +43,12 @@ const MoviesGrid = ({ userId }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   const movies = moviesByStatus[activeSubTab];
-  const showBookmark = activeSubTab === 'toWatch';
 
   const fetchMoviesForUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // For now bookmarks are only for the current logged-in user
       const profileRes = await getUserProfile();
       const profile = profileRes?.userProfile;
       if (!profile) {
@@ -102,7 +103,6 @@ const MoviesGrid = ({ userId }: Props) => {
         completed: dedupe(completedMovies),
       });
 
-      // default tab – if you have any "to watch", show that, otherwise completed
       if (toWatchMovies.length > 0) {
         setActiveSubTab('toWatch');
       } else if (completedMovies.length > 0) {
@@ -129,7 +129,6 @@ const MoviesGrid = ({ userId }: Props) => {
     return 'No movies found for this user.';
   }, [activeSubTab, userId]);
 
-  /** 🔗 Navigate to MovieChosenScreen */
   const handleMoviePress = (movieId: string) => {
     router.push({
       pathname: '/movies/[movieId]',
@@ -137,42 +136,38 @@ const MoviesGrid = ({ userId }: Props) => {
     });
   };
 
+  /** 🎬 Poster-only grid item */
   const renderMovie = ({ item }: { item: MovieListItem }) => (
     <TouchableOpacity
       onPress={() => handleMoviePress(item.id)}
-      style={tw`flex-row items-center py-3 border-b border-gray-100`}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
+      style={tw`w-1/3 p-1`}
     >
       {item.poster ? (
         <Image
           source={{ uri: item.poster }}
-          style={tw`w-[56px] h-[84px] rounded-md`}
+          style={[
+            tw`w-full rounded-md`,
+            { aspectRatio: 2 / 3 }, // classic poster ratio
+          ]}
           resizeMode="cover"
         />
       ) : (
         <View
-          style={tw`w-[56px] h-[84px] rounded-md bg-gray-200 items-center justify-center`}
+          style={[
+            tw`w-full rounded-md items-center justify-center bg-gray-200`,
+            { aspectRatio: 2 / 3 },
+          ]}
         >
           <Ionicons name="film-outline" size={22} color="#555" />
         </View>
       )}
-      <Text
-        style={tw`flex-1 ml-4 text-base font-semibold text-black`}
-        numberOfLines={2}
-      >
-        {item.title}
-      </Text>
-      <Ionicons
-        name={showBookmark ? 'bookmark-outline' : 'checkmark-circle-outline'}
-        size={22}
-        color="#111"
-      />
     </TouchableOpacity>
   );
 
   return (
     <View>
-      {/* 🔸 Sub-tabs bar stays here */}
+      {/* Sub-tabs */}
       <View
         style={[
           tw`flex-row items-center mb-4`,
@@ -254,13 +249,14 @@ const MoviesGrid = ({ userId }: Props) => {
           data={movies}
           keyExtractor={item => item.id}
           renderItem={renderMovie}
+          numColumns={3}
           scrollEnabled={false}
           removeClippedSubviews={false}
-          initialNumToRender={movies.length || 10}
-          maxToRenderPerBatch={movies.length || 10}
+          initialNumToRender={movies.length || 9}
+          maxToRenderPerBatch={movies.length || 9}
           windowSize={Math.max(5, movies.length || 5)}
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={tw`h-0`} />}
+          columnWrapperStyle={tw`justify-start`}
           ListFooterComponent={<View style={tw`h-2`} />}
         />
       )}
