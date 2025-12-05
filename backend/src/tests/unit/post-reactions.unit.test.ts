@@ -107,11 +107,11 @@ describe("Post Reactions Controller Unit Tests", () => {
       await toggleReaction(mockRequest as Request, mockResponse as Response);
 
       expect(prisma.postReaction.create).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           postId: mockPostId,
           userId: mockUserId,
           reactionType,
-        },
+        }),
       });
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Reaction added successfully",

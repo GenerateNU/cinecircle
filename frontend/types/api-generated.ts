@@ -3049,7 +3049,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    currentUserId?: string;
+                };
                 header?: {
                     authorization?: string;
                 };
@@ -4120,6 +4122,7 @@ export interface components {
             summary: components["schemas"]["MovieSummary"];
         };
         PostFormData: {
+            userId: string;
             movieId: string;
             content: string;
             /** @enum {string} */

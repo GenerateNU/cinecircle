@@ -197,6 +197,7 @@ export type GetMovieSummaryEnvelope = {
 };
 
 export type PostFormData = {
+  userId: string;
   movieId: string;
   content: string;
   type: 'SHORT' | 'LONG';

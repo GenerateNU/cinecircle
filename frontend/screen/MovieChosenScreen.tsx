@@ -248,11 +248,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     : null;
 
   const handleReviewPress = (post: Post) => {
-    console.log('Review pressed:', post.id, 'Movie:', post.movieId);
+    router.push(`/postDetail/${post.id}`);
   };
 
   const handlePostPress = (post: Post) => {
-    console.log('Post pressed:', post.id, 'Movie:', post.movieId);
+    router.push(`/postDetail/${post.id}`);
   };
 
   const handleAddPost = () => {
@@ -286,7 +286,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   };
 
   const handleComment = (post: Post) => {
-    console.log('Comment button pressed for post:', post.id);
+    router.push(`/postDetail/${post.id}`);
   };
 
   const getFeedItems = (): FeedItem[] =>
@@ -350,7 +350,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     const post = item.data;
     const username = post.UserProfile?.username || 'Unknown';
     const movieImagePath = post.movie?.imageUrl || movieEnvelope?.imageUrl;
-    const moviePosterUrlItem = getMoviePosterUrl(movieImagePath);
 
     // Unified spoiler flag for this post
     const containsSpoilers = Boolean(
@@ -399,6 +398,38 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
     // ⭐ Review posts (with stars)
     if (post.stars !== null && post.stars !== undefined) {
+      if (containsSpoilers && !showSpoilers && !isPostRevealed(post.id)) {
+        return (
+          <React.Fragment key={`post-${post.id}`}>
+            <View style={styles.reviewItemContainer}>
+              <UserBar
+                name={username}
+                username={username}
+                userId={post.userId}
+              />
+              <Text style={styles.reviewShareText}>
+                Check out this new review that I just dropped!
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => revealPost(post.id)}
+                style={styles.spoilerOverlayCard}
+              >
+                <Ionicons name="eye-outline" size={20} color="#561202" />
+                <Text style={styles.spoilerOverlayTitle}>
+                  This review contains spoilers
+                </Text>
+                <Text style={styles.spoilerOverlayText}>
+                  Tap to reveal just this post, or turn on "Show spoilers" to
+                  reveal all.
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {index < allFeedItems.length - 1 && <View style={styles.divider} />}
+          </React.Fragment>
+        );
+      }
+
       return (
         <React.Fragment key={`post-${post.id}`}>
           <View style={styles.reviewItemContainer}>
@@ -413,9 +444,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               reviewerName={username}
               movieTitle={title}
               rating={post.stars}
-              userId={post.userId}
-              reviewerUserId={post.userId}
-              movieImageUrl={moviePosterUrlItem}
+              userId={post.userId || ''}
+              reviewerUserId={post.userId || ''}
+              movieImageUrl={movieImagePath || ''}
               onPress={() => handleReviewPress(post)}
               spoiler={containsSpoilers}
             />

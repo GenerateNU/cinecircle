@@ -20,7 +20,10 @@ import { togglePostReaction } from '../services/feedService';
 import TextPost from '../components/TextPost';
 import PicturePost from '../components/PicturePost';
 import InteractionBar from '../components/InteractionBar';
-import CommentSection, { CommentInput, type CommentInputRenderProps } from '../app/commentSection/commentSection';
+import CommentSection, {
+  CommentInput,
+  type CommentInputRenderProps,
+} from '../app/commentSection/commentSection';
 import type { components } from '../types/api-generated';
 
 type Post = components['schemas']['Post'];
@@ -41,7 +44,8 @@ export default function PostDetails({ postId }: PostDetailsProps) {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [commentInputProps, setCommentInputProps] = useState<CommentInputRenderProps | null>(null);
+  const [commentInputProps, setCommentInputProps] =
+    useState<CommentInputRenderProps | null>(null);
 
   const loadPost = useCallback(async () => {
     if (!postId) return;
@@ -50,7 +54,12 @@ export default function PostDetails({ postId }: PostDetailsProps) {
     setError(null);
 
     try {
-      const response = await api.get<PostDetailResponse>(`/api/post/${postId}`);
+      const response = await api.get<PostDetailResponse>(
+        `/api/post/${postId}`,
+        {
+          currentUserId: user?.id,
+        }
+      );
       setPost(response.data ?? null);
     } catch (err) {
       console.error('Failed to load post:', err);
@@ -58,7 +67,7 @@ export default function PostDetails({ postId }: PostDetailsProps) {
     } finally {
       setLoading(false);
     }
-  }, [postId]);
+  }, [postId, user?.id]);
 
   useEffect(() => {
     loadPost();
@@ -143,11 +152,10 @@ export default function PostDetails({ postId }: PostDetailsProps) {
   if (error || !post) {
     return (
       <SafeAreaView style={tw`flex-1 bg-white`}>
-        <View style={tw`flex-row items-center px-4 py-3 border-b border-gray-200`}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={tw`mr-4`}
-          >
+        <View
+          style={tw`flex-row items-center px-4 py-3 border-b border-gray-200`}
+        >
+          <TouchableOpacity onPress={() => router.back()} style={tw`mr-4`}>
             <Feather name="arrow-left" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={tw`text-lg font-semibold`}>Post Details</Text>
@@ -209,11 +217,10 @@ export default function PostDetails({ postId }: PostDetailsProps) {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         {/* Header with back button */}
-        <View style={tw`flex-row items-center px-4 py-3 border-b border-gray-200`}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={tw`mr-4`}
-          >
+        <View
+          style={tw`flex-row items-center px-4 py-3 border-b border-gray-200`}
+        >
+          <TouchableOpacity onPress={() => router.back()} style={tw`mr-4`}>
             <Feather name="arrow-left" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={tw`text-lg font-semibold`}>Post Details</Text>
