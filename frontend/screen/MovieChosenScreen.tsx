@@ -399,12 +399,17 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
               const wasSelected =
                 p.userReactions?.includes(reactionType) || false;
-              const counts = { ...p.reactionCounts };
+              const counts = {
+                SPICY: p.reactionCounts?.SPICY ?? 0,
+                STAR_STUDDED: p.reactionCounts?.STAR_STUDDED ?? 0,
+                THOUGHT_PROVOKING: p.reactionCounts?.THOUGHT_PROVOKING ?? 0,
+                BLOCKBUSTER: p.reactionCounts?.BLOCKBUSTER ?? 0,
+              };
 
               // update count
               counts[reactionType] = Math.max(
                 0,
-                (counts[reactionType] || 0) + (wasSelected ? -1 : 1)
+                counts[reactionType] + (wasSelected ? -1 : 1)
               );
 
               // update selected list
