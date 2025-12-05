@@ -401,13 +401,26 @@ model Comment {
   userId          String      @db.Uuid
   postId          String?
   content         String
-  createdAt       DateTime    @default(now())
+  createdAt       DateTime      @default(now())
   parentId        String?
-  parent_comment  Comment?    @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
-  child_comment   Comment[]   @relation("CommentToComment")
-  Post            Post?       @relation(fields: [postId], references: [id])
-  UserProfile     UserProfile @relation(fields: [userId], references: [userId])
+  parent_comment  Comment?      @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
+  child_comment   Comment[]     @relation("CommentToComment")
+  Post            Post?         @relation(fields: [postId], references: [id])
+  UserProfile     UserProfile   @relation(fields: [userId], references: [userId])
+  CommentLike     CommentLike[]
 
+  @@schema("public")
+}
+
+model CommentLike {
+  id          String      @id @default(uuid())
+  commentId   String
+  userId      String      @db.Uuid
+  createdAt   DateTime    @default(now())
+  Comment     Comment     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [userId])
+
+  @@unique([commentId, userId])
   @@schema("public")
 }
 
@@ -492,6 +505,7 @@ model UserProfile {
   createdAt                                      DateTime       @default(now())
   updatedAt                                      DateTime       @updatedAt
   Comment                                        Comment[]
+  CommentLike                                    CommentLike[]
   Post                                           Post[]
   PostReaction                                   PostReaction[]
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[]   @relation("UserFollow_followerIdToUserProfile")

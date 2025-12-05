@@ -12,7 +12,7 @@ import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent, getLocalEvents } from "../controllers/local-events"
 import { createOrUpdateRsvp, getUserRsvp, deleteRsvp, getEventAttendees } from "../controllers/event-rsvp"
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
-import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree} from "../controllers/comment"
+import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree, toggleCommentLike, getCommentLikes } from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
 import { getAllMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReposts, toggleReaction, getPostReactions } from "../controllers/post.js";
@@ -69,6 +69,8 @@ router.post("/api/comment", createComment);
 router.get("/api/comment/:id", getComment)
 router.put("/api/comment/:id", updateComment);
 router.delete("/api/comment/:id", deleteComment);
+router.post("/api/comment/:id/like", toggleCommentLike);
+router.get("/api/comment/:id/likes", getCommentLikes);
 router.get("/api/:movieId/comments", getMovieComments);
 router.get("/api/comments/post/:postId", getCommentsTree);
 router.get("/api/comments/rating/:ratingId", getCommentsTree);
