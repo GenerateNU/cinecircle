@@ -1,5 +1,5 @@
 // frontend/app/components/BookmarkModal.tsx
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,13 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import watched from '../assets/watched.png';
-import toWatch from '../assets/wanttowatch.png';
+// Ticket images
+import wantToWatchDefault from '../assets/tickets/wanttowatch.png';
+import wantToWatchSelected from '../assets/tickets/wanttowatchselected.png';
+import wantToWatchSmall from '../assets/tickets/wanttowatchsmall.png';
+import watchedDefault from '../assets/tickets/watched.png';
+import watchedSelected from '../assets/tickets/watchedselected.png';
+import watchedSmall from '../assets/tickets/watchedsmall.png';
 
 export type BookmarkStatus = 'TO_WATCH' | 'WATCHED' | null;
 
@@ -21,11 +26,22 @@ interface Props {
 }
 
 export default function BookmarkModal({
-  selection,
+  selection: propSelection,
   onChangeSelection,
   onSave,
   onClose,
 }: Props) {
+  // Track the initial selection to detect changes
+  const initialSelectionRef = useRef<BookmarkStatus>(propSelection);
+  const [currentSelection, setCurrentSelection] = useState<BookmarkStatus>(propSelection);
+  
+  // Update current selection when prop changes
+  useEffect(() => {
+    setCurrentSelection(propSelection);
+    initialSelectionRef.current = propSelection;
+  }, [propSelection]);
+  
+  const hasChanges = currentSelection !== initialSelectionRef.current;
   const slideAnim = useRef(new Animated.Value(300)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -45,23 +61,15 @@ export default function BookmarkModal({
   }, [slideAnim, fadeAnim]);
 
   const toggleSelect = (status: Exclude<BookmarkStatus, null>) => {
-    if (selection === status) {
-      onChangeSelection(null); // tap again to unselect / remove
-    } else {
-      onChangeSelection(status);
-    }
+    const newSelection = currentSelection === status ? null : status;
+    setCurrentSelection(newSelection);
+    onChangeSelection(newSelection);
   };
 
-  const isToWatch = selection === 'TO_WATCH';
-  const isWatched = selection === 'WATCHED';
+  const isToWatch = currentSelection === 'TO_WATCH';
+  const isWatched = currentSelection === 'WATCHED';
 
-  const selectedImageStyle = {
-    transform: [{ scale: 1.07 }],
-    shadowColor: '#7B3DF0',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  };
+  // No need for additional styles since the images already have their own styling
 
   const handleSavePress = () => {
     onSave();
@@ -88,9 +96,15 @@ export default function BookmarkModal({
             activeOpacity={0.9}
           >
             <Image
-              source={toWatch}
+              source={
+                isToWatch
+                  ? wantToWatchSelected
+                  : isWatched
+                  ? wantToWatchSmall
+                  : wantToWatchDefault
+              }
               resizeMode="contain"
-              style={[styles.ticketImage, isToWatch && selectedImageStyle]}
+              style={styles.ticketImage}
             />
           </TouchableOpacity>
 
@@ -99,9 +113,15 @@ export default function BookmarkModal({
             activeOpacity={0.9}
           >
             <Image
-              source={watched}
+              source={
+                isWatched
+                  ? watchedSelected
+                  : isToWatch
+                  ? watchedSmall
+                  : watchedDefault
+              }
               resizeMode="contain"
-              style={[styles.ticketImage, isWatched && selectedImageStyle]}
+              style={styles.ticketImage}
             />
           </TouchableOpacity>
         </View>
@@ -118,17 +138,17 @@ export default function BookmarkModal({
           <TouchableOpacity
             style={[
               styles.actionButton,
-              selection === null
+              !hasChanges
                 ? styles.actionButtonDisabled
                 : styles.actionButtonPrimary,
             ]}
             onPress={handleSavePress}
-            disabled={selection === null}
+            disabled={!hasChanges}
           >
             <Text
               style={[
                 styles.actionPrimaryText,
-                selection === null && { color: '#999' },
+                !hasChanges && { color: '#999' },
               ]}
             >
               Save
@@ -159,8 +179,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingVertical: 28,
-    paddingHorizontal: 24,
+    paddingHorizontal: 0, // Remove horizontal padding to allow images to touch
     minHeight: 260,
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
@@ -170,7 +191,8 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
     marginBottom: 12,
   },
@@ -194,18 +216,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ticketInnerActive: {
-    borderColor: '#7B3DF0',
-  },
+  ticketInnerActive: {},
   ticketText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#c45c48',
     textAlign: 'center',
   },
-  ticketTextActive: {
-    color: '#7B3DF0',
-  },
+  ticketTextActive: {},
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',

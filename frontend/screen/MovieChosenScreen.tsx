@@ -35,7 +35,7 @@ import type { components } from '../types/api-generated';
 import { t } from '../il8n/_il8n';
 import { UiTextKey } from '../il8n/_keys';
 import { getUserProfile, updateUserProfile } from '../services/userService';
-import BookmarkModal from './bookmarkModal';
+import BookmarkModal from '../components/bookmarkModal';
 
 type MovieChosenScreenProps = {
   movieId: string;
@@ -355,8 +355,8 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     // Unified spoiler flag for this post
     const containsSpoilers = Boolean(
       (post as any).containsSpoilers ??
-        (post as any).hasSpoilers ??
-        (post as any).spoiler
+      (post as any).hasSpoilers ??
+      (post as any).spoiler
     );
 
     // Is this post allowed to be fully visible?
@@ -671,19 +671,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                   fill={isBookmarked ? '#FFFFFF' : '#AB2504'}
                 />
               </Svg>
-              <Text
-                style={{
-                  marginLeft: 2,
-                  color: isBookmarked ? '#FBEAE6' : '#561202',
-                  fontWeight: '600',
-                }}
-              >
-                {bookmarkStatus === 'TO_WATCH'
-                  ? ' Want to \n  Watch'
-                  : bookmarkStatus === 'WATCHED'
-                    ? 'Watched'
-                    : 'Save'}
-              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -969,11 +956,11 @@ const styles = StyleSheet.create({
   },
   bookmarkButton: {
     flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1.5,
     borderColor: '#5C013F',
     backgroundColor: '#F7D5CD',
