@@ -125,15 +125,8 @@ export default function BookmarkModal({
           </TouchableOpacity>
         </View>
 
-        {/* Actions */}
+        {/* Save Button */}
         <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonSecondary]}
-            onPress={onClose}
-          >
-            <Text style={styles.actionSecondaryText}>Cancel</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.actionButton,
@@ -238,6 +231,9 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 20,
     columnGap: 12,
   },
   actionButton: {
@@ -253,13 +249,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionButtonPrimary: {
-    backgroundColor: '#B8A7E8',
+    backgroundColor: '#AB2504',
+    borderColor: '#AB2504',
   },
   actionButtonDisabled: {
     backgroundColor: '#E0E0E0',
   },
   actionPrimaryText: {
-    color: '#333',
-    fontWeight: '700',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '400',
   },
 });

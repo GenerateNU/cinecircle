@@ -658,8 +658,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               style={[
                 styles.bookmarkButton,
                 isBookmarked && {
-                  backgroundColor: '#5C013F',
-                  borderColor: '#5C013F',
+                  backgroundColor: '#AB2504',
+                  borderColor: '#801C03',
+                  borderWidth: 1.5,
                 },
               ]}
               onPress={openBookmarkModal}
