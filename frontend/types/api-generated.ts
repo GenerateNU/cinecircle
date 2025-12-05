@@ -3049,7 +3049,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    currentUserId?: string;
+                };
                 header?: {
                     authorization?: string;
                 };
