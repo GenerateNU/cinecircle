@@ -20,7 +20,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     favoriteMovies,
     updatedAt,
     privateAccount,
-    spoilers,
+    spoiler,
   } = (req.body ?? {}) as Partial<UserProfile>;
 
   try {
@@ -55,7 +55,7 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
       favoriteMovies,
       updatedAt,
       privateAccount,
-      spoilers,
+      spoiler,
     });
 
     const updated = await prisma.userProfile.update({
@@ -111,7 +111,7 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           city: null,
           primaryLanguage: 'English',
           privateAccount: false,
-          spoilers: false,
+          spoiler: false,
           updatedAt: new Date(),
         },
       });
@@ -173,7 +173,7 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
         ? userProfile.favoriteMovies as string[]
         : [],
       privateAccount: Boolean(userProfile.privateAccount),
-      spoilers: Boolean(userProfile.spoilers),
+      spoiler: Boolean(userProfile.spoiler),
       createdAt: userProfile.createdAt,
       updatedAt: userProfile.updatedAt,
     });
@@ -258,7 +258,7 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
           ? userProfile.favoriteMovies as string[]
           : [],
         privateAccount: Boolean(userProfile.privateAccount),
-        spoilers: Boolean(userProfile.spoilers),
+        spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
       });
@@ -316,7 +316,7 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
           ? userProfile.favoriteMovies as string[]
           : [],
         privateAccount: Boolean(userProfile.privateAccount),
-        spoilers: Boolean(userProfile.spoilers),
+        spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
       });
@@ -349,7 +349,7 @@ export function mapUserProfileDbToApi(row: {
   favoriteGenres: string[];
   favoriteMovies: string[];
   privateAccount?: boolean | null;
-  spoilers?: boolean | null;
+  spoiler?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 }): UserProfile {
@@ -365,7 +365,7 @@ export function mapUserProfileDbToApi(row: {
     favoriteGenres: row.favoriteGenres ?? [],
     favoriteMovies: row.favoriteMovies ?? [],
     privateAccount: Boolean(row.privateAccount),
-    spoilers: Boolean(row.spoilers),
+    spoiler: Boolean(row.spoiler),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -374,7 +374,7 @@ export function mapUserProfileDbToApi(row: {
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt" | "privateAccount" | "spoilers"
+    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt" | "privateAccount" | "spoiler"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
@@ -409,8 +409,8 @@ export function mapUserProfilePatchToUpdateData(
   if (Object.prototype.hasOwnProperty.call(patch, "privateAccount")) {
     data.privateAccount = patch.privateAccount ?? false;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "spoilers")) {
-    data.spoilers = patch.spoilers ?? false;
+  if (Object.prototype.hasOwnProperty.call(patch, "spoiler")) {
+    data.spoiler = patch.spoiler ?? false;
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one
