@@ -4,71 +4,134 @@ import { prisma } from '../services/db.js';
 import { Prisma } from "@prisma/client";
 import { UserProfile } from "../types/models";
 
-export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
-  const { user } = req;
-  if (!user) return res.status(401).json({ message: "Unauthorized" });
+import { prisma } from '../services/db'; // or wherever yours is
+import { Prisma } from '@prisma/client';
 
-  const {
-    username,
-    onboardingCompleted,
-    primaryLanguage,
-    secondaryLanguage,
-    profilePicture,
-    country,
-    city,
-    favoriteGenres,
-    favoriteMovies,
-    updatedAt,
-    privateAccount,
-    spoiler,
-  } = (req.body ?? {}) as Partial<UserProfile>;
-
+// inside your handler:
+export const updateUserProfile = async (req, res) => {
   try {
-    const existingProfile = await prisma.userProfile.findUnique({
-      where: { userId: user.id },
+    // however you're getting this – body already validated / normalized
+    const body = req.body; 
+
+    console.log('🟠 [BE] raw body in updateUserProfile:', body);
+
+    const normalized = {
+      username: body.username ?? null,
+      displayName: body.displayName ?? null,
+      onboardingCompleted: body.onboardingCompleted,
+      primaryLanguage: body.primaryLanguage,
+      secondaryLanguage: Array.isArray(body.secondaryLanguage)
+        ? body.secondaryLanguage
+        : [],
+      profilePicture: body.profilePicture,
+      country: body.country,
+      city: body.city,
+      favoriteGenres: Array.isArray(body.favoriteGenres)
+        ? body.favoriteGenres
+        : [],
+      favoriteMovies: Array.isArray(body.favoriteMovies)
+        ? body.favoriteMovies
+        : [],
+      bio: body.bio ?? null,
+      eventsSaved: Array.isArray(body.eventsSaved)
+        ? Array.from(new Set(body.eventsSaved))
+        : undefined,
+      eventsAttended: Array.isArray(body.eventsAttended)
+        ? Array.from(new Set(body.eventsAttended))
+        : undefined,
+      privateAccount:
+        typeof body.privateAccount === 'boolean'
+          ? body.privateAccount
+          : undefined,
+      spoiler:
+        typeof body.spoiler === 'boolean' ? body.spoiler : undefined,
+
+      // 🔥 IMPORTANT PART: keep arrays exactly as passed, just dedupe
+      bookmarkedToWatch: Array.isArray(body.bookmarkedToWatch)
+        ? Array.from(new Set(body.bookmarkedToWatch))
+        : undefined,
+      bookmarkedWatched: Array.isArray(body.bookmarkedWatched)
+        ? Array.from(new Set(body.bookmarkedWatched))
+        : undefined,
+    };
+
+    console.log('🔍 [BE] normalized body before prisma:', {
+      bookmarkedToWatch: normalized.bookmarkedToWatch,
+      bookmarkedWatched: normalized.bookmarkedWatched,
     });
 
-    if (!existingProfile) {
-      return res.status(404).json({ message: "User profile not found" });
-    }
+    const prismaData: Prisma.UserProfileUpdateInput = {
+      // only set fields that are explicitly provided (!== undefined)
+      ...(normalized.username !== undefined && {
+        username: normalized.username,
+      }),
+      ...(normalized.displayName !== undefined) && {
+        displayName: normalized.displayName,
+      },
+      ...(normalized.onboardingCompleted !== undefined && {
+        onboardingCompleted: normalized.onboardingCompleted,
+      }),
+      ...(normalized.primaryLanguage !== undefined && {
+        primaryLanguage: normalized.primaryLanguage,
+      }),
+      ...(normalized.secondaryLanguage !== undefined && {
+        secondaryLanguage: normalized.secondaryLanguage,
+      }),
+      ...(normalized.profilePicture !== undefined && {
+        profilePicture: normalized.profilePicture,
+      }),
+      ...(normalized.country !== undefined && { country: normalized.country }),
+      ...(normalized.city !== undefined && { city: normalized.city }),
+      ...(normalized.favoriteGenres !== undefined && {
+        favoriteGenres: normalized.favoriteGenres,
+      }),
+      ...(normalized.favoriteMovies !== undefined && {
+        favoriteMovies: normalized.favoriteMovies,
+      }),
+      ...(normalized.bio !== undefined && {
+        bio: normalized.bio,
+      }),
+      ...(normalized.eventsSaved !== undefined && {
+        eventsSaved: normalized.eventsSaved,
+      }),
+      ...(normalized.eventsAttended !== undefined && {
+        eventsAttended: normalized.eventsAttended,
+      }),
+      ...(normalized.privateAccount !== undefined && {
+        privateAccount: normalized.privateAccount,
+      }),
+      ...(normalized.spoiler !== undefined && { spoiler: normalized.spoiler }),
 
-    const mergedSecondaryLanguages = Array.isArray(secondaryLanguage)
-      ? Array.from(
-          new Set([
-            ...(Array.isArray(existingProfile.secondaryLanguage)
-              ? (existingProfile.secondaryLanguage as string[])
-              : []),
-            ...secondaryLanguage,
-          ]),
-        )
-      : undefined;
+      ...(normalized.bookmarkedToWatch !== undefined && {
+        bookmarkedToWatch: normalized.bookmarkedToWatch,
+      }),
+      ...(normalized.bookmarkedWatched !== undefined && {
+        bookmarkedWatched: normalized.bookmarkedWatched,
+      }),
 
-    const data = mapUserProfilePatchToUpdateData({
-      username,
-      onboardingCompleted,
-      primaryLanguage,
-      secondaryLanguage: mergedSecondaryLanguages,
-      profilePicture,
-      country,
-      city,
-      favoriteGenres,
-      favoriteMovies,
-      updatedAt,
-      privateAccount,
-      spoiler,
+      updatedAt: new Date(),
+    };
+
+    console.log(
+      '🟡 [BE] updateUserProfile() prisma update data:',
+      prismaData
+    );
+
+    const userId = req.user.id; // or however you attach auth
+    const result = await prisma.userProfile.update({
+      where: { userId },
+      data: prismaData,
     });
 
-    const updated = await prisma.userProfile.update({
-      where: { userId: user.id },
-      data,
-    });
+    console.log('🟢 [BE] updateUserProfile() prisma result:', result);
 
-    res.json({ message: "Profile updated", data: mapUserProfileDbToApi(updated) });
-  } catch (error) {
-    console.error("updateUserProfile error:", error);
-    res.status(500).json({ message: "Failed to update profile" });
+    res.json({ userProfile: result });
+  } catch (err) {
+    console.error('🔴 [BE] updateUserProfile() error:', err);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 };
+
   
   export const deleteUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     const { user } = req;
@@ -107,13 +170,20 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           favoriteGenres: [],
           secondaryLanguage: [],
           profilePicture: null,
+          displayName: null,
           country: null,
           city: null,
           primaryLanguage: 'English',
           privateAccount: false,
           spoiler: false,
+          bio: null,
+          eventsSaved: [],
+          eventsAttended: [],
           updatedAt: new Date(),
+          bookmarkedToWatch: [],
+          bookmarkedWatched: [],
         },
+        
       });
     }
 
@@ -166,17 +236,31 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
       profilePicture: userProfile.profilePicture,
       country: userProfile.country,
       city: userProfile.city,
-      favoriteGenres: Array.isArray(userProfile.favoriteGenres)
-        ? userProfile.favoriteGenres as string[]
+    displayName: userProfile.displayName,
+    favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+      ? userProfile.favoriteGenres as string[]
+      : [],
+    favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+      ? userProfile.favoriteMovies as string[]
+      : [],
+    bio: userProfile.bio ?? null,
+    eventsSaved: Array.isArray(userProfile.eventsSaved)
+      ? (userProfile.eventsSaved as string[])
+      : [],
+    eventsAttended: Array.isArray(userProfile.eventsAttended)
+      ? (userProfile.eventsAttended as string[])
+      : [],
+    privateAccount: Boolean(userProfile.privateAccount),
+    spoiler: Boolean(userProfile.spoiler),
+    createdAt: userProfile.createdAt,
+    updatedAt: userProfile.updatedAt,
+      bookmarkedToWatch: Array.isArray(userProfile.bookmarkedToWatch)
+        ? userProfile.bookmarkedToWatch as string[]
         : [],
-      favoriteMovies: Array.isArray(userProfile.favoriteMovies)
-        ? userProfile.favoriteMovies as string[]
+      bookmarkedWatched: Array.isArray(userProfile.bookmarkedWatched)
+        ? userProfile.bookmarkedWatched as string[]
         : [],
-      privateAccount: Boolean(userProfile.privateAccount),
-      spoiler: Boolean(userProfile.spoiler),
-      createdAt: userProfile.createdAt,
-      updatedAt: userProfile.updatedAt,
-    });
+  });
     
     const basicUser = req.user
       ? {
@@ -217,6 +301,63 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
+// Public profile lookup by userId (used when viewing another user's profile)
+export const getUserProfileById = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!userProfile) {
+      return res.status(404).json({ message: "User profile not found" });
+    }
+
+    const mappedUserProfile = mapUserProfileDbToApi({
+      userId: userProfile.userId,
+      username: userProfile.username,
+      onboardingCompleted: userProfile.onboardingCompleted,
+      primaryLanguage: userProfile.primaryLanguage,
+      secondaryLanguage: Array.isArray(userProfile.secondaryLanguage)
+        ? (userProfile.secondaryLanguage as string[])
+        : [],
+      profilePicture: userProfile.profilePicture,
+      country: userProfile.country,
+      city: userProfile.city,
+      displayName: userProfile.displayName,
+      favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+        ? (userProfile.favoriteGenres as string[])
+        : [],
+      favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+        ? (userProfile.favoriteMovies as string[])
+        : [],
+      bio: userProfile.bio ?? null,
+      eventsSaved: Array.isArray(userProfile.eventsSaved)
+        ? (userProfile.eventsSaved as string[])
+        : [],
+      eventsAttended: Array.isArray(userProfile.eventsAttended)
+        ? (userProfile.eventsAttended as string[])
+        : [],
+      privateAccount: Boolean(userProfile.privateAccount),
+      spoiler: Boolean(userProfile.spoiler),
+      createdAt: userProfile.createdAt,
+      updatedAt: userProfile.updatedAt,
+    });
+
+    return res.json({
+      message: "User profile retrieved successfully",
+      userProfile: mappedUserProfile,
+    });
+  } catch (error) {
+    console.error("getUserProfileById error:", error);
+    return res.status(500).json({ message: "Failed to retrieve user profile" });
+  }
+};
+
 export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
   const { user_id } = req.query;
 
@@ -229,7 +370,6 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
     const ratings = await prisma.rating.findMany({
       where: { userId: user_id },
       orderBy: { date: "desc" },
-      include: { Comment: true },
     });
 
     // Fetch user profile
@@ -248,19 +388,33 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
         secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
           ? userProfile.secondaryLanguage as string[]
           : [],
-        profilePicture: userProfile.profilePicture,
-        country: userProfile.country,
-        city: userProfile.city,
+      profilePicture: userProfile.profilePicture,
+      country: userProfile.country,
+      city: userProfile.city,
+        displayName: userProfile.displayName,
         favoriteGenres: Array.isArray(userProfile.favoriteGenres)
           ? userProfile.favoriteGenres as string[]
           : [],
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
           : [],
+        bio: userProfile.bio ?? null,
+        eventsSaved: Array.isArray(userProfile.eventsSaved)
+          ? (userProfile.eventsSaved as string[])
+          : [],
+        eventsAttended: Array.isArray(userProfile.eventsAttended)
+          ? (userProfile.eventsAttended as string[])
+          : [],
         privateAccount: Boolean(userProfile.privateAccount),
         spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
+        bookmarkedToWatch: Array.isArray(userProfile.bookmarkedToWatch)
+          ? userProfile.bookmarkedToWatch as string[]
+          : [],
+        bookmarkedWatched: Array.isArray(userProfile.bookmarkedWatched)
+          ? userProfile.bookmarkedWatched as string[]
+          : [],
       });
     }
 
@@ -306,19 +460,32 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
         secondaryLanguage: Array.isArray(userProfile.secondaryLanguage) 
           ? userProfile.secondaryLanguage as string[]
           : [],
-        profilePicture: userProfile.profilePicture ?? null,
-        country: userProfile.country,
-        city: userProfile.city,
+      profilePicture: userProfile.profilePicture ?? null,
+      country: userProfile.country,
+      city: userProfile.city,
+        displayName: userProfile.displayName,
         favoriteGenres: Array.isArray(userProfile.favoriteGenres)
           ? userProfile.favoriteGenres as string[]
           : [],
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
+        : [],
+        eventsSaved: Array.isArray(userProfile.eventsSaved)
+          ? (userProfile.eventsSaved as string[])
+          : [],
+        eventsAttended: Array.isArray(userProfile.eventsAttended)
+          ? (userProfile.eventsAttended as string[])
           : [],
         privateAccount: Boolean(userProfile.privateAccount),
         spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
+        bookmarkedToWatch: Array.isArray(userProfile.bookmarkedToWatch)
+          ? userProfile.bookmarkedToWatch as string[]
+          : [],
+        bookmarkedWatched: Array.isArray(userProfile.bookmarkedWatched)
+          ? userProfile.bookmarkedWatched as string[]
+          : [],
       });
     }
 
@@ -348,10 +515,16 @@ export function mapUserProfileDbToApi(row: {
   city: string | null;
   favoriteGenres: string[];
   favoriteMovies: string[];
+  displayName?: string | null;
+  bio?: string | null;
+  eventsSaved?: string[] | null;
+  eventsAttended?: string[] | null;
   privateAccount?: boolean | null;
   spoiler?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
+  bookmarkedToWatch: string[];
+  bookmarkedWatched: string[];
 }): UserProfile {
   return {
     userId: row.userId,
@@ -362,25 +535,38 @@ export function mapUserProfileDbToApi(row: {
     profilePicture: row.profilePicture,
     country: row.country,
     city: row.city,
+    displayName: row.displayName ?? null,
     favoriteGenres: row.favoriteGenres ?? [],
     favoriteMovies: row.favoriteMovies ?? [],
+    bio: row.bio ?? null,
+    eventsSaved: row.eventsSaved ?? [],
+    eventsAttended: row.eventsAttended ?? [],
     privateAccount: Boolean(row.privateAccount),
     spoiler: Boolean(row.spoiler),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    bookmarkedToWatch: Array.isArray(row.bookmarkedToWatch)
+      ? row.bookmarkedToWatch as string[]
+      : [],
+    bookmarkedWatched: Array.isArray(row.bookmarkedWatched)
+      ? row.bookmarkedWatched as string[]
+      : [],
   };
 }
 
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt" | "privateAccount" | "spoiler"
+    "username" | "displayName" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "bio" | "eventsSaved" | "eventsAttended" | "updatedAt" | "privateAccount" | "spoiler" | "spoilers"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
 
   if (Object.prototype.hasOwnProperty.call(patch, "username")) {
     data.username = patch.username ?? null;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "displayName")) {
+    data.displayName = patch.displayName ?? null;
   }
   if (Object.prototype.hasOwnProperty.call(patch, "onboardingCompleted")) {
     data.onboardingCompleted = patch.onboardingCompleted;
@@ -406,11 +592,37 @@ export function mapUserProfilePatchToUpdateData(
   if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
     data.favoriteMovies = patch.favoriteMovies ?? [];
   }
+  if (Object.prototype.hasOwnProperty.call(patch, "bio")) {
+    data.bio = patch.bio ?? null;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "eventsSaved")) {
+    data.eventsSaved = patch.eventsSaved ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "eventsAttended")) {
+    data.eventsAttended = patch.eventsAttended ?? [];
+  }
   if (Object.prototype.hasOwnProperty.call(patch, "privateAccount")) {
     data.privateAccount = patch.privateAccount ?? false;
   }
-  if (Object.prototype.hasOwnProperty.call(patch, "spoiler")) {
-    data.spoiler = patch.spoiler ?? false;
+  const spoilerValue = Object.prototype.hasOwnProperty.call(patch, "spoiler")
+    ? patch.spoiler
+    : Object.prototype.hasOwnProperty.call(patch as any, "spoilers")
+    ? (patch as any).spoilers
+    : undefined;
+  if (spoilerValue !== undefined) {
+    data.spoiler = spoilerValue ?? false;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedToWatch")) {
+    data.bookmarkedToWatch = patch.bookmarkedToWatch ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedWatched")) {
+    data.bookmarkedWatched = patch.bookmarkedWatched ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedToWatch")) {
+    data.bookmarkedToWatch = patch.bookmarkedToWatch ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedWatched")) {
+    data.bookmarkedWatched = patch.bookmarkedWatched ?? [];
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one

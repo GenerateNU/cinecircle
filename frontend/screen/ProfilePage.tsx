@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,15 +12,19 @@ import {
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import tw from 'twrnc';
+
 import { getUserProfile } from '../services/userService';
 import { getFollowers, getFollowing } from '../services/followService';
+import { getMovieByCinecircleId } from '../services/moviesService';
+
 import { User, Props } from '../types/models';
 import type { components } from '../types/api-generated';
 
-type UserProfile = components["schemas"]["UserProfile"];
+type UserProfile = components['schemas']['UserProfile'];
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2); // ~1/5 screen
+const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2);
 const AVATAR_SIZE = 100;
 const AVATAR_RADIUS = AVATAR_SIZE / 2;
 
@@ -41,15 +45,12 @@ const ProfilePage = ({ user, userId }: Props) => {
     try {
       setLoading(true);
 
-      // Fetch current user's profile (returns id, email, role)
       const profileRes = await getUserProfile();
       if (profileRes.userProfile?.userId) {
         setProfile(profileRes.userProfile);
 
-        // Use the userId prop if provided, otherwise use current user's id
         const targetUserId = userId || profileRes.userProfile.userId;
 
-        // Fetch followers and following counts
         const [followersRes, followingRes] = await Promise.all([
           getFollowers(targetUserId),
           getFollowing(targetUserId),
@@ -65,41 +66,45 @@ const ProfilePage = ({ user, userId }: Props) => {
     }
   };
 
-  // Build display user from real data + placeholders for missing fields for now
-  const u: User = profile
-    ? {
-        name: profile.username || 'User',
-        username: profile.username || 'user',
-        bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field for now
-        followers: followersCount,
-        following: followingCount,
-        profilePic: profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          profile.username || 'User'
-        )}&size=200&background=667eea&color=fff`,
-      }
-    : user || {
-        name: 'User',
-        username: 'user',
-        bio: 'Movie enthusiast',
-        followers: 0,
-        following: 0,
-        profilePic:
-          'https://ui-avatars.com/api/?name=User&size=200&background=667eea&color=fff',
-      };
+  // Build display user from real data + placeholders
+  const u: User =
+    profile && profile.userId
+      ? {
+          name: profile.username || 'User',
+          username: profile.username || 'user',
+          bio: 'Movie enthusiast',
+          followers: followersCount,
+          following: followingCount,
+          profilePic:
+            profile.profilePicture ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              profile.username || 'User'
+            )}&size=200&background=667eea&color=fff`,
+        }
+      : user || {
+          name: 'User',
+          username: 'user',
+          bio: 'Movie enthusiast',
+          followers: 0,
+          following: 0,
+          profilePic:
+            'https://ui-avatars.com/api/?name=User&size=200&background=667eea&color=fff',
+        };
+
+  // Pull bookmark arrays out of the loaded profile
+  const bookmarkedToWatch: string[] = (profile as any)?.bookmarkedToWatch ?? [];
+  const bookmarkedWatched: string[] = (profile as any)?.bookmarkedWatched ?? [];
 
   return (
     <View style={styles.screen}>
       {/* Light gray band */}
       <View style={[styles.topBand, { height: HEADER_HEIGHT }]} />
 
-      {/* Scrollable content (pad bottom for fixed nav) */}
       <ScrollView contentContainerStyle={{ paddingBottom: 96 }}>
-        {/* Invisible spacer so content starts below band */}
         <View style={{ height: HEADER_HEIGHT }} />
 
         {/* Profile block */}
         <View style={styles.profileContainer}>
-          {/* Avatar bisecting the band boundary */}
           <Image
             source={{ uri: u.profilePic }}
             style={[
@@ -113,14 +118,11 @@ const ProfilePage = ({ user, userId }: Props) => {
             ]}
           />
 
-          {/* Name & Username */}
           <Text style={styles.name}>{u.name}</Text>
           <Text style={styles.username}>@{u.username}</Text>
 
-          {/* Bio */}
           <Text style={styles.bio}>{u.bio}</Text>
 
-          {/* Stats row: Followers | Following | WhatsApp */}
           <View style={styles.statsRow}>
             <Text style={styles.statCell}>
               {formatCount(u.followers)}{' '}
@@ -135,7 +137,6 @@ const ProfilePage = ({ user, userId }: Props) => {
             </View>
           </View>
 
-          {/* Buttons (square outline) */}
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.buttonOutlineSquare}>
               <Text style={styles.buttonOutlineSquareText}>Edit Profile</Text>
@@ -211,13 +212,18 @@ const ProfilePage = ({ user, userId }: Props) => {
 
         {/* Tab-specific content */}
         <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-          {activeTab === 'movies' && <MoviesGrid />}
+          {activeTab === 'movies' && (
+            <MoviesGrid
+              userId={profile?.userId || userId}
+              bookmarkedToWatch={bookmarkedToWatch}
+              bookmarkedWatched={bookmarkedWatched}
+            />
+          )}
           {activeTab === 'posts' && <PostsList user={u} />}
           {activeTab === 'events' && <EventsList />}
           {activeTab === 'badges' && <BadgesGrid />}
         </View>
 
-        {/* Create Post CTA (only show on Posts tab; optional) */}
         {activeTab === 'posts' && (
           <TouchableOpacity
             style={styles.postCTA}
@@ -231,41 +237,243 @@ const ProfilePage = ({ user, userId }: Props) => {
   );
 };
 
-/* ===== Tab Content Components ===== */
+/* ===== Movies Tab (uses bookmark arrays directly) ===== */
 
-const MoviesGrid = () => {
-  // simple 3-column grid using placeholder posters
-  const posters = [
-    'https://image.tmdb.org/t/p/w185/9O1Iy9od7VwG9N0e6N4l1EuY1r8.jpg',
-    'https://image.tmdb.org/t/p/w185/6bCplVkhowCjTHXWv49UjRPn0eK.jpg',
-    'https://image.tmdb.org/t/p/w185/3bhkrj58Vtu7enYsRolD1fZdja1.jpg',
-    'https://image.tmdb.org/t/p/w185/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
-    'https://image.tmdb.org/t/p/w185/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg',
-    'https://image.tmdb.org/t/p/w185/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg',
-  ];
+type MovieListItem = {
+  id: string;
+  title: string;
+  poster?: string | null;
+};
+
+type MoviesGridProps = {
+  userId?: string | null;
+  bookmarkedToWatch: string[];
+  bookmarkedWatched: string[];
+};
+
+const MoviesGrid = ({
+  userId,
+  bookmarkedToWatch,
+  bookmarkedWatched,
+}: MoviesGridProps) => {
+  const [activeSubTab, setActiveSubTab] = useState<'toWatch' | 'completed'>(
+    'completed'
+  );
+  const [moviesByStatus, setMoviesByStatus] = useState<
+    Record<'toWatch' | 'completed', MovieListItem[]>
+  >({
+    toWatch: [],
+    completed: [],
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const movies = moviesByStatus[activeSubTab];
+  const showBookmark = activeSubTab === 'toWatch';
+
+  const fetchMoviesForIds = useCallback(
+    async (ids: string[]): Promise<MovieListItem[]> => {
+      if (!ids || ids.length === 0) return [];
+
+      const results = await Promise.all(
+        ids.map(async movieId => {
+          try {
+            const envelope = await getMovieByCinecircleId(movieId);
+            const movie =
+              (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
+
+            return {
+              id: movieId,
+              title: movie?.title || `Movie ${movieId}`,
+              poster: movie?.imageUrl ?? null,
+            } as MovieListItem;
+          } catch (err) {
+            console.error('Failed to fetch movie detail:', err);
+            return {
+              id: movieId,
+              title: `Movie ${movieId}`,
+              poster: null,
+            } as MovieListItem;
+          }
+        })
+      );
+
+      // Deduplicate by id
+      return results.filter(
+        (m, index, self) => self.findIndex(x => x.id === m.id) === index
+      );
+    },
+    []
+  );
+
+  const syncMovies = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // If no user or no bookmark data, just clear
+      if (!userId) {
+        setMoviesByStatus({ toWatch: [], completed: [] });
+        return;
+      }
+
+      const [toWatchMovies, completedMovies] = await Promise.all([
+        fetchMoviesForIds(bookmarkedToWatch),
+        fetchMoviesForIds(bookmarkedWatched),
+      ]);
+
+      setMoviesByStatus({
+        toWatch: toWatchMovies,
+        completed: completedMovies,
+      });
+
+      if (completedMovies.length > 0) {
+        setActiveSubTab('completed');
+      } else if (toWatchMovies.length > 0) {
+        setActiveSubTab('toWatch');
+      } else {
+        setActiveSubTab('completed');
+      }
+    } catch (err: any) {
+      console.error('Failed to load movies for user:', err);
+      setError(err?.message || 'Failed to load movies');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, bookmarkedToWatch, bookmarkedWatched, fetchMoviesForIds]);
+
+  // Re-sync whenever userId or bookmark arrays change
+  useEffect(() => {
+    syncMovies();
+  }, [syncMovies]);
+
+  const emptyMessage = useMemo(() => {
+    if (!userId) return 'Sign in to see your movies.';
+    if (activeSubTab === 'toWatch') return 'No watchlist movies yet.';
+    return 'No movies found for this user.';
+  }, [activeSubTab, userId]);
+
+  const renderMovie = ({ item }: { item: MovieListItem }) => (
+    <View style={tw`w-1/3 p-1`}>
+      {item.poster ? (
+        <Image
+          source={{ uri: item.poster }}
+          style={[
+            tw`w-full rounded-md`,
+            { aspectRatio: 2 / 3 }, // classic poster ratio
+          ]}
+          resizeMode="cover"
+        />
+      ) : (
+        <View
+          style={[
+            tw`w-full rounded-md items-center justify-center bg-gray-200`,
+            { aspectRatio: 2 / 3 },
+          ]}
+        >
+          <Ionicons name="film-outline" size={22} color="#555" />
+        </View>
+      )}
+    </View>
+  );
+
   return (
-    <View style={{ marginBottom: 16 }}>
-      <FlatList
-        data={posters}
-        keyExtractor={(uri, idx) => uri + idx}
-        numColumns={3}
-        scrollEnabled={false}
-        columnWrapperStyle={{ gap: 8 }}
-        renderItem={({ item }) => (
-          <Image
-            source={{ uri: item }}
-            style={{
-              width: (Dimensions.get('window').width - 16 * 2 - 8 * 2) / 3, // padding & gaps
-              height: 160,
-              borderRadius: 6,
-              marginBottom: 8,
-            }}
-          />
-        )}
-      />
+    <View>
+      {/* Sub-tabs */}
+      <View
+        style={[
+          tw`flex-row items-center mb-4`,
+          {
+            backgroundColor: '#FBEAE6',
+            borderRadius: 12,
+            padding: 4,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={[
+            tw`flex-1 items-center justify-center`,
+            {
+              paddingVertical: 8,
+              borderRadius: 8,
+              marginHorizontal: 2,
+              backgroundColor:
+                activeSubTab === 'toWatch' ? '#D62E05' : 'transparent',
+            },
+          ]}
+          onPress={() => setActiveSubTab('toWatch')}
+        >
+          <Text
+            style={[
+              tw`text-sm font-semibold`,
+              { color: activeSubTab === 'toWatch' ? '#FBEAE6' : '#D62E05' },
+            ]}
+          >
+            To Be Watched
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            tw`flex-1 items-center justify-center`,
+            {
+              paddingVertical: 8,
+              borderRadius: 8,
+              marginHorizontal: 2,
+              backgroundColor:
+                activeSubTab === 'completed' ? '#D62E05' : 'transparent',
+            },
+          ]}
+          onPress={() => setActiveSubTab('completed')}
+        >
+          <Text
+            style={[
+              tw`text-sm font-semibold`,
+              { color: activeSubTab === 'completed' ? '#FBEAE6' : '#D62E05' },
+            ]}
+          >
+            Completed
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <View style={tw`py-6 items-center`}>
+          <ActivityIndicator size="small" color="#D62E05" />
+          <Text style={tw`mt-2 text-gray-600`}>Loading movies…</Text>
+        </View>
+      ) : error ? (
+        <View style={tw`py-4`}>
+          <Text style={tw`text-red-600 mb-2`}>{error}</Text>
+          <TouchableOpacity
+            onPress={syncMovies}
+            style={tw`self-start px-3 py-2 rounded bg-black`}
+          >
+            <Text style={tw`text-white font-semibold`}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : movies.length === 0 ? (
+        <Text style={tw`text-gray-600 px-1 py-2`}>{emptyMessage}</Text>
+      ) : (
+        <FlatList
+          data={movies}
+          keyExtractor={item => item.id}
+          renderItem={renderMovie}
+          numColumns={3}
+          scrollEnabled={false}
+          removeClippedSubviews={false}
+          initialNumToRender={movies.length || 9}
+          maxToRenderPerBatch={movies.length || 9}
+          windowSize={Math.max(5, movies.length || 5)}
+          showsVerticalScrollIndicator={false}
+          columnWrapperStyle={tw`justify-start`}
+          ListFooterComponent={<View style={tw`h-2`} />}
+        />
+      )}
     </View>
   );
 };
+
+/* ===== Posts Tab ===== */
 
 const PostsList = ({ user }: { user: User }) => {
   const posts = [
@@ -304,6 +512,8 @@ const PostsList = ({ user }: { user: User }) => {
     </View>
   );
 };
+
+/* ===== Events & Badges stay unchanged ===== */
 
 const EventsList = () => {
   const events = [
@@ -417,7 +627,7 @@ const BadgesGrid = () => {
   );
 };
 
-/* ===== Helpers ===== */
+/* ===== Helpers & Styles (unchanged) ===== */
 
 function formatCount(n?: number) {
   if (n === undefined || n === null) return '—';
@@ -427,12 +637,8 @@ function formatCount(n?: number) {
 
 export default ProfilePage;
 
-/* ===== Styles ===== */
-
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#fff' },
-
-  // Light gray top band
   topBand: {
     position: 'absolute',
     top: 0,
@@ -440,37 +646,30 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: '#E9EBEF',
   },
-
   profileContainer: {
     paddingHorizontal: 20,
   },
-
-  // Avatar sits left and is bisected by band boundary via negative marginTop
   profileImage: {
     alignSelf: 'flex-start',
   },
-
-  // Typography hierarchy
   name: {
     marginTop: 12,
-    fontSize: 28, // biggest on page
+    fontSize: 28,
     fontWeight: '800',
     color: '#000',
   },
   username: {
     marginTop: 4,
-    fontSize: 20, // second biggest
-    color: '#9A9A9A', // light gray
+    fontSize: 20,
+    color: '#9A9A9A',
     fontWeight: '600',
   },
   bio: {
     marginTop: 10,
     color: '#555',
     lineHeight: 20,
-    paddingHorizontal: 6, // whitespace left/right
+    paddingHorizontal: 6,
   },
-
-  // Stats row
   statsRow: {
     marginTop: 14,
     flexDirection: 'row',
@@ -489,21 +688,20 @@ const styles = StyleSheet.create({
   statLabel: { fontWeight: '600' },
   whatsappLabel: { fontWeight: '600' },
 
-  // Square outline buttons (equal width & centered row)
   buttonRow: {
     marginTop: 12,
     flexDirection: 'row',
-    alignSelf: 'center', // center the whole row
-    width: '88%', // control total row width
-    gap: 12, // RN >=0.71 supports gap; otherwise use space-between
+    alignSelf: 'center',
+    width: '88%',
+    gap: 12,
   },
   buttonOutlineSquare: {
-    flex: 1, // equal widths
+    flex: 1,
     borderWidth: 1,
     borderColor: '#000',
     paddingVertical: 10,
     paddingHorizontal: 18,
-    borderRadius: 0, // square corners
+    borderRadius: 0,
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
@@ -513,8 +711,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-
-  // Tabs
   tabContainer: {
     marginTop: 18,
     flexDirection: 'row',
@@ -535,8 +731,6 @@ const styles = StyleSheet.create({
   },
   tabLabel: { fontSize: 12, marginTop: 2, color: '#333' },
   tabLabelActive: { fontWeight: '700', color: '#000' },
-
-  // Example posts (used in Posts tab)
   postContainer: {
     flexDirection: 'row',
     padding: 15,
@@ -554,8 +748,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '80%',
   },
-
-  // CTA (only for Posts)
   postCTA: {
     backgroundColor: '#000',
     padding: 12,
@@ -563,8 +755,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   postCTAText: { color: '#fff', textAlign: 'center', fontSize: 16 },
-
-  // Events chips
   chipBtn: {
     backgroundColor: '#000',
     paddingVertical: 8,
@@ -587,7 +777,6 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
-
   bottomBar: {
     position: 'absolute',
     left: 0,

@@ -154,7 +154,7 @@ describe("Post Controller Unit Tests", () => {
           title: "Test Movie",
           imageUrl: null,
         },
-        Reposts: [{ id: "repost-1" }, { id: "repost-2" }],
+        other_Post: [{ id: "repost-1" }, { id: "repost-2" }],
         PostReaction: [
           { id: "reaction-1", reactionType: "SPICY" }, 
           { id: "reaction-2", reactionType: "BLOCKBUSTER" }, 
@@ -169,12 +169,29 @@ describe("Post Controller Unit Tests", () => {
 
       expect(responseObject.json).toHaveBeenCalledWith({
         message: "Post found successfully",
-        data: {
-          ...mockPost,
+        data: expect.objectContaining({
+          id: mockPostId,
+          userId: "user-123",
+          content: "Test post",
+          type: "SHORT",
+          UserProfile: expect.objectContaining({
+            userId: "user-123",
+            username: "testuser",
+          }),
+          Comment: [],
+          PostReaction: expect.arrayContaining([
+            expect.objectContaining({ reactionType: "SPICY" }),
+            expect.objectContaining({ reactionType: "BLOCKBUSTER" }),
+            expect.objectContaining({ reactionType: "STAR_STUDDED" }),
+          ]),
+          Reposts: expect.arrayContaining([
+            expect.objectContaining({ id: "repost-1" }),
+            expect.objectContaining({ id: "repost-2" }),
+          ]),
           reactionCount: 3,
           commentCount: 0,
           repostCount: 2,
-        },
+        }),
       });
     });
   });

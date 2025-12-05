@@ -134,7 +134,7 @@ export const getPostById = async (req: Request, res: Response) => {
             },
           },
           PostReaction: true,
-          Reposts: {
+          other_Post: {
             include: {
               UserProfile: {
                 select: {
@@ -158,9 +158,10 @@ export const getPostById = async (req: Request, res: Response) => {
         message: "Post found successfully",
         data: {
           ...post,
+          Reposts: post.other_Post,
           reactionCount: post.PostReaction.length,
           commentCount: post.Comment.length,
-          repostCount: post.Reposts.length,
+          repostCount: post.other_Post.length,
         },
       });
     } catch (err) {
@@ -238,7 +239,7 @@ export const getPosts = async (req: Request, res: Response) => {
               id: true,
             },
           },
-          Reposts: {
+          other_Post: {
             select: {
               id: true,
             },
@@ -260,11 +261,12 @@ export const getPosts = async (req: Request, res: Response) => {
 
         return {
           ...post,
+          Reposts: post.other_Post,
           reactionCount: post.PostReaction.length,
           reactionCounts,
           userReactions: userReactionsByPost.get(post.id) || [],
           commentCount: post.Comment.length,
-          repostCount: post.Reposts.length,
+          repostCount: post.other_Post.length,
         };
       });
   
@@ -521,7 +523,7 @@ export const getPostReposts = async (req: Request, res: Response) => {
             },
           },
           PostReaction: true,
-          Reposts: {
+          other_Post: {
             select: {
               id: true,
             },
@@ -534,8 +536,9 @@ export const getPostReposts = async (req: Request, res: Response) => {
   
       const repostsWithCounts = reposts.map((repost) => ({
         ...repost,
+        Reposts: repost.other_Post,
         reactionCount: repost.PostReaction?.length || 0,
-        repostCount: repost.Reposts.length,
+        repostCount: repost.other_Post.length,
       }));
   
       res.json({

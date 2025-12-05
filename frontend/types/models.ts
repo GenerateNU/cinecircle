@@ -10,6 +10,8 @@ export type User = {
   followers?: number;
   following?: number;
   profilePic?: string;
+  bookmarkedToWatch?: string[];
+  bookmarkedWatched?: string[];
 };
 
 export type Props = {

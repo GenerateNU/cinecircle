@@ -6,7 +6,7 @@ import {
   getMovieById,
   updateMovie,
 } from "../controllers/tmdb";
-import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
+import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserProfileById, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent, getLocalEvents } from "../controllers/local-events"
@@ -45,6 +45,7 @@ router.get('/api/protected', protect);
   
 // User Profile Routes
 router.get('/api/user/profile', getUserProfile);
+router.get('/api/user/profile/:userId', getUserProfileById);
 router.put("/api/user/profile", updateUserProfile);
 router.delete("/api/user/profile", deleteUserProfile);
 

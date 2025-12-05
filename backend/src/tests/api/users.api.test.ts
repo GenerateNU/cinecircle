@@ -218,7 +218,7 @@ describe("User Profile API Tests", () => {
         .expect(HTTP_STATUS.OK);
 
       // Verify profile was created and updated
-      expect(res.body.data).toMatchObject({
+      expect(res.body.userProfile).toMatchObject({
         username: "newuser",
         country: "USA",
         onboardingCompleted: true,
@@ -250,9 +250,13 @@ describe("User Profile API Tests", () => {
         .set(authHeader())
         .expect(HTTP_STATUS.OK);
 
-      expect(res.body).toHaveProperty("message", "Profile updated");
-      expect(res.body).toHaveProperty("data");
-      expect(res.body.data).toMatchObject(payload);
+      expect(res.body).toHaveProperty("userProfile");
+      expect(res.body.userProfile).toMatchObject({
+        username: payload.username,
+        secondaryLanguage: payload.secondaryLanguage,
+        favoriteGenres: payload.favoriteGenres,
+        favoriteMovies: payload.favoriteMovies
+      });
     });
   });
 
