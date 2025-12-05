@@ -34,7 +34,7 @@ export const createPost = async (req: Request, res: Response) => {
         data: {
           userId,
           content,
-          type: type || "SHORT_POST",
+          type: type || "SHORT",
           imageUrls: imageUrls || [],
           parentPostId,
         },

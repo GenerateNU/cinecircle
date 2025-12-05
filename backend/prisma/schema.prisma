@@ -618,8 +618,8 @@ enum one_time_token_type {
 }
 
 enum PostType {
-  SHORT_POST
-  LONG_POST
+  SHORT
+  LONG
 
   @@schema("public")
 }
