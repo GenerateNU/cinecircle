@@ -13,14 +13,12 @@ import ShortPostForm from '../components/ShortPostForm';
 import CreatePostBar from '../components/CreatePostBar';
 import { useAuth } from '../context/AuthContext';
 import { createPost } from '../services/postService';
+import type { components } from '../types/api-generated';
 
-export type PostFormData = {
-  content: string;
-  rating?: number;
-  title?: string;
-  subtitle?: string;
-  tags?: string[];
-};
+type PostFormData = components['schemas']['PostFormData'];
+type LongPostFormData = components['schemas']['LongPostFormData'];
+type ShortPostFormData = components['schemas']['ShortPostFormData'];
+type Post = components['schemas']['Post'];
 
 export default function PostScreen({
   initialType,
@@ -35,11 +33,32 @@ export default function PostScreen({
   const shortFormRef = useRef<any>(null);
   const { user } = useAuth();
 
-  const handleFormSubmit = async (formData: PostFormData) => {
-    const payload = {
-      ...formData,
-      userId: user?.id,
-      postType: postType === 'long' ? 'LONG' : 'SHORT',
+  const handleLongFormSubmit = async (formData: LongPostFormData) => {
+    const payload: PostFormData = {
+      movieId: formData.movieId,
+      content: formData.content,
+      type: 'LONG',
+      stars: formData.rating || null,
+      spoiler: formData.spoiler || false,
+      tags: formData.tags || [],
+      imageUrls: formData.imageUrls || [],
+      repostedPostId: null,
+    };
+
+    await createPost(payload);
+    router.back();
+  };
+
+  const handleShortFormSubmit = async (formData: ShortPostFormData) => {
+    const payload: PostFormData = {
+      movieId: formData.movieId,
+      content: formData.content,
+      type: 'SHORT',
+      stars: null,
+      spoiler: formData.spoiler || false,
+      tags: [],
+      imageUrls: formData.imageUrls || [],
+      repostedPostId: null,
     };
 
     await createPost(payload);
@@ -78,13 +97,13 @@ export default function PostScreen({
             <LongPostForm
               preselectedMovie={preselectedMovie}
               onToolbarAction={handleToolbarAction}
-              onSubmit={handleFormSubmit}
+              onSubmit={handleLongFormSubmit}
             />
           ) : (
             <ShortPostForm
               preselectedMovie={preselectedMovie}
               onToolbarAction={handleToolbarAction}
-              onSubmit={handleFormSubmit}
+              onSubmit={handleShortFormSubmit}
             />
           )}
         </ScrollView>

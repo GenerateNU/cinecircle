@@ -193,6 +193,35 @@ export type GetMovieSummaryEnvelope = {
   summary: MovieSummary;
 };
 
+export type PostFormData = {
+  movieId: string;
+  content: string;
+  type: 'SHORT' | 'LONG';
+  stars?: number | null;
+  spoiler?: boolean;
+  tags?: string[];
+  imageUrls?: string[];
+  repostedPostId?: string | null;
+};
+
+export type LongPostFormData = {
+  movieId: string;
+  content: string;
+  rating?: number;
+  title?: string;
+  subtitle?: string;
+  tags?: string[];
+  spoiler?: boolean;
+  imageUrls?: string[];
+};
+
+export type ShortPostFormData = {
+  movieId: string;
+  content: string;
+  spoiler?: boolean;
+  imageUrls?: string[];
+};
+
 // For chunk-level aggregation
 export type ChunkSummary = {
   pros: string[];
