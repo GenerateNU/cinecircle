@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import tw from 'twrnc';
 import UpcomingEventCard from '../../events/components/UpcomingEventCard';
 import type { LocalEvent } from '../../../services/eventsService';
@@ -20,6 +21,7 @@ type Props = {
 const EMPTY_IDS: string[] = [];
 
 const EventsList = ({ userId, eventsSaved, eventsAttended }: Props) => {
+  const router = useRouter();
   // Normalize to stable references to avoid re-running effects on every render
   const savedIds = useMemo(() => eventsSaved ?? EMPTY_IDS, [eventsSaved]);
   const attendedIds = useMemo(() => eventsAttended ?? EMPTY_IDS, [eventsAttended]);
@@ -158,7 +160,11 @@ const EventsList = ({ userId, eventsSaved, eventsAttended }: Props) => {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={tw`mb-3`}>
-              <UpcomingEventCard event={item} size="small" />
+              <UpcomingEventCard 
+                event={item} 
+                size="small" 
+                onPress={() => router.push(`/events/eventDetail?eventId=${item.id}`)}
+              />
             </View>
           )}
           ListFooterComponent={<View style={tw`h-2`} />}
