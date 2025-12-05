@@ -500,10 +500,14 @@ model UserProfile {
   profilePicture                                 String?
   country                                        String?
   city                                           String?
+  displayName                                    String?
   favoriteGenres                                 String[]       @default([])
   favoriteMovies                                 String[]       @default([])
   privateAccount                                 Boolean        @default(false)
   spoiler                                        Boolean        @default(false)
+  bio                                            String?        @db.Text
+  moviesToWatch                                  String[]       @default([])
+  moviesCompleted                                String[]       @default([])
   createdAt                                      DateTime       @default(now())
   updatedAt                                      DateTime       @updatedAt
   Comment                                        Comment[]

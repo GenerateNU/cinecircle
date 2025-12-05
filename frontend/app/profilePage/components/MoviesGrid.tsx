@@ -20,9 +20,11 @@ type MovieListItem = {
 
 type Props = {
   userId?: string | null;
+  moviesToWatch?: string[] | null;
+  moviesCompleted?: string[] | null;
 };
 
-const MoviesGrid = ({ userId }: Props) => {
+const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
   const [activeSubTab, setActiveSubTab] = useState<'toWatch' | 'completed'>('completed');
   const [moviesByStatus, setMoviesByStatus] = useState<Record<'toWatch' | 'completed', MovieListItem[]>>({
     toWatch: [],
@@ -33,58 +35,54 @@ const MoviesGrid = ({ userId }: Props) => {
 
   const movies = moviesByStatus[activeSubTab];
   const showBookmark = activeSubTab === 'toWatch';
-  const isValidUuid = (val: string | null | undefined) =>
-    !!val &&
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
-      val
+  const hydrateList = useCallback(async (ids: string[]): Promise<MovieListItem[]> => {
+    const validIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
+    if (!validIds.length) return [];
+
+    const results = await Promise.all(
+      validIds.map(async (id) => {
+        try {
+          const envelope = await getMovieByCinecircleId(id);
+          const movie = (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
+          return {
+            id,
+            title: movie?.title || `Movie ${id}`,
+            poster: movie?.imageUrl ?? null,
+          } as MovieListItem;
+        } catch (err) {
+          console.error('Failed to fetch movie detail:', err);
+          return {
+            id,
+            title: `Movie ${id}`,
+            poster: null,
+          } as MovieListItem;
+        }
+      })
     );
 
-  const fetchMoviesForUser = useCallback(async () => {
-    if (!userId || !isValidUuid(userId)) {
-      setMoviesByStatus({ toWatch: [], completed: [] });
-      setLoading(false);
-      setError(null);
-      return;
-    }
+    return results.filter(
+      (movie, index, self) => self.findIndex((m) => m.id === movie.id) === index
+    );
+  }, []);
+
+  const hydrateFromProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const ratingsRes = await getUserRatings(userId);
-      const ratings = ratingsRes?.ratings ?? [];
-
-      const movieDetails = await Promise.all(
-        ratings.map(async (rating) => {
-          try {
-            const envelope = await getMovieByCinecircleId(rating.movieId);
-            const movie = (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
-
-            return {
-              id: rating.movieId,
-              title: movie?.title || `Movie ${rating.movieId}`,
-              poster: movie?.imageUrl ?? null,
-            } as MovieListItem;
-          } catch (err) {
-            console.error('Failed to fetch movie detail:', err);
-            return {
-              id: rating.movieId,
-              title: `Movie ${rating.movieId}`,
-              poster: null,
-            } as MovieListItem;
-          }
-        })
-      );
-
-      const deduped = movieDetails.filter(
-        (movie, index, self) => self.findIndex((m) => m.id === movie.id) === index
-      );
+      const [toWatchList, completedList] = await Promise.all([
+        hydrateList(moviesToWatch ?? []),
+        hydrateList(moviesCompleted ?? []),
+      ]);
 
       setMoviesByStatus({
-        toWatch: [],
-        completed: deduped,
+        toWatch: toWatchList,
+        completed: completedList,
       });
 
-      if (deduped.length > 0) {
+      if (toWatchList.length > 0) {
+        setActiveSubTab('toWatch');
+      } else if (completedList.length > 0) {
         setActiveSubTab('completed');
       }
     } catch (err: any) {
@@ -93,17 +91,16 @@ const MoviesGrid = ({ userId }: Props) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [hydrateList, moviesCompleted, moviesToWatch]);
 
   useEffect(() => {
-    fetchMoviesForUser();
-  }, [fetchMoviesForUser]);
+    hydrateFromProfile();
+  }, [hydrateFromProfile]);
 
   const emptyMessage = useMemo(() => {
-    if (!userId) return 'Sign in to see your movies.';
     if (activeSubTab === 'toWatch') return 'No watchlist movies yet.';
-    return 'No movies found for this user.';
-  }, [activeSubTab, userId]);
+    return 'No completed movies yet.';
+  }, [activeSubTab]);
 
   const renderMovie = ({ item }: { item: MovieListItem }) => (
     <View style={tw`flex-row items-center py-3 border-b border-gray-100`}>

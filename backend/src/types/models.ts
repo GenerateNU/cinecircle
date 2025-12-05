@@ -26,8 +26,12 @@ export type UserProfile = {
   profilePicture: string | null;
   country: string | null;
   city: string | null;
+  displayName?: string | null;
   favoriteGenres: string[];
   favoriteMovies: string[];
+  bio?: string | null;
+  moviesToWatch: string[];
+  moviesCompleted: string[];
   privateAccount: boolean;
   spoiler: boolean;
   createdAt: Date;
@@ -43,11 +47,6 @@ export type Rating = {
   tags: string[];
   date: string;
   votes: number;
-  UserProfile?: {
-    userId: string;
-    username: string | null;
-  };
-  threadedComments?: unknown[];
 };
 
 export type Comment = {
@@ -231,4 +230,3 @@ export type ChunkSummary = {
   stats: SentimentStats;
   quotes: string[];
 };
-

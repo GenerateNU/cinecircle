@@ -25,7 +25,10 @@ import { getFollowers, getFollowing } from '../../services/followService';
 import type { components } from '../../types/api-generated';
 import { getUserProfile } from '../../services/userService';
 
-type UserProfile = components['schemas']['UserProfile'];
+type UserProfile = components['schemas']['UserProfile'] & {
+  moviesToWatch?: string[];
+  moviesCompleted?: string[];
+};
 
 type Props = {
   user?: User;
@@ -132,43 +135,45 @@ const ProfilePage = ({
     };
   }, [fetchProfileData, isMe]);
 
-  const resolvedUsername = isMe
-    ? profile?.username && profile.username.trim().length > 0
-      ? profile.username
-      : 'user'
-    : userProp?.username && userProp.username.trim().length > 0
-      ? userProp.username
-      : 'user';
+  const resolvedDisplayName = isMe
+    ? profile?.displayName?.trim() ||
+      profile?.username?.trim() ||
+      'user'
+    : userProp?.name?.trim() ||
+      userProp?.username?.trim() ||
+      'user';
 
   const derivedBio = isMe
-    ? profile?.favoriteMovies?.[0]?.trim() || 'No Bio'
+    ? profile?.bio?.trim() ||
+      profile?.favoriteMovies?.[0]?.trim() ||
+      'No Bio'
     : userProp?.bio || 'No Bio';
 
   const displayUser: User = isMe && profile
     ? {
-        name: resolvedUsername || 'User',
-        username: resolvedUsername || 'user',
+        name: resolvedDisplayName || 'User',
+        username: profile.username || 'user',
         bio: derivedBio,
         followers: followersCount,
         following: followingCount,
         profilePic:
           profile.profilePicture ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            resolvedUsername || 'User'
+            resolvedDisplayName || 'User'
           )}&size=200&background=667eea&color=fff`,
       }
     : userProp
     ? {
         ...userProp,
-        name: userProp.name || resolvedUsername || 'User',
-        username: resolvedUsername || 'user',
+        name: userProp.name || resolvedDisplayName || 'User',
+        username: userProp.username || resolvedDisplayName || 'user',
         bio: derivedBio,
         followers: userProp.followers ?? 0,
         following: userProp.following ?? 0,
         profilePic:
           userProp.profilePic ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            resolvedUsername || 'User'
+            resolvedDisplayName || 'User'
           )}&size=200&background=667eea&color=fff`,
       }
     : {
@@ -437,11 +442,6 @@ const ProfilePage = ({
 
         </View>
 
-        {/* Activity header */}
-        <View style={tw`px-5 mt-6`}>
-          <SectionHeader title="Your Activity" size="small" />
-        </View>
-
         {/* Tabs row */}
           <View
             style={tw`mt-[18px] flex-row justify-around border-y border-[#ddd] py-[10px]`}
@@ -541,7 +541,13 @@ const ProfilePage = ({
 
         {/* Tab-specific content */}
         <View style={tw`px-4 pt-3`}>
-          {activeTab === 'movies' && <MoviesGrid userId={targetUserId ?? null} />}
+          {activeTab === 'movies' && (
+            <MoviesGrid
+              userId={targetUserId ?? null}
+              moviesToWatch={profile?.moviesToWatch}
+              moviesCompleted={profile?.moviesCompleted}
+            />
+          )}
           {activeTab === 'posts' && <PostsList user={u} userId={targetUserId ?? null} />}
           {activeTab === 'events' && <EventsList userId={targetUserId ?? null} />}
           {activeTab === 'badges' && <BadgesGrid />}
