@@ -20,7 +20,6 @@ import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
 export default function Settings() {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
   const [photoUri, setPhotoUri] = useState('https://i.pravatar.cc/150?img=3');
   const [hasCustomPhoto, setHasCustomPhoto] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -244,21 +243,6 @@ export default function Settings() {
                 textAlignVertical="top"
                 style={[
                   tw`rounded-[6px] px-3 py-2 h-28`,
-                  { borderWidth: 1, borderColor: '#D62E05' },
-                ]}
-              />
-            </View>
-
-            {/* WhatsApp Section */}
-            <View style={tw`w-[92%] self-center rounded-[8px] p-4 mb-5`}>
-              <Text style={[tw`text-base font-semibold mb-2`, { color: '#D62E05' }]}>WhatsApp Number</Text>
-              <TextInput
-                value={whatsapp}
-                onChangeText={setWhatsapp}
-                keyboardType="phone-pad"
-                placeholder="+1 (___) ___-____"
-                style={[
-                  tw`rounded-[6px] px-3 py-2`,
                   { borderWidth: 1, borderColor: '#D62E05' },
                 ]}
               />
