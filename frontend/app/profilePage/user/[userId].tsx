@@ -3,9 +3,10 @@ import { useLocalSearchParams } from 'expo-router';
 import { DeviceEventEmitter } from 'react-native';
 import ProfilePage from '../index';
 import { followUser, unfollowUser, getFollowers, getFollowing } from '../../../lib/profilePage/followServiceProxy';
-import { getUserProfile } from '../../../services/userService';
+import { getUserProfile, getUserProfileById } from '../../../services/userService';
 import { searchUsers } from '../../../services/searchService';
 import type { User } from '../../../lib/profilePage/_types';
+import type { components } from '../../../types/api-generated';
 
 /**
  * Standalone profile screen for viewing another user's page.
@@ -28,6 +29,7 @@ export default function OtherUserProfile() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const initialUserId = params.userId ?? 'demo-user';
   const [resolvedUserId, setResolvedUserId] = useState(initialUserId);
+  const [profileData, setProfileData] = useState<components['schemas']['UserProfile'] | null>(null);
   const isValidUuid = (val: string | null | undefined) =>
     !!val &&
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
@@ -39,10 +41,6 @@ export default function OtherUserProfile() {
 
   useEffect(() => {
     const maybeResolve = async () => {
-      if (isValidUuid(initialUserId)) {
-        setResolvedUserId(initialUserId);
-        return;
-      }
       const query = params.username || params.userId || params.name;
       if (!query) return;
       try {
@@ -51,8 +49,34 @@ export default function OtherUserProfile() {
         const match =
           results.find((u) => (u.username || '').toLowerCase() === normalized) ||
           results[0];
-        if (match?.userId && isValidUuid(match.userId)) {
-          setResolvedUserId(match.userId);
+        if (match?.userId) {
+          if (isValidUuid(match.userId)) {
+            setResolvedUserId(match.userId);
+          }
+          // Capture profile data (events, favorites, etc.) when available
+          const safeProfile: components['schemas']['UserProfile'] = {
+            userId: match.userId,
+            username: match.username ?? null,
+            onboardingCompleted: Boolean(match.onboardingCompleted),
+            primaryLanguage: match.primaryLanguage ?? 'English',
+            secondaryLanguage: match.secondaryLanguage ?? [],
+            profilePicture: match.profilePicture ?? null,
+            country: match.country ?? null,
+            city: match.city ?? null,
+            displayName: match.displayName ?? match.username ?? null,
+            favoriteGenres: match.favoriteGenres ?? [],
+            favoriteMovies: match.favoriteMovies ?? [],
+            bio: match.bio ?? null,
+            moviesToWatch: match.moviesToWatch ?? [],
+            moviesCompleted: match.moviesCompleted ?? [],
+            eventsSaved: match.eventsSaved ?? [],
+            eventsAttended: match.eventsAttended ?? [],
+            privateAccount: Boolean(match.privateAccount),
+            spoiler: Boolean(match.spoiler),
+            createdAt: match.createdAt ?? new Date().toISOString(),
+            updatedAt: match.updatedAt ?? new Date().toISOString(),
+          };
+          setProfileData(safeProfile);
         }
       } catch (err) {
         console.error('Failed to resolve userId from username search:', err);
@@ -60,6 +84,22 @@ export default function OtherUserProfile() {
     };
     maybeResolve();
   }, [initialUserId, params.name, params.userId, params.username]);
+
+  // Once we know the userId, fetch the full profile (including events) directly
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!isValidUuid(resolvedUserId)) return;
+      try {
+        const res = await getUserProfileById(resolvedUserId);
+        if (res?.userProfile) {
+          setProfileData(res.userProfile as components['schemas']['UserProfile']);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile by id:', err);
+      }
+    };
+    fetchProfile();
+  }, [resolvedUserId]);
 
   const loadCounts = useCallback(async () => {
     if (!isValidUuid(resolvedUserId)) {
@@ -153,6 +193,7 @@ export default function OtherUserProfile() {
       onFollow={isValidUuid(resolvedUserId) ? handleFollow : undefined}
       onUnfollow={isValidUuid(resolvedUserId) ? handleUnfollow : undefined}
       profileUserId={resolvedUserId}
+      profileData={profileData}
     />
   );
 }

@@ -238,6 +238,63 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
+// Public profile lookup by userId (used when viewing another user's profile)
+export const getUserProfileById = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!userProfile) {
+      return res.status(404).json({ message: "User profile not found" });
+    }
+
+    const mappedUserProfile = mapUserProfileDbToApi({
+      userId: userProfile.userId,
+      username: userProfile.username,
+      onboardingCompleted: userProfile.onboardingCompleted,
+      primaryLanguage: userProfile.primaryLanguage,
+      secondaryLanguage: Array.isArray(userProfile.secondaryLanguage)
+        ? (userProfile.secondaryLanguage as string[])
+        : [],
+      profilePicture: userProfile.profilePicture,
+      country: userProfile.country,
+      city: userProfile.city,
+      displayName: userProfile.displayName,
+      favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+        ? (userProfile.favoriteGenres as string[])
+        : [],
+      favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+        ? (userProfile.favoriteMovies as string[])
+        : [],
+      bio: userProfile.bio ?? null,
+      eventsSaved: Array.isArray(userProfile.eventsSaved)
+        ? (userProfile.eventsSaved as string[])
+        : [],
+      eventsAttended: Array.isArray(userProfile.eventsAttended)
+        ? (userProfile.eventsAttended as string[])
+        : [],
+      privateAccount: Boolean(userProfile.privateAccount),
+      spoiler: Boolean(userProfile.spoiler),
+      createdAt: userProfile.createdAt,
+      updatedAt: userProfile.updatedAt,
+    });
+
+    return res.json({
+      message: "User profile retrieved successfully",
+      userProfile: mappedUserProfile,
+    });
+  } catch (error) {
+    console.error("getUserProfileById error:", error);
+    return res.status(500).json({ message: "Failed to retrieve user profile" });
+  }
+};
+
 export const getUserRatings = async (req: Request, res: Response): Promise<void> => {
   const { user_id } = req.query;
 

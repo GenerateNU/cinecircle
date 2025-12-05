@@ -17,9 +17,12 @@ type Props = {
   eventsAttended?: string[] | null;
 };
 
-const EventsList = ({ userId, eventsSaved = [], eventsAttended = [] }: Props) => {
-  const savedIds = useMemo(() => eventsSaved ?? [], [eventsSaved]);
-  const attendedIds = useMemo(() => eventsAttended ?? [], [eventsAttended]);
+const EMPTY_IDS: string[] = [];
+
+const EventsList = ({ userId, eventsSaved, eventsAttended }: Props) => {
+  // Normalize to stable references to avoid re-running effects on every render
+  const savedIds = useMemo(() => eventsSaved ?? EMPTY_IDS, [eventsSaved]);
+  const attendedIds = useMemo(() => eventsAttended ?? EMPTY_IDS, [eventsAttended]);
   const [activeSubTab, setActiveSubTab] = useState<'saved' | 'attended'>(
     'saved'
   );

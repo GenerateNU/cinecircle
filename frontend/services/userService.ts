@@ -42,6 +42,10 @@ export function getUserProfile() {
   return api.get<GetUserProfileResponse>(`/api/user/profile`);
 }
 
+export function getUserProfileById(userId: string) {
+  return api.get<GetUserProfileResponse>(`/api/user/profile/${userId}`);
+}
+
 export async function getUserProfileBasic() {
   const res = await getUserProfile();
   const profile = res.userProfile;

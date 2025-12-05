@@ -39,6 +39,7 @@ type Props = {
   onUnfollow?: () => Promise<void> | void;
   isFollowing?: boolean;
   profileUserId?: string;
+  profileData?: UserProfile | null;
 };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -60,9 +61,10 @@ const ProfilePage = ({
   onUnfollow,
   isFollowing = false,
   profileUserId,
+  profileData = null,
 }: Props) => {
   const [activeTab, setActiveTab] = useState<TabKey>('movies');
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(profileData);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(isMe);
@@ -136,6 +138,12 @@ const ProfilePage = ({
       sub.remove();
     };
   }, [fetchProfileData, isMe]);
+
+  useEffect(() => {
+    if (profileData) {
+      setProfile(profileData);
+    }
+  }, [profileData]);
 
   const resolvedDisplayName = isMe
     ? profile?.displayName?.trim() ||
