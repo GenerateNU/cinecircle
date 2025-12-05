@@ -30,6 +30,7 @@ export default function OtherUserProfile() {
   const initialUserId = params.userId ?? 'demo-user';
   const [resolvedUserId, setResolvedUserId] = useState(initialUserId);
   const [profileData, setProfileData] = useState<components['schemas']['UserProfile'] | null>(null);
+  
   const isValidUuid = (val: string | null | undefined) =>
     !!val &&
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
@@ -56,7 +57,8 @@ export default function OtherUserProfile() {
         }
 
         // If no user found by ID or not a valid UUID, try searching by username
-        const results = await searchUsers(String(query), 5);
+        const searchResponse = await searchUsers(String(query));
+        const results = searchResponse.results || [];
         const normalized = String(query).toLowerCase();
         const match = results.find((u) => 
           (u.username || '').toLowerCase() === normalized || 
@@ -81,10 +83,10 @@ export default function OtherUserProfile() {
               profilePicture: match.profilePicture || null,
               country: null,
               city: null,
-              displayName: match.displayName || match.username || null,
-              favoriteGenres: [],
+              displayName: match.username || null,
+              favoriteGenres: match.favoriteGenres || [],
               favoriteMovies: [],
-              bio: match.bio || null,
+              bio: null,
               eventsSaved: [],
               eventsAttended: [],
               privateAccount: false,
@@ -158,12 +160,11 @@ export default function OtherUserProfile() {
         console.error('Failed to determine current user:', err);
       }
     };
-    fetchCurrentUser(); // ensures we know whether the visitor already follows this profile
+    fetchCurrentUser();
   }, []);
 
   const displayUser: User = useMemo(() => {
-    const username =
-      usernameFromParams || 'user';
+    const username = usernameFromParams || 'user';
     const name = params.name || username;
     return {
       name,
