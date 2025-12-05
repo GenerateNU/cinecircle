@@ -21,7 +21,6 @@ import PicturePost from '../components/PicturePost';
 import ReviewPost from '../components/ReviewPost';
 import InteractionBar from '../components/InteractionBar';
 import UserBar from '../components/UserBar';
-import SpoilerButton from '../components/SpoilerButton';
 
 import type { components } from '../types/api-generated';
 
