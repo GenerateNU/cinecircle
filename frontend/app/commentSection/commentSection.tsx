@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { api } from '../../services/apiClient';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +12,18 @@ import { commentSectionStyles } from './styles/CommentSection.styles';
 interface CommentSectionProps {
     targetType: 'post' | 'rating';
     targetId: string;
+    /** When true, renders CommentInput at the bottom. When false, parent handles input rendering. */
+    renderInput?: boolean;
+    /** Called with input props when renderInput is false, so parent can render input elsewhere */
+    onInputPropsReady?: (inputProps: CommentInputRenderProps) => void;
+}
+
+export interface CommentInputRenderProps {
+    onSubmit: (content: string) => Promise<void>;
+    replyingTo: string | null;
+    onCancelReply: () => void;
+    userProfilePicture?: string | null;
+    username?: string | null;
 }
 
 interface GetCommentsResponse {
@@ -27,7 +39,7 @@ interface CreateCommentResponse {
 const MAX_INITIAL_THREADS = 4;
 const THREAD_INCREMENT = 8;
 
-const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
+const CommentSection = ({ targetType, targetId, renderInput = true, onInputPropsReady }: CommentSectionProps) => {
     const { profile } = useAuth();
     const [comments, setComments] = useState<ApiComment[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -107,38 +119,68 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
         setReplyTarget(null);
     }, []);
 
+    // Provide input props to parent when not rendering input internally
+    const inputProps: CommentInputRenderProps = useMemo(() => ({
+        onSubmit: handleSubmitComment,
+        replyingTo: replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null),
+        onCancelReply: handleCancelReply,
+        userProfilePicture: profile?.profilePicture,
+        username: profile?.username,
+    }), [handleSubmitComment, replyTarget, handleCancelReply, profile?.profilePicture, profile?.username]);
+
+    // Notify parent of input props when they change - this runs before any early returns
+    // so the input is always available even during loading
+    useEffect(() => {
+        if (!renderInput && onInputPropsReady) {
+            onInputPropsReady(inputProps);
+        }
+    }, [renderInput, onInputPropsReady, inputProps]);
+
     if (loading) {
         return (
-            <View style={commentSectionStyles.loadingContainer}>
-                <Text style={commentSectionStyles.loadingText}>Loading comments…</Text>
-            </View>
+            <>
+                <View style={commentSectionStyles.loadingContainer}>
+                    <Text style={commentSectionStyles.loadingText}>Loading comments…</Text>
+                </View>
+                {renderInput && (
+                    <CommentInput
+                        onSubmit={handleSubmitComment}
+                        replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
+                        onCancelReply={handleCancelReply}
+                        userProfilePicture={profile?.profilePicture}
+                        username={profile?.username}
+                    />
+                )}
+            </>
         );
     }
 
     if (error) {
         return (
-            <View style={commentSectionStyles.errorContainer}>
-                <Text style={commentSectionStyles.errorText}>{error}</Text>
-            </View>
+            <>
+                <View style={commentSectionStyles.errorContainer}>
+                    <Text style={commentSectionStyles.errorText}>{error}</Text>
+                </View>
+                {renderInput && (
+                    <CommentInput
+                        onSubmit={handleSubmitComment}
+                        replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
+                        onCancelReply={handleCancelReply}
+                        userProfilePicture={profile?.profilePicture}
+                        username={profile?.username}
+                    />
+                )}
+            </>
         );
     }
 
     return (
-        <KeyboardAvoidingView
-            style={commentSectionStyles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
+        <View style={commentSectionStyles.container}>
             <Text style={commentSectionStyles.header}>
                 {comments.length} Comments
             </Text>
 
-            <ScrollView
-                style={commentSectionStyles.scrollView}
-                contentContainerStyle={commentSectionStyles.threadContainer}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-            >
+            <View style={commentSectionStyles.threadContainer}>
                 {visibleThreads.map((node) => (
                     <CommentThread
                         key={node.id}
@@ -162,9 +204,9 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
                         </Text>
                     </TouchableOpacity>
                 )}
-            </ScrollView>
+            </View>
 
-            <View style={commentSectionStyles.inputContainer}>
+            {renderInput && (
                 <CommentInput
                     onSubmit={handleSubmitComment}
                     replyingTo={replyTarget?.UserProfile?.username ?? (replyTarget ? 'Anonymous' : null)}
@@ -172,9 +214,10 @@ const CommentSection = ({ targetType, targetId }: CommentSectionProps) => {
                     userProfilePicture={profile?.profilePicture}
                     username={profile?.username}
                 />
-            </View>
-        </KeyboardAvoidingView>
+            )}
+        </View>
     );
 };
 
 export default CommentSection;
+export { CommentInput };

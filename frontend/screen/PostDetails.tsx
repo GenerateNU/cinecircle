@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -18,7 +20,7 @@ import { togglePostReaction } from '../services/feedService';
 import TextPost from '../components/TextPost';
 import PicturePost from '../components/PicturePost';
 import InteractionBar from '../components/InteractionBar';
-import CommentSection from '../app/commentSection/commentSection';
+import CommentSection, { CommentInput, type CommentInputRenderProps } from '../app/commentSection/commentSection';
 import type { components } from '../types/api-generated';
 
 type Post = components['schemas']['Post'];
@@ -39,6 +41,7 @@ export default function PostDetails({ postId }: PostDetailsProps) {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [commentInputProps, setCommentInputProps] = useState<CommentInputRenderProps | null>(null);
 
   const loadPost = useCallback(async () => {
     if (!postId) return;
@@ -200,58 +203,83 @@ export default function PostDetails({ postId }: PostDetailsProps) {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
-      {/* Header with back button */}
-      <View style={tw`flex-row items-center px-4 py-3 border-b border-gray-200`}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={tw`mr-4`}
-        >
-          <Feather name="arrow-left" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={tw`text-lg font-semibold`}>Post Details</Text>
-      </View>
-
-      <ScrollView
+      <KeyboardAvoidingView
         style={tw`flex-1`}
-        contentContainerStyle={tw`pb-6`}
-        showsVerticalScrollIndicator={false}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        <View style={tw`px-4 pt-4`}>
-          {/* Post Content */}
-          {hasImages ? (
-            <PicturePost
-              userName={userName}
-              username={username}
-              date={formatDate(post.createdAt)}
-              content={post.content}
-              imageUrls={post.imageUrls || []}
-              userId={post.userId}
-            />
-          ) : (
-            <TextPost
-              userName={userName}
-              username={username}
-              date={formatDate(post.createdAt)}
-              content={post.content}
-              userId={post.userId}
-            />
-          )}
+        {/* Header with back button */}
+        <View style={tw`flex-row items-center px-4 py-3 border-b border-gray-200`}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={tw`mr-4`}
+          >
+            <Feather name="arrow-left" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={tw`text-lg font-semibold`}>Post Details</Text>
+        </View>
 
-          {/* Interaction Bar */}
-          <View style={styles.interactionWrapper}>
-            <InteractionBar
-              initialComments={post.commentCount || 0}
-              reactions={reactions}
-              onReactionPress={handleReaction}
+        <ScrollView
+          style={tw`flex-1`}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+          bounces={true}
+        >
+          <View style={tw`px-4 pt-4`}>
+            {/* Post Content */}
+            {hasImages ? (
+              <PicturePost
+                userName={userName}
+                username={username}
+                date={formatDate(post.createdAt)}
+                content={post.content}
+                imageUrls={post.imageUrls || []}
+                userId={post.userId}
+              />
+            ) : (
+              <TextPost
+                userName={userName}
+                username={username}
+                date={formatDate(post.createdAt)}
+                content={post.content}
+                userId={post.userId}
+              />
+            )}
+
+            {/* Interaction Bar */}
+            <View style={styles.interactionWrapper}>
+              <InteractionBar
+                initialComments={post.commentCount || 0}
+                reactions={reactions}
+                onReactionPress={handleReaction}
+              />
+            </View>
+          </View>
+
+          {/* Comment Section - comments only, input rendered separately below */}
+          <View style={tw`mt-6 px-4`}>
+            <CommentSection
+              targetType="post"
+              targetId={postId}
+              renderInput={false}
+              onInputPropsReady={setCommentInputProps}
             />
           </View>
-        </View>
+        </ScrollView>
 
-        {/* Comment Section */}
-        <View style={tw`mt-6 px-4`}>
-          <CommentSection targetType="post" targetId={postId} />
-        </View>
-      </ScrollView>
+        {/* Sticky Comment Input - positioned outside ScrollView for sticky behavior */}
+        {commentInputProps && (
+          <CommentInput
+            onSubmit={commentInputProps.onSubmit}
+            replyingTo={commentInputProps.replyingTo}
+            onCancelReply={commentInputProps.onCancelReply}
+            userProfilePicture={commentInputProps.userProfilePicture}
+            username={commentInputProps.username}
+          />
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
