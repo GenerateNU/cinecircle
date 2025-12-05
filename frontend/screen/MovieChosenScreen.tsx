@@ -67,6 +67,12 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   );
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [revealedPostIds, setRevealedPostIds] = useState<string[]>([]);
+
+  const isPostRevealed = (id: string) => revealedPostIds.includes(id);
+
+  const revealPost = (id: string) =>
+    setRevealedPostIds(prev => (prev.includes(id) ? prev : [...prev, id]));
 
   // Animation value for toggle
   // const toggleAnimation = useRef(new Animated.Value(0)).current;
@@ -215,10 +221,10 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     setShowPostModal(false);
     router.push({
       pathname: '/form',
-      params: { 
+      params: {
         type,
         movieId,
-        movieTitle: title
+        movieTitle: title,
       },
     });
   };
@@ -266,7 +272,56 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       const movieImagePath = post.movie?.imageUrl || movieEnvelope?.imageUrl;
       const moviePosterUrl = getMoviePosterUrl(movieImagePath);
 
-      // If post has stars, render it as a review
+      // Unified spoiler flag for this post
+      const containsSpoilers = Boolean(
+        (post as any).containsSpoilers ??
+          (post as any).hasSpoilers ??
+          (post as any).spoiler
+      );
+
+      // Is this post allowed to be fully visible?
+      const isRevealed = showSpoilers || isPostRevealed(post.id);
+
+      // 🔒 If post has spoilers and is not revealed yet: show overlay *for all types*
+      if (containsSpoilers && !isRevealed) {
+        return (
+          <React.Fragment key={`post-${post.id}`}>
+            <View
+              style={
+                post.stars !== null && post.stars !== undefined
+                  ? styles.reviewItemContainer
+                  : styles.postContainer
+              }
+            >
+              <UserBar
+                name={username}
+                username={username}
+                userId={post.userId}
+              />
+
+              <TouchableOpacity
+                style={styles.spoilerOverlayCard}
+                activeOpacity={0.85}
+                onPress={() => revealPost(post.id)}
+              >
+                <Ionicons name="eye-outline" size={20} color="#561202" />
+                <Text style={styles.spoilerOverlayTitle}>
+                  This post may contain spoilers
+                </Text>
+                <Text style={styles.spoilerOverlayText}>
+                  Tap to reveal just this post, or turn on “Show spoilers” to
+                  reveal all.
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {index < getFeedItems().length - 1 && (
+              <View style={styles.divider} />
+            )}
+          </React.Fragment>
+        );
+      }
+
+      // ⭐ If post has stars, render as review (now fully revealed)
       if (post.stars !== null && post.stars !== undefined) {
         return (
           <React.Fragment key={`post-${post.id}`}>
@@ -290,6 +345,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                 reviewerUserId={post.userId}
                 movieImageUrl={moviePosterUrl}
                 onPress={() => handleReviewPress(post)}
+                spoiler={containsSpoilers} // pill on review card
               />
             </View>
             {index < getFeedItems().length - 1 && (
@@ -297,144 +353,126 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
             )}
           </React.Fragment>
         );
-      } else {
-        // Render as a regular post (SHORT post) with proper components
-        const hasImage = post.imageUrls && post.imageUrls.length > 0;
-
-        // Map backend reaction data to InteractionBar format
-        const reactions = [
-          {
-            emoji: '🌶️',
-            count: post.reactionCounts?.SPICY || 0,
-            selected: post.userReactions?.includes('SPICY') || false,
-          },
-          {
-            emoji: '✨',
-            count: post.reactionCounts?.STAR_STUDDED || 0,
-            selected: post.userReactions?.includes('STAR_STUDDED') || false,
-          },
-          {
-            emoji: '🧠',
-            count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
-            selected:
-              post.userReactions?.includes('THOUGHT_PROVOKING') || false,
-          },
-          {
-            emoji: '🧨',
-            count: post.reactionCounts?.BLOCKBUSTER || 0,
-            selected: post.userReactions?.includes('BLOCKBUSTER') || false,
-          },
-        ];
-
-        const handleReaction = async (reactionIndex: number) => {
-          if (!user?.id) return;
-
-          const reactionTypes: Array<
-            'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
-          > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
-          const reactionType = reactionTypes[reactionIndex];
-
-          try {
-            // Optimistically update UI
-            setPosts(prevPosts =>
-              prevPosts.map(p => {
-                if (p.id === post.id) {
-                  const wasSelected =
-                    p.userReactions?.includes(reactionType) || false;
-
-                  // Update reaction counts
-                  const newReactionCounts = { ...p.reactionCounts };
-                  if (wasSelected) {
-                    newReactionCounts[reactionType] = Math.max(
-                      0,
-                      (newReactionCounts[reactionType] || 0) - 1
-                    );
-                  } else {
-                    newReactionCounts[reactionType] =
-                      (newReactionCounts[reactionType] || 0) + 1;
-                  }
-
-                  // Update user reactions
-                  let newUserReactions = [...(p.userReactions || [])];
-                  if (wasSelected) {
-                    newUserReactions = newUserReactions.filter(
-                      r => r !== reactionType
-                    );
-                  } else {
-                    newUserReactions.push(reactionType);
-                  }
-
-                  return {
-                    ...p,
-                    reactionCounts: newReactionCounts,
-                    userReactions: newUserReactions,
-                  } as Post;
-                }
-                return p;
-              })
-            );
-
-            // Call API in background
-            await togglePostReaction(post.id, user.id, reactionType);
-          } catch (error) {
-            console.error('Error toggling reaction:', error);
-            // Reload on error to get correct state
-            try {
-              const postsResponse = await getPosts({
-                movieId,
-                currentUserId: user?.id,
-              });
-              setPosts(postsResponse || []);
-            } catch (reloadError) {
-              console.error('Error reloading posts:', reloadError);
-            }
-          }
-        };
-
-        return (
-          <React.Fragment key={`post-${post.id}`}>
-            <View style={styles.postContainer}>
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => handlePostPress(post)}
-              >
-                {hasImage ? (
-                  <PicturePost
-                    userName={username}
-                    username={username}
-                    date={formatDate(post.createdAt)}
-                    content={post.content}
-                    imageUrls={post.imageUrls || []}
-                    userId={post.userId}
-                  />
-                ) : (
-                  <TextPost
-                    userName={username}
-                    username={username}
-                    date={formatDate(post.createdAt)}
-                    content={post.content}
-                    userId={post.userId}
-                  />
-                )}
-              </TouchableOpacity>
-              <View style={styles.interactionWrapper}>
-                <InteractionBar
-                  initialComments={post.commentCount || 0}
-                  reactions={reactions}
-                  onCommentPress={() => handleComment(post)}
-                  onReactionPress={handleReaction}
-                />
-              </View>
-            </View>
-            {index < getFeedItems().length - 1 && (
-              <View style={styles.divider} />
-            )}
-          </React.Fragment>
-        );
       }
+
+      // 🧾 Otherwise: SHORT / picture posts (also now fully visible)
+      const hasImage = post.imageUrls && post.imageUrls.length > 0;
+
+      // === Always build reaction state & handler (needed even if hidden behind spoiler overlay) ===
+      const reactions = [
+        {
+          emoji: '🌶️',
+          count: post.reactionCounts?.SPICY || 0,
+          selected: post.userReactions?.includes('SPICY') || false,
+        },
+        {
+          emoji: '✨',
+          count: post.reactionCounts?.STAR_STUDDED || 0,
+          selected: post.userReactions?.includes('STAR_STUDDED') || false,
+        },
+        {
+          emoji: '🧠',
+          count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
+          selected: post.userReactions?.includes('THOUGHT_PROVOKING') || false,
+        },
+        {
+          emoji: '🧨',
+          count: post.reactionCounts?.BLOCKBUSTER || 0,
+          selected: post.userReactions?.includes('BLOCKBUSTER') || false,
+        },
+      ];
+
+      const handleReaction = async (reactionIndex: number) => {
+        if (!user?.id) return;
+
+        const reactionTypes: Array<
+          'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+        > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
+
+        const reactionType = reactionTypes[reactionIndex];
+
+        try {
+          // Optimistic update
+          setPosts(prev =>
+            prev.map(p => {
+              if (p.id !== post.id) return p;
+
+              const wasSelected =
+                p.userReactions?.includes(reactionType) || false;
+              const counts = { ...p.reactionCounts };
+
+              // update count
+              counts[reactionType] = Math.max(
+                0,
+                (counts[reactionType] || 0) + (wasSelected ? -1 : 1)
+              );
+
+              // update selected list
+              let newUserReactions = [...(p.userReactions || [])];
+              if (wasSelected) {
+                newUserReactions = newUserReactions.filter(
+                  r => r !== reactionType
+                );
+              } else {
+                newUserReactions.push(reactionType);
+              }
+
+              return {
+                ...p,
+                reactionCounts: counts,
+                userReactions: newUserReactions,
+              };
+            })
+          );
+
+          await togglePostReaction(post.id, user.id, reactionType);
+        } catch (err) {
+          console.error('Reaction error:', err);
+        }
+      };
+
+      return (
+        <React.Fragment key={`post-${post.id}`}>
+          <View style={styles.postContainer}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => handlePostPress(post)}
+            >
+              {hasImage ? (
+                <PicturePost
+                  userName={username}
+                  username={username}
+                  date={formatDate(post.createdAt)}
+                  content={post.content}
+                  imageUrls={post.imageUrls || []}
+                  userId={post.userId}
+                  spoiler={containsSpoilers} // pill on picture post
+                />
+              ) : (
+                <TextPost
+                  userName={username}
+                  username={username}
+                  date={formatDate(post.createdAt)}
+                  content={post.content}
+                  userId={post.userId}
+                  spoiler={containsSpoilers} // pill on text post
+                />
+              )}
+            </TouchableOpacity>
+            <View style={styles.interactionWrapper}>
+              <InteractionBar
+                initialComments={post.commentCount || 0}
+                reactions={reactions}
+                onCommentPress={() => handleComment(post)}
+                onReactionPress={handleReaction}
+              />
+            </View>
+          </View>
+          {index < getFeedItems().length - 1 && <View style={styles.divider} />}
+        </React.Fragment>
+      );
     }
 
-    // Should never reach here since all FeedItems are now posts
     return null;
   };
 
@@ -522,8 +560,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                   />
                   <Text style={styles.ratingCount}>
                     {formatCount(
-                      posts.filter(p => p.stars !== null && p.stars !== undefined)
-                        .length
+                      posts.filter(
+                        p => p.stars !== null && p.stars !== undefined
+                      ).length
                     )}
                   </Text>
                 </View>
@@ -561,10 +600,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         {/* Filter Bar: Spoiler Toggle and Sort Dropdown */}
         <View style={styles.filterBar}>
           {/* Spoiler Toggle */}
-          <SpoilerButton
-            isSpoiler={showSpoilers}
-            onToggle={setShowSpoilers}
-          />
+          <SpoilerButton isSpoiler={showSpoilers} onToggle={setShowSpoilers} />
 
           {/* Sort Dropdown */}
           <TouchableOpacity
@@ -702,8 +738,14 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         activeOpacity={0.8}
       >
         <Svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <Path d="M32 64C23.5131 64 15.3737 60.6286 9.37258 54.6274C3.37142 48.6263 0 40.4869 0 32C0 23.5131 3.37142 15.3737 9.37258 9.37258C15.3737 3.37142 23.5131 0 32 0C40.4869 0 48.6263 3.37142 54.6274 9.37258C60.6286 15.3737 64 23.5131 64 32C64 40.4869 60.6286 48.6263 54.6274 54.6274C48.6263 60.6286 40.4869 64 32 64Z" fill="#D62E05"/>
-          <Path d="M35.2 28.8V16H28.8V28.8H16V35.2H28.8V48H35.2V35.2H48V28.8H35.2Z" fill="#FFFFFF"/>
+          <Path
+            d="M32 64C23.5131 64 15.3737 60.6286 9.37258 54.6274C3.37142 48.6263 0 40.4869 0 32C0 23.5131 3.37142 15.3737 9.37258 9.37258C15.3737 3.37142 23.5131 0 32 0C40.4869 0 48.6263 3.37142 54.6274 9.37258C60.6286 15.3737 64 23.5131 64 32C64 40.4869 60.6286 48.6263 54.6274 54.6274C48.6263 60.6286 40.4869 64 32 64Z"
+            fill="#D62E05"
+          />
+          <Path
+            d="M35.2 28.8V16H28.8V28.8H16V35.2H28.8V48H35.2V35.2H48V28.8H35.2Z"
+            fill="#FFFFFF"
+          />
         </Svg>
       </TouchableOpacity>
 
@@ -953,6 +995,47 @@ const styles = StyleSheet.create({
   dropdownItemLast: {
     borderBottomWidth: 0,
   },
+  spoilerHiddenBox: {
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFF4E5',
+    borderWidth: 1,
+    borderColor: '#F5C518',
+    marginTop: 8,
+  },
+  spoilerHiddenTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#561202',
+    marginBottom: 4,
+  },
+  spoilerHiddenText: {
+    fontSize: 13,
+    color: '#7A4A24',
+  },
+  spoilerOverlayCard: {
+    marginTop: 12,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#FFF4E5',
+    borderWidth: 1,
+    borderColor: '#F5C518',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  spoilerOverlayTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#561202',
+    textAlign: 'center',
+  },
+  spoilerOverlayText: {
+    fontSize: 13,
+    color: '#7A4A24',
+    textAlign: 'center',
+  },
+
   addButton: {
     position: 'absolute',
     bottom: 48,
