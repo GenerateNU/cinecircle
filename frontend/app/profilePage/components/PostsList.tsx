@@ -276,9 +276,9 @@ const PostsList = ({ user, userId }: Props) => {
                   reviewerAvatarUri={avatar}
                   movieTitle={movieTitle}
                   rating={post.stars || 0}
-                  userId={post.userId}
-                  reviewerUserId={post.userId}
-                  movieImageUrl={movieImagePath}
+                  userId={post.userId || ''}
+                  reviewerUserId={post.userId || ''}
+                  movieImageUrl={movieImagePath || ''}
                   onPress={() => handlePostPress(post)}
                   spoiler={containsSpoilers}
                 />

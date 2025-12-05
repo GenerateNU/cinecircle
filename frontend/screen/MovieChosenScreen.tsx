@@ -444,9 +444,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               reviewerName={username}
               movieTitle={title}
               rating={post.stars}
-              userId={post.userId}
-              reviewerUserId={post.userId}
-              movieImageUrl={movieImagePath}
+              userId={post.userId || ''}
+              reviewerUserId={post.userId || ''}
+              movieImageUrl={movieImagePath || ''}
               onPress={() => handleReviewPress(post)}
               spoiler={containsSpoilers}
             />

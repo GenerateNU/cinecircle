@@ -325,9 +325,9 @@ export default function RecByFriendsScreen() {
             reviewerName={username}
             movieTitle={movieTitle}
             rating={post.stars || 0}
-            userId={post.userId}
-            reviewerUserId={post.userId}
-            movieImageUrl={movieImagePath}
+            userId={post.userId || ''}
+            reviewerUserId={post.userId || ''}
+            movieImageUrl={movieImagePath || ''}
             onPress={handleReviewPress}
             spoiler={containsSpoilers}
           />
