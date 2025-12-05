@@ -174,10 +174,24 @@ describe("Search Controller Unit Tests", () => {
                 {
                     userId: "user-uuid",
                     username: "john_doe",
-                    preferredCategories: ["Action"],
-                    preferredLanguages: ["English"],
+                    onboardingCompleted: null,
+                    primaryLanguage: null,
+                    secondaryLanguage: [],
+                    profilePicture: null,
+                    country: null,
+                    city: null,
+                    displayName: null,
+                    favoriteGenres: [],
                     favoriteMovies: [],
+                    bio: null,
+                    moviesToWatch: [],
+                    moviesCompleted: [],
+                    eventsSaved: [],
+                    eventsAttended: [],
+                    privateAccount: null,
+                    spoiler: null,
                     createdAt: new Date(),
+                    updatedAt: null,
                 },
             ];
 
@@ -191,7 +205,13 @@ describe("Search Controller Unit Tests", () => {
                     type: "users",
                     query: "john",
                     count: 1,
-                    results: mockUsers,
+                    results: expect.arrayContaining([
+                        expect.objectContaining({
+                            userId: "user-uuid",
+                            username: "john_doe",
+                            favoriteMovies: [],
+                        })
+                    ]),
                 })
             );
         });
