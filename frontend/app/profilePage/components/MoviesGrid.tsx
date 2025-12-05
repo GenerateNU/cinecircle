@@ -25,8 +25,12 @@ type Props = {
 };
 
 const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
-  const [activeSubTab, setActiveSubTab] = useState<'toWatch' | 'completed'>('completed');
-  const [moviesByStatus, setMoviesByStatus] = useState<Record<'toWatch' | 'completed', MovieListItem[]>>({
+  const [activeSubTab, setActiveSubTab] = useState<'toWatch' | 'completed'>(
+    'completed'
+  );
+  const [moviesByStatus, setMoviesByStatus] = useState<
+    Record<'toWatch' | 'completed', MovieListItem[]>
+  >({
     toWatch: [],
     completed: [],
   });
@@ -35,35 +39,39 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
 
   const movies = moviesByStatus[activeSubTab];
   const showBookmark = activeSubTab === 'toWatch';
-  const hydrateList = useCallback(async (ids: string[]): Promise<MovieListItem[]> => {
-    const validIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
-    if (!validIds.length) return [];
+  const hydrateList = useCallback(
+    async (ids: string[]): Promise<MovieListItem[]> => {
+      const validIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
+      if (!validIds.length) return [];
 
-    const results = await Promise.all(
-      validIds.map(async (id) => {
-        try {
-          const envelope = await getMovieByCinecircleId(id);
-          const movie = (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
-          return {
-            id,
-            title: movie?.title || `Movie ${id}`,
-            poster: movie?.imageUrl ?? null,
-          } as MovieListItem;
-        } catch (err) {
-          console.error('Failed to fetch movie detail:', err);
-          return {
-            id,
-            title: `Movie ${id}`,
-            poster: null,
-          } as MovieListItem;
-        }
-      })
-    );
+      const results = await Promise.all(
+        validIds.map(async id => {
+          try {
+            const envelope = await getMovieByCinecircleId(id);
+            const movie =
+              (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
+            return {
+              id,
+              title: movie?.title || `Movie ${id}`,
+              poster: movie?.imageUrl ?? null,
+            } as MovieListItem;
+          } catch (err) {
+            console.error('Failed to fetch movie detail:', err);
+            return {
+              id,
+              title: `Movie ${id}`,
+              poster: null,
+            } as MovieListItem;
+          }
+        })
+      );
 
-    return results.filter(
-      (movie, index, self) => self.findIndex((m) => m.id === movie.id) === index
-    );
-  }, []);
+      return results.filter(
+        (movie, index, self) => self.findIndex(m => m.id === movie.id) === index
+      );
+    },
+    []
+  );
 
   const hydrateFromProfile = useCallback(async () => {
     try {
@@ -117,7 +125,10 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
           <Ionicons name="film-outline" size={22} color="#555" />
         </View>
       )}
-      <Text style={tw`flex-1 ml-4 text-base font-semibold text-black`} numberOfLines={2}>
+      <Text
+        style={tw`flex-1 ml-4 text-base font-semibold text-black`}
+        numberOfLines={2}
+      >
         {item.title}
       </Text>
       <Ionicons
@@ -147,7 +158,8 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
               paddingVertical: 8,
               borderRadius: 8,
               marginHorizontal: 2,
-              backgroundColor: activeSubTab === 'toWatch' ? '#D62E05' : 'transparent',
+              backgroundColor:
+                activeSubTab === 'toWatch' ? '#D62E05' : 'transparent',
             },
           ]}
           onPress={() => setActiveSubTab('toWatch')}
@@ -168,7 +180,8 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
               paddingVertical: 8,
               borderRadius: 8,
               marginHorizontal: 2,
-              backgroundColor: activeSubTab === 'completed' ? '#D62E05' : 'transparent',
+              backgroundColor:
+                activeSubTab === 'completed' ? '#D62E05' : 'transparent',
             },
           ]}
           onPress={() => setActiveSubTab('completed')}
@@ -193,7 +206,7 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
         <View style={tw`py-4`}>
           <Text style={tw`text-red-600 mb-2`}>{error}</Text>
           <TouchableOpacity
-            onPress={fetchMoviesForUser}
+            onPress={hydrateFromProfile}
             style={tw`self-start px-3 py-2 rounded bg-black`}
           >
             <Text style={tw`text-white font-semibold`}>Retry</Text>
@@ -204,7 +217,7 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
       ) : (
         <FlatList
           data={movies}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={renderMovie}
           scrollEnabled={false}
           removeClippedSubviews={false}

@@ -421,11 +421,27 @@ export interface paths {
                         /** @example any */
                         city?: unknown;
                         /** @example any */
+                        displayName?: unknown;
+                        /** @example any */
                         favoriteGenres?: unknown;
                         /** @example any */
                         favoriteMovies?: unknown;
                         /** @example any */
                         updatedAt?: unknown;
+                        /** @example any */
+                        privateAccount?: unknown;
+                        /** @example any */
+                        spoiler?: unknown;
+                        /** @example any */
+                        bio?: unknown;
+                        /** @example any */
+                        moviesToWatch?: unknown;
+                        /** @example any */
+                        moviesCompleted?: unknown;
+                        /** @example any */
+                        eventsSaved?: unknown;
+                        /** @example any */
+                        eventsAttended?: unknown;
                     };
                 };
             };
@@ -439,6 +455,13 @@ export interface paths {
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1328,6 +1351,136 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/{id}/likes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3487,8 +3640,16 @@ export interface components {
             profilePicture: string | null;
             country: string | null;
             city: string | null;
+            displayName?: string | null;
             favoriteGenres: string[];
             favoriteMovies: string[];
+            bio?: string | null;
+            moviesToWatch: string[];
+            moviesCompleted: string[];
+            eventsSaved: string[];
+            eventsAttended: string[];
+            privateAccount: boolean;
+            spoiler: boolean;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -3502,8 +3663,16 @@ export interface components {
             secondaryLanguage?: string[];
             country?: string;
             city?: string;
+            displayName?: string | null;
             favoriteGenres?: string[];
             favoriteMovies?: string[];
+            bio?: string | null;
+            privateAccount?: boolean;
+            spoiler?: boolean;
+            moviesToWatch?: string[];
+            moviesCompleted?: string[];
+            eventsSaved?: string[];
+            eventsAttended?: string[];
         };
         UpdateUserProfileResponse: {
             message: string;
@@ -3526,11 +3695,6 @@ export interface components {
             tags: string[];
             date: string;
             votes: number;
-            UserProfile?: {
-                userId: string;
-                username: string | null;
-            };
-            threadedComments?: unknown[];
         };
         GetUserCommentsResponse: {
             message: string;
