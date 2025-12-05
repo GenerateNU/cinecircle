@@ -19,20 +19,43 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     favoriteGenres,
     favoriteMovies,
     updatedAt,
+    privateAccount,
+    spoiler,
   } = (req.body ?? {}) as Partial<UserProfile>;
 
   try {
+    const existingProfile = await prisma.userProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (!existingProfile) {
+      return res.status(404).json({ message: "User profile not found" });
+    }
+
+    const mergedSecondaryLanguages = Array.isArray(secondaryLanguage)
+      ? Array.from(
+          new Set([
+            ...(Array.isArray(existingProfile.secondaryLanguage)
+              ? (existingProfile.secondaryLanguage as string[])
+              : []),
+            ...secondaryLanguage,
+          ]),
+        )
+      : undefined;
+
     const data = mapUserProfilePatchToUpdateData({
       username,
       onboardingCompleted,
       primaryLanguage,
-      secondaryLanguage,
+      secondaryLanguage: mergedSecondaryLanguages,
       profilePicture,
       country,
       city,
       favoriteGenres,
       favoriteMovies,
       updatedAt,
+      privateAccount,
+      spoiler,
     });
 
     const updated = await prisma.userProfile.update({
@@ -87,6 +110,8 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           country: null,
           city: null,
           primaryLanguage: 'English',
+          privateAccount: false,
+          spoiler: false,
           updatedAt: new Date(),
         },
       });
@@ -147,6 +172,8 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
       favoriteMovies: Array.isArray(userProfile.favoriteMovies)
         ? userProfile.favoriteMovies as string[]
         : [],
+      privateAccount: Boolean(userProfile.privateAccount),
+      spoiler: Boolean(userProfile.spoiler),
       createdAt: userProfile.createdAt,
       updatedAt: userProfile.updatedAt,
     });
@@ -159,6 +186,17 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
         }
       : undefined;
 
+    try {
+      console.log(
+        `[${timestamp}] [AccountSettings][backend] profile payload for user ${req.user.id}:`,
+        JSON.stringify({ userProfile: mappedUserProfile }, null, 2),
+      );
+    } catch {
+      console.log(
+        `[${timestamp}] [AccountSettings][backend] profile payload (raw) for user ${req.user.id}:`,
+        mappedUserProfile,
+      );
+    }
     console.log(`[${timestamp}] getUserProfile success: Retrieved profile for user ${req.user.id}`);
     
     res.json({ 
@@ -219,6 +257,8 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
           : [],
+        privateAccount: Boolean(userProfile.privateAccount),
+        spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
       });
@@ -275,6 +315,8 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
           : [],
+        privateAccount: Boolean(userProfile.privateAccount),
+        spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
       });
@@ -306,6 +348,8 @@ export function mapUserProfileDbToApi(row: {
   city: string | null;
   favoriteGenres: string[];
   favoriteMovies: string[];
+  privateAccount?: boolean | null;
+  spoiler?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 }): UserProfile {
@@ -320,6 +364,8 @@ export function mapUserProfileDbToApi(row: {
     city: row.city,
     favoriteGenres: row.favoriteGenres ?? [],
     favoriteMovies: row.favoriteMovies ?? [],
+    privateAccount: Boolean(row.privateAccount),
+    spoiler: Boolean(row.spoiler),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -328,7 +374,7 @@ export function mapUserProfileDbToApi(row: {
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt"
+    "username" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "updatedAt" | "privateAccount" | "spoiler"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
@@ -359,6 +405,12 @@ export function mapUserProfilePatchToUpdateData(
   }
   if (Object.prototype.hasOwnProperty.call(patch, "favoriteMovies")) {
     data.favoriteMovies = patch.favoriteMovies ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "privateAccount")) {
+    data.privateAccount = patch.privateAccount ?? false;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "spoiler")) {
+    data.spoiler = patch.spoiler ?? false;
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one

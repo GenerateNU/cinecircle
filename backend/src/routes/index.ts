@@ -15,15 +15,18 @@ import { followUser, unfollowUser, getFollowers, getFollowing } from "../control
 import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree, toggleCommentLike, getCommentLikes } from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
 import { getAllMovies } from "../controllers/movies";
-import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReplies, toggleReaction, getPostReactions } from "../controllers/post.js";
+import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReposts, toggleReaction, getPostReactions } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
+import { getMovieSummaryHandler } from "../controllers/movies.js";
 // backend/src/routes/index.ts
 
 const router = Router();
 
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
+router.get('/movies/:movieId/summary', getMovieSummaryHandler);
+
 
 // Legacy endpoint
 router.get("/swagger-output.json", serveSwagger);  
@@ -111,7 +114,7 @@ router.delete("/api/post/:postId", deletePost);
 // Reaction routes
 router.post("/api/post/:postId/reaction", toggleReaction);
 router.get("/api/post/:postId/reactions", getPostReactions);
-router.get("/api/post/:postId/replies", getPostReplies);
+router.get("/api/post/:postId/reposts", getPostReposts);
 
 // Search routes
 router.get("/api/search/movies", searchMovies)

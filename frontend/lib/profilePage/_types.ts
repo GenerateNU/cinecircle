@@ -8,4 +8,3 @@ export type User = {
 };
 
 export type TabKey = 'movies' | 'posts' | 'events' | 'badges';
-

@@ -53,6 +53,8 @@ export type UpdateUserProfileInput = {
   city?: string;
   favoriteGenres?: string[];
   favoriteMovies?: string[];
+  privateAccount?: boolean;
+  spoiler?: boolean;
 };
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };
@@ -103,10 +105,14 @@ export type GetPostByIdResponse = {
 
 export type CreatePostInput = {
   userId: string;
+  movieId: string;
   content: string;
   type?: 'SHORT' | 'LONG';
+  stars?: number;
+  spoiler?: boolean;
+  tags?: string[];
   imageUrls?: string[];
-  parentPostId?: string;
+  repostedPostId?: string; // Optional reference to original post if this is a repost
 };
 
 export type CreatePostResponse = {
@@ -117,6 +123,9 @@ export type CreatePostResponse = {
 export type UpdatePostInput = {
   content?: string;
   type?: 'SHORT' | 'LONG';
+  stars?: number;
+  spoiler?: boolean;
+  tags?: string[];
   imageUrls?: string[];
 };
 

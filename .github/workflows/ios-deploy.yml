@@ -1,7 +1,7 @@
 name: Deploy IOS (Caller)
 on:
   push:
-    branches: [main, ios-deploy]
+    branches: [prod, ios-deploy]
 
 jobs:
   deploy:
