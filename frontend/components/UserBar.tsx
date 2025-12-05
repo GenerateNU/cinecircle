@@ -1,4 +1,4 @@
-// frontend/app/components/UserBar.tsx
+// components/UserBar.tsx
 import React from 'react';
 import {
   View,
@@ -10,20 +10,23 @@ import {
   Dimensions,
 } from 'react-native';
 
-// 👇 adjust this path to wherever you put the icon in your project
-// e.g. ../assets/translate.png
-const translateIcon = require('../assets/translate.png');
-
 const { width } = Dimensions.get('window');
 
-type UserBarProps = {
+// ⬇️ adjust if your icon lives somewhere else
+const translateIcon = require('../assets/translate.png');
+
+export type UserBarProps = {
   name: string;
-  username: string;
-  date: string;
+  username?: string;
+  date?: string;
   avatarUri?: string;
   userId?: string;
 
-  // NEW: translation-related props
+  // old props used by ReviewPost
+  avatarSize?: number; // in px
+  nameColor?: string;
+
+  // new translation props
   showTranslate?: boolean;
   onPressTranslate?: () => void;
   loadingTranslate?: boolean;
@@ -34,29 +37,47 @@ export default function UserBar({
   username,
   date,
   avatarUri,
-  // userId not used visually here but you might use it for nav
-  userId,
+  userId, // not used visually yet, but kept for navigation if you want
+  avatarSize,
+  nameColor,
   showTranslate = false,
   onPressTranslate,
   loadingTranslate = false,
 }: UserBarProps) {
+  // default avatar size if not provided
+  const size = avatarSize ?? width * 0.1;
+
   return (
     <View style={styles.container}>
-      {/* Left: avatar */}
+      {/* Left: avatar + name/username */}
       <View style={styles.leftRow}>
         {avatarUri ? (
-          <Image source={{ uri: avatarUri }} style={styles.avatar} />
+          <Image
+            source={{ uri: avatarUri }}
+            style={[
+              styles.avatar,
+              { width: size, height: size, borderRadius: size / 2 },
+            ]}
+          />
         ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]} />
+          <View
+            style={[
+              styles.avatar,
+              styles.avatarPlaceholder,
+              { width: size, height: size, borderRadius: size / 2 },
+            ]}
+          />
         )}
 
         <View>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.username}>@{username}</Text>
+          <Text style={[styles.name, nameColor ? { color: nameColor } : null]}>
+            {name}
+          </Text>
+          {username ? <Text style={styles.username}>@{username}</Text> : null}
         </View>
       </View>
 
-      {/* Right: translate icon + date */}
+      {/* Right: translate icon (optional) + date (optional) */}
       <View style={styles.rightRow}>
         {showTranslate && (
           <TouchableOpacity
@@ -72,7 +93,7 @@ export default function UserBar({
           </TouchableOpacity>
         )}
 
-        <Text style={styles.date}>{date}</Text>
+        {date ? <Text style={styles.date}>{date}</Text> : null}
       </View>
     </View>
   );
@@ -94,9 +115,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   avatar: {
-    width: width * 0.1,
-    height: width * 0.1,
-    borderRadius: width * 0.05,
     marginRight: width * 0.03,
   },
   avatarPlaceholder: {
