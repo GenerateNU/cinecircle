@@ -38,7 +38,13 @@ export const threadStyles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: width * 0.04,
     paddingTop: height * 0.015,
-    paddingBottom: height * 0.1,
+    paddingBottom: height * 0.02,
+  },
+  footerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    paddingTop: height * 0.01,
   },
   loadingContainer: {
     flex: 1,
