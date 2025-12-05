@@ -29,7 +29,7 @@ export type UserProfile = {
   favoriteGenres: string[];
   favoriteMovies: string[];
   privateAccount: boolean;
-  spoilers: boolean;
+  spoiler: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
