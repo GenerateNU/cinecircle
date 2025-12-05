@@ -123,7 +123,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       fetchMovieData();
     }
   }, [movieId]);
-  // Initialize spoiler toggle from user profile preference
+
   // Initialize spoiler toggle from user profile preference
   useEffect(() => {
     const loadSpoilerPreference = async () => {
@@ -136,7 +136,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           return;
         }
 
-        // 👇 this matches your backend field
         const pref = (profile as any).spoiler;
 
         console.log('Loaded spoiler pref from profile:', pref);
@@ -304,8 +303,8 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       // Unified spoiler flag for this post
       const containsSpoilers = Boolean(
         (post as any).containsSpoilers ??
-          (post as any).hasSpoilers ??
-          (post as any).spoiler
+        (post as any).hasSpoilers ??
+        (post as any).spoiler
       );
 
       // Is this post allowed to be fully visible?
