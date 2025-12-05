@@ -28,6 +28,8 @@ type ReviewPostProps = {
   reviewerUserId?: string;
   movieImageUrl: string;
   onPress?: () => void;
+  /** If true, show a 'Spoiler' badge on the card */
+  spoiler?: boolean;
 };
 
 export default function ReviewPost({
@@ -43,6 +45,7 @@ export default function ReviewPost({
   reviewerUserId,
   movieImageUrl,
   onPress,
+  spoiler = false,
 }: ReviewPostProps) {
   const content = (
     <View style={styles.container}>
@@ -52,6 +55,15 @@ export default function ReviewPost({
         imageStyle={styles.image}
         resizeMode="cover"
       >
+        {/* Top overlay row (spoiler badge, etc.) */}
+        <View style={styles.topOverlayRow}>
+          {spoiler && (
+            <View style={styles.spoilerPill}>
+              <Text style={styles.spoilerText}>Spoiler</Text>
+            </View>
+          )}
+        </View>
+
         <View style={styles.bottomContainer}>
           <MaskedView
             style={styles.maskedView}
@@ -125,6 +137,30 @@ const styles = StyleSheet.create({
   },
   image: {
     borderRadius: width * 0.03,
+  },
+  // row at the top of the card where the spoiler pill sits
+  topOverlayRow: {
+    position: 'absolute',
+    top: width * 0.03,
+    right: width * 0.03,
+    left: width * 0.03,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    zIndex: 2,
+  },
+  spoilerPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    borderWidth: 1,
+    borderColor: '#F5C518', // IMDb-ish yellow accent
+  },
+  spoilerText: {
+    color: '#F5C518',
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   bottomContainer: {
     flex: 1,
