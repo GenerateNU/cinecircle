@@ -20,10 +20,13 @@ export default function MyCarousel({ components, width, height }: CarouselProps)
   const carouselHeight = (height / 100) * screenHeight;
 
   return (
-    <View style={[styles.carouselContainer, { width: carouselWidth, height: carouselHeight }]}>
+    <View style={[styles.carouselContainer, { width: carouselWidth, height: carouselHeight }]}> 
       <ScrollView
         horizontal
         pagingEnabled
+        nestedScrollEnabled
+        directionalLockEnabled
+        decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(event) => {
           const newIndex = Math.round(
@@ -31,10 +34,12 @@ export default function MyCarousel({ components, width, height }: CarouselProps)
           );
           setCurrentIndex(newIndex);
         }}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ height: carouselHeight }}
         style={{ width: carouselWidth, height: carouselHeight }}
       >
         {components.map((component, index) => (
-          <View key={index} style={[styles.carouselItem, { width: carouselWidth }]}>
+          <View key={index} style={[styles.carouselItem, { width: carouselWidth }]}> 
             {component}
           </View>
         ))}
@@ -67,6 +72,7 @@ const styles = StyleSheet.create({
   carouselItem: {
     justifyContent: "center",
     alignItems: "center",
+    height: "100%",
   },
   pagination: {
     flexDirection: "row",
