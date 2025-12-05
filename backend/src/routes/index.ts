@@ -73,7 +73,6 @@ router.post("/api/comment/:id/like", toggleCommentLike);
 router.get("/api/comment/:id/likes", getCommentLikes);
 router.get("/api/:movieId/comments", getMovieComments);
 router.get("/api/comments/post/:postId", getCommentsTree);
-router.get("/api/comments/rating/:ratingId", getCommentsTree);
 
 // Ratings routes
 router.post('/api/ratings', createRating);

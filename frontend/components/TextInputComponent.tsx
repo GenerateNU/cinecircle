@@ -11,6 +11,8 @@ type TextInputProps = {
     onChangeText?: (text: string) => void;
     secureTextEntry?: boolean;
     keyboardType?: RNTextInputProps['keyboardType'];
+    autoComplete?: RNTextInputProps['autoComplete'];
+    textContentType?: RNTextInputProps['textContentType'];
 }
 
 export default function TextInputComponent({ 
@@ -23,6 +25,8 @@ export default function TextInputComponent({
     onChangeText,
     secureTextEntry = false,
     keyboardType = 'default',
+    autoComplete='off',
+    textContentType,
 } : TextInputProps) {
     return (
     <View>
@@ -42,6 +46,8 @@ export default function TextInputComponent({
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
+            autoComplete={autoComplete}
+            textContentType={textContentType}
         />
         {subtext && <Text style={styles.subtext}>{subtext}</Text>}
     </View>

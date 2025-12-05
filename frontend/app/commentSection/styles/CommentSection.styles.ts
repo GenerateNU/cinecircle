@@ -5,7 +5,6 @@ const { width, height } = Dimensions.get('window');
 export const commentSectionStyles = StyleSheet.create({
   container: {
     marginHorizontal: width * 0.025,
-    minHeight: height * 0.5,
   },
   header: {
     fontWeight: '400',
@@ -13,6 +12,7 @@ export const commentSectionStyles = StyleSheet.create({
   },
   threadContainer: {
     paddingRight: width * 0.04,
+    paddingBottom: height * 0.02,
   },
   viewMoreButton: {
     marginTop: height * 0.01,
@@ -24,7 +24,7 @@ export const commentSectionStyles = StyleSheet.create({
     alignSelf: 'center',
   },
   loadingContainer: {
-    flex: 1,
+    paddingVertical: height * 0.04,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -32,7 +32,7 @@ export const commentSectionStyles = StyleSheet.create({
     color: '#555',
   },
   errorContainer: {
-    flex: 1,
+    paddingVertical: height * 0.04,
     justifyContent: 'center',
     alignItems: 'center',
   },
