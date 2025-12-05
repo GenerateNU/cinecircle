@@ -194,6 +194,17 @@ const PostsList = ({ user, userId }: Props) => {
     }
   };
 
+  // Render a horizontal line between posts
+  const renderSeparator = () => (
+    <View
+      style={{
+        height: 1,
+        backgroundColor: '#E5E7EB',
+        marginVertical: 8,
+      }}
+    />
+  );
+
   return (
     <FlatList
       data={posts}
@@ -204,6 +215,7 @@ const PostsList = ({ user, userId }: Props) => {
       maxToRenderPerBatch={posts.length || 10}
       windowSize={Math.max(5, posts.length || 5)}
       showsVerticalScrollIndicator={false}
+      ItemSeparatorComponent={renderSeparator}
       renderItem={({ item: post }) => {
         const username = post.UserProfile?.username || user.username || 'User';
         const avatar = user.profilePic;
@@ -358,7 +370,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
     paddingTop: width * 0.04,
     paddingBottom: width * 0.04,
-    marginBottom: width * 0.04,
   },
   shareText: {
     fontSize: width * 0.04,
@@ -371,7 +382,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
     paddingTop: width * 0.04,
     paddingBottom: width * 0.04,
-    marginBottom: width * 0.04,
   },
   interactionWrapper: {
     marginTop: width * 0.04,
