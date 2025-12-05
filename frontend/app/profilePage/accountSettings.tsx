@@ -105,6 +105,7 @@ export default function AccountSettings() {
         spoilers: allowSpoilers,
       });
       if (res?.data) {
+        setUsername(res.data.username ?? '');
         setPrivateAccount(Boolean(res.data.privateAccount));
         setAllowSpoilers(Boolean(res.data.spoilers));
         setSelectedLanguages(res.data.secondaryLanguage ?? []);
@@ -148,6 +149,7 @@ export default function AccountSettings() {
         spoilers: allowSpoilers,
       });
       if (res?.data) {
+        setUsername(res.data.username ?? '');
         setPrivateAccount(Boolean(res.data.privateAccount));
         setAllowSpoilers(Boolean(res.data.spoilers));
         setSelectedLanguages(res.data.secondaryLanguage ?? []);
@@ -171,6 +173,7 @@ export default function AccountSettings() {
         spoilers: allowSpoilers,
       });
       if (res?.data) {
+        setUsername(res.data.username ?? '');
         setPrivateAccount(Boolean(res.data.privateAccount));
         setAllowSpoilers(Boolean(res.data.spoilers));
       }
