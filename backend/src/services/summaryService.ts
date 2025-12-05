@@ -169,6 +169,9 @@ function aggregateChunkSummaries(
     neutral: 0,
     negative: 0,
     total: 0,
+    positivePercent: 0,
+    neutralPercent: 0,
+    negativePercent: 0,
   };
 
   const prosSet = new Set<string>();
@@ -201,6 +204,13 @@ function aggregateChunkSummaries(
   // If the model didn't fill stats.total correctly, fall back to the total # of lines
   if (!stats.total) {
     stats.total = totalReviews;
+  }
+
+  // Calculate percentages
+  if (stats.total > 0) {
+    stats.positivePercent = Math.round((stats.positive / stats.total) * 100);
+    stats.neutralPercent = Math.round((stats.neutral / stats.total) * 100);
+    stats.negativePercent = Math.round((stats.negative / stats.total) * 100);
   }
 
   const pros = Array.from(prosSet).slice(0, 8);
@@ -282,7 +292,15 @@ export async function generateMovieSummary(movieId: string): Promise<MovieSummar
       overall: 'There are no posts yet for this movie.',
       pros: [],
       cons: [],
-      stats: { positive: 0, neutral: 0, negative: 0, total: 0 },
+      stats: { 
+        positive: 0, 
+        neutral: 0, 
+        negative: 0, 
+        total: 0,
+        positivePercent: 0,
+        neutralPercent: 0,
+        negativePercent: 0,
+      },
       quotes: [],
     };
     summaryCache.set(movieId, { summary, expiresAt: now + SUMMARY_TTL_MS });

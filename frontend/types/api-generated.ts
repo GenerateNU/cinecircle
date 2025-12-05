@@ -3839,6 +3839,9 @@ export interface components {
             neutral: number;
             negative: number;
             total: number;
+            positivePercent: number;
+            neutralPercent: number;
+            negativePercent: number;
         };
         MovieSummary: {
             movieId: string;

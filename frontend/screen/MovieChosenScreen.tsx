@@ -21,6 +21,7 @@ import PicturePost from '../components/PicturePost';
 import InteractionBar from '../components/InteractionBar';
 import UserBar from '../components/UserBar';
 import StarRating from '../components/StarRating';
+import AiConsensus from '../components/AiConsensus';
 import {
   getMovieSummary,
   getMovieByCinecircleId,
@@ -122,27 +123,34 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     }).start();
   }, [showSpoilers]);
 
-  const handleGenerateSummary = async () => {
-    console.log('Generating AI summary for movieId:', movieId);
+  // Auto-generate summary when movieId changes
+  useEffect(() => {
+    const generateSummary = async () => {
+      console.log('Auto-generating AI summary for movieId:', movieId);
 
-    if (!movieId) return;
+      if (!movieId) return;
 
-    try {
-      setSummaryError(null);
-      setSummary(null);
-      setSummaryLoading(true);
+      try {
+        setSummaryError(null);
+        setSummary(null);
+        setSummaryLoading(true);
 
-      const summaryResponse = await getMovieSummary(movieId);
-      console.log('AI summary response:', summaryResponse);
+        const summaryResponse = await getMovieSummary(movieId);
+        console.log('AI summary response:', summaryResponse);
 
-      setSummary(summaryResponse);
-    } catch (err: any) {
-      console.error('Error fetching AI summary:', err?.message);
-      setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
-    } finally {
-      setSummaryLoading(false);
+        setSummary(summaryResponse);
+      } catch (err: any) {
+        console.error('Error fetching AI summary:', err?.message);
+        setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    if (movieId) {
+      generateSummary();
     }
-  };
+  }, [movieId]);
 
   const calculateAverageRating = () => {
     // Only calculate average from posts that have star ratings (reviews)
@@ -680,112 +688,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       </View>
 
       {/* AI Consensus / Sentiment Analysis */}
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryHeaderRow}>
-          <Text style={styles.sectionHeader}>Community Consensus</Text>
-
-          <TouchableOpacity
-            style={[
-              styles.summaryButton,
-              summaryLoading && styles.summaryButtonDisabled,
-            ]}
-            onPress={handleGenerateSummary}
-            disabled={summaryLoading}
-          >
-            {summaryLoading ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <Text style={styles.summaryButtonText}>
-                {summary ? 'Regenerate' : 'Generate'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Error state */}
-        {summaryError && (
-          <Text style={styles.summaryErrorText}>{summaryError}</Text>
-        )}
-
-        {/* Summary content */}
-        {summary && !summaryError && (
-          <>
-            {/* Overall paragraph */}
-            {summary.overall && (
-              <Text style={styles.summaryOverall}>{summary.overall}</Text>
-            )}
-
-            {/* Pros / Cons */}
-            {(summary.pros?.length || summary.cons?.length) && (
-              <View style={styles.summaryRow}>
-                {summary.pros && summary.pros.length > 0 && (
-                  <View style={styles.summaryColumn}>
-                    <Text style={styles.summarySubheader}>
-                      {t(UiTextKey.PeopleLiked)}
-                    </Text>
-                    {summary.pros
-                      .slice(0, 3)
-                      .map((item: string, idx: number) => (
-                        <Text key={`pro-${idx}`} style={styles.summaryBullet}>
-                          • {item}
-                        </Text>
-                      ))}
-                  </View>
-                )}
-
-                {summary.cons && summary.cons.length > 0 && (
-                  <View style={styles.summaryColumn}>
-                    <Text style={styles.summarySubheader}>
-                      {t(UiTextKey.CommonComplaints)}
-                    </Text>
-                    {summary.cons
-                      .slice(0, 3)
-                      .map((item: string, idx: number) => (
-                        <Text key={`con-${idx}`} style={styles.summaryBullet}>
-                          • {item}
-                        </Text>
-                      ))}
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* Sentiment stats */}
-            {summary.stats && (
-              <View style={styles.statsRow}>
-                <Text style={styles.statsText}>
-                  👍 {summary.stats.positive} {t(UiTextKey.PositiveCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  😐 {summary.stats.neutral} {t(UiTextKey.NeutralCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  👎 {summary.stats.negative} {t(UiTextKey.NegativeCount)}
-                </Text>
-                <Text style={styles.statsTotalText}>
-                  Based on {summary.stats.total ?? 0} post
-                  {summary.stats.total !== 1 ? 's' : ''}
-                </Text>
-              </View>
-            )}
-
-            {/* Representative quote */}
-            {summary.quotes && summary.quotes.length > 0 && (
-              <View style={styles.quoteContainer}>
-                <Text style={styles.quoteLabel}>Representative Post</Text>
-                <Text style={styles.quoteText}>"{summary.quotes[0]}"</Text>
-              </View>
-            )}
-          </>
-        )}
-
-        {/* "Empty" state text when no summary yet and no error */}
-        {!summary && !summaryError && !summaryLoading && (
-          <Text style={styles.summaryHintText}>
-            Tap "Generate" to analyze posts about this movie.
-          </Text>
-        )}
-      </View>
+      <AiConsensus
+        summary={summary}
+        summaryLoading={summaryLoading}
+        summaryError={summaryError}
+      />
 
       {/* Feed Items */}
       {loading ? (
@@ -869,57 +776,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingTop: 8,
   },
-  summaryContainer: { backgroundColor: '#FFF', padding: 16, marginTop: 8 },
-  sectionHeader: { fontSize: 18, fontWeight: '600' },
-  summaryHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  summaryButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#000',
-  },
-  summaryButtonDisabled: {
-    opacity: 0.6,
-  },
-  summaryButtonText: {
-    color: '#FFF',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  summaryLoadingRow: { flexDirection: 'row', alignItems: 'center' },
-  summaryLoadingText: { marginLeft: 8, fontSize: 14, color: '#999' },
-  summaryErrorText: { fontSize: 14, color: '#FF3B30', marginTop: 8 },
-  summaryOverall: {
-    fontSize: 15,
-    color: '#333',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  summaryHintText: {
-    fontSize: 13,
-    color: '#777',
-    marginTop: 6,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-    gap: 16,
-  },
-  summaryColumn: { flex: 1 },
-  summarySubheader: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
-  summaryBullet: { fontSize: 13, color: '#555' },
-  statsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, gap: 8 },
-  statsText: { fontSize: 12, color: '#666' },
-  statsTotalText: { fontSize: 12, color: '#999' },
-  quoteContainer: { marginTop: 10 },
-  quoteLabel: { fontSize: 13, fontWeight: '500', marginBottom: 2 },
-  quoteText: { fontSize: 13, fontStyle: 'italic', color: '#444' },
   ratingsContainer: {
     backgroundColor: '#FFF',
     paddingHorizontal: 16,
@@ -1040,8 +896,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginTop: 8,
     position: 'relative',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    zIndex: 10,
   },
   spoilerContainer: {
     flexDirection: 'row',
@@ -1105,8 +966,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
-    zIndex: 100,
+    elevation: 10,
+    zIndex: 9999,
     minWidth: 150,
   },
   dropdownItem: {

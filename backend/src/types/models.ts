@@ -175,6 +175,9 @@ export type SentimentStats = {
   neutral: number;
   negative: number;
   total: number;
+  positivePercent: number;
+  neutralPercent: number;
+  negativePercent: number;
 };
 
 export type MovieSummary = {
