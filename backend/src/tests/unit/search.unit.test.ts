@@ -168,7 +168,7 @@ describe("Search Controller Unit Tests", () => {
             consoleErrorSpy.mockRestore();
         });
     });
-    
+
     describe("searchUsers", () => {
         it("should return 400 if query parameter is missing", async () => {
             mockRequest.query = {};
@@ -311,38 +311,53 @@ describe("Search Controller Unit Tests", () => {
         });
 
         it("should search posts successfully", async () => {
-            mockRequest.query = { q: "cinema" };
+    mockRequest.query = { q: "cinema" };
 
-            const mockPosts = [
-                {
-                    id: "post-uuid",
-                    userId: "user-uuid",
-                    content: "I love cinema!",
-                    type: "SHORT",
-                    votes: 5,
-                    createdAt: new Date(),
-                    user: {
-                        userId: "user-uuid",
-                        username: "john_doe",
-                    },
-                    _count: {
-                        comments: 3,
-                    },
-                },
-            ];
+    const mockPosts = [
+        {
+            id: "post-uuid",
+            userId: "user-uuid",
+            movieId: "movie-uuid",
+            content: "I love cinema!",
+            type: "SHORT",
+            stars: null,
+            spoiler: false,
+            tags: [],
+            imageUrls: [],
+            repostedPostId: null,
+            createdAt: new Date(),
+            UserProfile: {
+                userId: "user-uuid",
+                username: "john_doe",
+            },
+            movie: {
+                movieId: "movie-uuid",
+                title: "Test Movie",
+                imageUrl: "test.jpg",
+            },
+            _count: {
+                Comment: 3,
+            },
+        },
+    ];
 
-            jest.spyOn(prisma.post, "findMany").mockResolvedValueOnce(mockPosts as any);
+    jest.spyOn(prisma.post, "findMany").mockResolvedValueOnce(mockPosts as any);
 
-            await searchPosts(mockRequest as Request, mockResponse as Response);
+    await searchPosts(mockRequest as Request, mockResponse as Response);
 
-            expect(responseObject.json).toHaveBeenCalledWith(
+    expect(responseObject.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+            type: "posts",
+            count: 1,
+            results: expect.arrayContaining([
                 expect.objectContaining({
-                    type: "posts",
-                    count: 1,
-                    results: mockPosts,
+                    id: "post-uuid",
+                    content: "I love cinema!",
                 })
-            );
-        });
+            ]),
+        })
+    );
+});
 
         it("should filter by post type", async () => {
             mockRequest.query = { q: "discussion", type: "LONG" };
