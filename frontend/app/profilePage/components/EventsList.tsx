@@ -45,17 +45,20 @@ const EventsList = ({ userId, eventsSaved = [], eventsAttended = [] }: Props) =>
     try {
       setLoading(true);
       setError(null);
-      // fetch saved
-      const fetchSaved = savedIds.length
-        ? Promise.all(savedIds.map(id => getLocalEvent(id).then(r => r.data as LocalEvent)))
+      // fetch saved (create arrays of promises)
+      const fetchSaved: Promise<LocalEvent>[] = savedIds.length
+        ? savedIds.map(id => getLocalEvent(id).then(r => r.data as LocalEvent))
         : [];
-      const fetchAttended = attendedIds.length
-        ? Promise.all(attendedIds.map(id => getLocalEvent(id).then(r => r.data as LocalEvent)))
+      const fetchAttended: Promise<LocalEvent>[] = attendedIds.length
+        ? attendedIds.map(id => getLocalEvent(id).then(r => r.data as LocalEvent))
         : [];
 
-      const [saved, attended] = await Promise.all([Promise.all(fetchSaved), Promise.all(fetchAttended)]);
-      setSavedEvents(saved.filter(Boolean));
-      setAttendedEvents(attended.filter(Boolean));
+      const [saved, attended] = await Promise.all([
+        Promise.all(fetchSaved),
+        Promise.all(fetchAttended),
+      ]);
+      setSavedEvents(saved.filter((e): e is LocalEvent => Boolean(e)));
+      setAttendedEvents(attended.filter((e): e is LocalEvent => Boolean(e)));
     } catch (err: any) {
       console.error('Failed to load user events', err);
       setError(err?.message || 'Failed to load events');
