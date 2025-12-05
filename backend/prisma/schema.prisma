@@ -482,7 +482,7 @@ model UserProfile {
   favoriteGenres                                 String[]       @default([])
   favoriteMovies                                 String[]       @default([])
   privateAccount                                 Boolean        @default(false)
-  spoilers                                       Boolean        @default(false)
+  spoiler                                        Boolean        @default(false)
   createdAt                                      DateTime       @default(now())
   updatedAt                                      DateTime       @updatedAt
   Comment                                        Comment[]
