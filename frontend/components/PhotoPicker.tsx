@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, TouchableOpacity, Text, Image, StyleSheet, Alert } from 'react-native';
 import * as ExpoImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
+import ImageCropper from './ImageCropper';
 
 // testing shape for cropper - circle for now
 interface ImagePickerProps {
@@ -9,15 +10,19 @@ interface ImagePickerProps {
   currentImage?: string | null;
   size?: 'small' | 'medium' | 'large';
   shape?: 'circle' | 'square';
+  enableCropping?: boolean; // enable/disable cropper
 }
 
 export default function ImagePicker({ 
   onImageSelected, 
   currentImage,
   size = 'medium',
-  shape = 'square'
+  shape = 'square',
+  enableCropping = true,
 }: ImagePickerProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(currentImage || null);
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
 
   const requestPermissions = async () => {
     const { status } = await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
@@ -41,18 +46,24 @@ export default function ImagePicker({
     try {
       const result = await ExpoImagePicker.launchImageLibraryAsync({
         mediaTypes: ExpoImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
+        allowsEditing: !enableCropping,
         aspect: shape === 'circle' ? [1, 1] : [4, 3],
-        quality: 0.8,
+        quality: enableCropping ? 1 : 0.8,
       });
 
       if (!result.canceled && result.assets[0]) {
         const imageUri = result.assets[0].uri;
-        setSelectedImage(imageUri);
-        
-        if (onImageSelected) {
-          onImageSelected(imageUri);
-        }
+
+        if (enableCropping) {
+            // show cropper
+            setTempImage(imageUri);
+            setShowCropper(true);
+          } else {
+            setSelectedImage(imageUri);
+            if (onImageSelected) {
+              onImageSelected(imageUri);
+            }
+          }
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -60,6 +71,23 @@ export default function ImagePicker({
     }
   };
 
+  // finish crop
+  const handleCropComplete = (croppedUri: string) => {
+    setSelectedImage(croppedUri);
+    if (onImageSelected) {
+      onImageSelected(croppedUri);
+    }
+    setShowCropper(false);
+    setTempImage(null);
+  };
+
+  // cancel crop
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setTempImage(null);
+  };
+
+  // remove
   const removeImage = () => {
     setSelectedImage(null);
     if (onImageSelected) {
@@ -119,6 +147,16 @@ export default function ImagePicker({
         >
           <MaterialIcons name="close" size={20} color="#fff" />
         </TouchableOpacity>
+      )}
+
+     {tempImage && enableCropping && (
+        <ImageCropper
+          visible={showCropper}
+          imageUri={tempImage}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          circular={isCircle}
+        />
       )}
     </View>
   );

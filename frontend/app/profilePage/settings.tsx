@@ -16,6 +16,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { getUserProfile, updateUserProfile } from '../../services/userService';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
+import ImagePicker from '../../components/PhotoPicker';
 
 export default function Settings() {
   const [displayName, setDisplayName] = useState('');
@@ -25,6 +26,8 @@ export default function Settings() {
   const [hasCustomPhoto, setHasCustomPhoto] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  
   const { height: SCREEN_HEIGHT } = Dimensions.get('window');
   const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2);
   const AVATAR_SIZE = 100;
@@ -75,6 +78,18 @@ export default function Settings() {
     }
   }, [displayName, hasCustomPhoto]);
 
+  const handleImageSelected = (uri: string) => {
+    if (uri) {
+      setPhotoUri(uri);
+      setHasCustomPhoto(true);
+      setShowImagePicker(false);
+      console.log('New profile picture selected:', uri);
+      // need to implement backend upload
+    } else {
+      setShowImagePicker(false);
+    }
+  };
+
   const handleSave = async () => {
     if (saving) return;
     try {
@@ -83,6 +98,7 @@ export default function Settings() {
       await updateUserProfile({
         username: normalizedName,
         favoriteMovies: bio.trim() ? [bio.trim()] : [],
+        
       });
       if (!hasCustomPhoto) {
         setPhotoUri(
@@ -186,7 +202,7 @@ export default function Settings() {
                       borderRadius: AVATAR_RADIUS,
                     },
                   ]}
-                  onPress={() => {/* hook up image picker here */}}
+                  onPress={() => setShowImagePicker(true)}
                 >
                   <Image
                     source={{ uri: photoUri }}
@@ -263,6 +279,26 @@ export default function Settings() {
           </>
         )}
       </ScrollView>
+
+      {showImagePicker && (
+        <View style={tw`absolute inset-0 bg-white`}>
+          <View style={tw`flex-1 items-center justify-center`}>
+            <ImagePicker
+              onImageSelected={handleImageSelected}
+              currentImage={photoUri}
+              size="large"
+              shape="circle"
+              enableCropping={true}
+            />
+            <TouchableOpacity
+              style={tw`mt-5 px-6 py-3 bg-gray-200 rounded-lg`}
+              onPress={() => setShowImagePicker(false)}
+            >
+              <Text style={tw`font-semibold`}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Bottom nav to keep tabs visible in settings */}
       <View
