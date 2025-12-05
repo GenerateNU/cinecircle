@@ -4,7 +4,7 @@ export const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "center",
-    paddingVertical: 16,
+    paddingVertical: 4,
   },
 
   starContainer: {

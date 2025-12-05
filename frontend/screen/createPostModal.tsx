@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.5)",
+    zIndex: 2000,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,

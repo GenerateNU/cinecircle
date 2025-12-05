@@ -5,24 +5,25 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Switch,
 } from "react-native";
 
 import MovieSelectorModal from "./MovieSelectorModal";
 import CreatePostToolBar from "./CreatePostToolBar";
+import SpoilerButton from "./SpoilerButton";
 
 interface ShortPostFormProps {
   onSubmit: (data: any) => void;
   onToolbarAction: (action: string) => void;
+  preselectedMovie?: { id: string; title: string } | null;
 }
 
 interface Movie {
   id: string;
-  title: string;
+  title?: string | null;
 }
 
-const ShortPostForm = forwardRef(({ onSubmit, onToolbarAction }: ShortPostFormProps, ref) => {
-  const [movie, setMovie] = useState<Movie | null>(null);
+const ShortPostForm = forwardRef(({ onSubmit, onToolbarAction, preselectedMovie }: ShortPostFormProps, ref) => {
+  const [movie, setMovie] = useState<Movie | null>(preselectedMovie || null);
   const [spoiler, setSpoiler] = useState(false);
   const [content, setContent] = useState("");
   const [movieModalVisible, setMovieModalVisible] = useState(false);
@@ -61,13 +62,10 @@ const ShortPostForm = forwardRef(({ onSubmit, onToolbarAction }: ShortPostFormPr
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.spoilerRow}>
-        <Text style={styles.spoilerLabel}>Spoiler</Text>
-        <Switch
-          value={spoiler}
-          onValueChange={setSpoiler}
-          trackColor={{ true: "#e8856d", false: "#e8856d" }}
-          thumbColor='white'
+      <View style={{ marginTop: 18 }}>
+        <SpoilerButton
+          isSpoiler={spoiler}
+          onToggle={setSpoiler}
         />
       </View>
 
@@ -119,18 +117,6 @@ const styles = StyleSheet.create({
     fontFamily: "Figtree_500Medium",
     fontSize: 15,
     color: "#e66a4e",
-  },
-
-  spoilerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 18,
-  },
-  spoilerLabel: {
-    fontFamily: "Figtree_500Medium",
-    fontSize: 14,
-    color: "#444",
-    marginRight: 10,
   },
 
   input: {

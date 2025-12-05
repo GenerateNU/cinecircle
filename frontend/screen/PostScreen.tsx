@@ -24,8 +24,10 @@ export type PostFormData = {
 
 export default function PostScreen({
   initialType,
+  preselectedMovie,
 }: {
   initialType: 'long' | 'short';
+  preselectedMovie?: { id: string; title: string } | null;
 }) {
   const [postType] = useState<'long' | 'short'>(initialType);
   const [showStars, setShowStars] = useState(false);
@@ -74,11 +76,13 @@ export default function PostScreen({
         <ScrollView keyboardShouldPersistTaps="handled">
           {postType === 'long' ? (
             <LongPostForm
+              preselectedMovie={preselectedMovie}
               onToolbarAction={handleToolbarAction}
               onSubmit={handleFormSubmit}
             />
           ) : (
             <ShortPostForm
+              preselectedMovie={preselectedMovie}
               onToolbarAction={handleToolbarAction}
               onSubmit={handleFormSubmit}
             />

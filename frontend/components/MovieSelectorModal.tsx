@@ -15,7 +15,7 @@ import {
 import { getAllMovies } from "../services/moviesService";
 
 interface Movie {
-  movieId: string;
+  id: string;
   title?: string | null;
 }
 
@@ -41,7 +41,12 @@ export default function MovieSelectorModal({
         try {
           const movies = await getAllMovies();
           console.log("Movie API returned:", movies);
-          setAllMovies(movies);
+          // Transform API response to use consistent 'id' property
+          const transformedMovies = movies.map((movie: any) => ({
+            id: movie.movieId,
+            title: movie.title
+          }));
+          setAllMovies(transformedMovies);
         } catch (err) {
           console.log("Error fetching movies:", err);
         }
@@ -112,7 +117,7 @@ export default function MovieSelectorModal({
 
             <FlatList
               data={filtered}
-              keyExtractor={(item) => item.movieId}
+              keyExtractor={(item) => item.id}
               contentContainerStyle={styles.pillContainer}
               renderItem={({ item }) => (
                 <TouchableOpacity

@@ -5,7 +5,6 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Switch,
 } from "react-native";
 
 import MovieSelectorModal from "./MovieSelectorModal";
@@ -13,10 +12,12 @@ import StarRating from "./StarRating";
 import CreatePostToolBar from "./CreatePostToolBar";
 import TagModal from './TagSelectorModal'
 import Tag from './Tag'
+import SpoilerButton from './SpoilerButton'
 
 interface LongPostFormProps {
   onSubmit: (data: any) => void;
   onToolbarAction: (action: string) => void;
+  preselectedMovie?: { id: string; title: string } | null;
 }
 
 interface Movie {
@@ -24,8 +25,8 @@ interface Movie {
   title?: string | null;
 }
 
-const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProps, ref) => {
-  const [movie, setMovie] = useState<Movie | null>(null);
+const LongPostForm = forwardRef(({ onSubmit, onToolbarAction, preselectedMovie }: LongPostFormProps, ref) => {
+  const [movie, setMovie] = useState<Movie | null>(preselectedMovie || null);
   const [spoiler, setSpoiler] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -71,13 +72,10 @@ const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProp
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.spoilerRow}>
-        <Text style={styles.spoilerLabel}>Spoiler</Text>
-        <Switch
-          value={spoiler}
-          onValueChange={setSpoiler}
-          trackColor={{ true: "#e8856d", false: "#e8856d" }}
-          thumbColor='white'
+      <View style={{ marginTop: 18 }}>
+        <SpoilerButton
+          isSpoiler={spoiler}
+          onToggle={setSpoiler}
         />
       </View>
 
@@ -129,10 +127,7 @@ const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProp
         visible={movieModalVisible}
         onClose={() => setMovieModalVisible(false)}
         onSelect={(selectedMovie) => {
-          setMovie({
-                id: selectedMovie.movieId,
-                title: selectedMovie.title,
-            });
+          setMovie(selectedMovie);
         }}
       />
 
@@ -168,25 +163,12 @@ const styles = StyleSheet.create({
     color: "#e66a4e",
   },
 
-  spoilerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 18,
-  },
-
   titleInput: {
      fontSize: 22,
      fontFamily: "Figtree_600SemiBold",
      marginBottom: 12,
      color: "#000",
    },
-
-  spoilerLabel: {
-    fontFamily: "Figtree_500Medium",
-    fontSize: 14,
-    color: "#444",
-    marginRight: 10,
-  },
 
   input: {
     marginTop: 18,
