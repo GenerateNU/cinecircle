@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   StyleSheet,
   View,
@@ -8,17 +9,20 @@ import {
   ActivityIndicator,
   Modal,
   Image,
+  Alert,
 } from 'react-native';
 import RsvpNotification from '../../components/RsvpNotification';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { CircleDollarSign, MapPin, Calendar } from 'lucide-react-native';
+import { CircleDollarSign, MapPin, Calendar, Bookmark, BookmarkCheck } from 'lucide-react-native';
 import Entypo from '@expo/vector-icons/Entypo';
 import Rsvp from '../../components/Rsvp';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getLocalEvent, type LocalEvent } from '../../services/eventsService';
 import { createOrUpdateRsvp, getUserRsvp } from '../../services/rsvpService';
+import { getUserProfile, updateUserProfile } from '../../services/userService';
 import LocationSection from '../../components/LocationSection';
+import { useAuth } from '../../context/AuthContext';
 
 export default function EventDetailScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -29,13 +33,43 @@ export default function EventDetailScreen() {
   const [showRsvpModal, setShowRsvpModal] = useState(false);
   const [userRsvp, setUserRsvp] = useState<'yes' | 'maybe' | 'no' | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [savedEvents, setSavedEvents] = useState<string[]>([]);
+  const { user } = useAuth();
 
+  // Load event details, user RSVP, and saved events
+  const loadUserData = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const profile = await getUserProfile();
+      if (profile?.userProfile) {
+        const { eventsSaved = [] } = profile.userProfile;
+        setSavedEvents(eventsSaved);
+        setIsBookmarked(eventId ? eventsSaved.includes(eventId) : false);
+      }
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+    }
+  }, [user, eventId]);
+
+  // Load data when component mounts or eventId changes
   useEffect(() => {
     if (eventId) {
       loadEventDetails();
       loadUserRsvp();
+      loadUserData();
     }
-  }, [eventId]);
+  }, [eventId, loadUserData]);
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (eventId) {
+        loadUserData();
+      }
+    }, [eventId, loadUserData])
+  );
 
   const loadEventDetails = async () => {
     if (!eventId) return;
@@ -96,6 +130,31 @@ export default function EventDetailScreen() {
 
   const handleDismissNotification = () => {
     setShowNotification(false);
+  };
+
+  const toggleBookmark = async () => {
+    if (!user?.id || !eventId) return;
+    
+    try {
+      const updatedSavedEvents = isBookmarked
+        ? savedEvents.filter(id => id !== eventId)
+        : [...savedEvents, eventId];
+      
+      // Optimistic UI update
+      setIsBookmarked(!isBookmarked);
+      setSavedEvents(updatedSavedEvents);
+      
+      // Update the backend
+      await updateUserProfile({
+        eventsSaved: updatedSavedEvents
+      });
+      
+    } catch (error) {
+      // Revert on error
+      setIsBookmarked(!isBookmarked);
+      console.error('Failed to update bookmarks:', error);
+      Alert.alert('Error', 'Failed to update bookmarks. Please try again.');
+    }
   };
 
   if (loading) {
@@ -159,12 +218,15 @@ export default function EventDetailScreen() {
               <TouchableOpacity style={styles.iconButton}>
                 <MaterialIcons name="ios-share" size={20} color="#A82411" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialIcons
-                  name="bookmark-border"
-                  size={20}
-                  color="#A82411"
-                />
+              <TouchableOpacity 
+                style={styles.iconButton}
+                onPress={toggleBookmark}
+              >
+                {isBookmarked ? (
+                  <BookmarkCheck size={20} color="#A82411" fill="#A82411" />
+                ) : (
+                  <Bookmark size={20} color="#A82411" />
+                )}
               </TouchableOpacity>
             </View>
           </View>

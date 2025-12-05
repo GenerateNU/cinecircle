@@ -42,21 +42,111 @@ INSERT INTO "public"."UserProfile" (
   "profilePicture",
   "country",
   "city",
+  "displayName",
   "favoriteGenres",
   "favoriteMovies",
+  "privateAccount",
+  "spoiler",
+  "bio",
+  "eventsSaved",
+  "eventsAttended",
   "createdAt",
-  "updatedAt"
+  "updatedAt",
+  "bookmarkedToWatch",
+  "bookmarkedWatched"
 ) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'alice_movie_fan', true, 'English', ARRAY['Spanish'], NULL, 'USA', 'New York', ARRAY['Drama', 'Thriller'], ARRAY['tt0111161', 'tt0068646'], NOW(), NOW()),
-  ('22222222-2222-2222-2222-222222222222', 'bob_cineaste', true, 'English', ARRAY['French'], NULL, 'USA', 'Los Angeles', ARRAY['Action', 'Sci-Fi'], ARRAY['tt0468569', 'tt0137523'], NOW(), NOW()),
-  ('33333333-3333-3333-3333-333333333333', 'charlie_critic', true, 'English', ARRAY[]::text[], NULL, 'Canada', 'Toronto', ARRAY['Comedy', 'Romance'], ARRAY['tt0109830', 'tt1375666'], NOW(), NOW()),
-  ('44444444-4444-4444-4444-444444444444', 'diana_director', true, 'English', ARRAY['Italian'], NULL, 'Italy', 'Rome', ARRAY['Drama', 'Biography'], ARRAY['tt0073486', 'tt0099685'], NOW(), NOW()),
-  ('55555555-5555-5555-5555-555555555555', 'evan_enthusiast', true, 'English', ARRAY['Japanese'], NULL, 'USA', 'San Francisco', ARRAY['Animation', 'Fantasy'], ARRAY['tt0245429', 'tt1853728'], NOW(), NOW()),
-  ('66666666-6666-6666-6666-666666666666', 'fiona_film_buff', true, 'English', ARRAY['German'], NULL, 'Germany', 'Berlin', ARRAY['Horror', 'Mystery'], ARRAY['tt0816692', 'tt0110912'], NOW(), NOW()),
-  ('77777777-7777-7777-7777-777777777777', 'george_genre_fan', true, 'English', ARRAY[]::text[], NULL, 'USA', 'Chicago', ARRAY['Western', 'Crime'], ARRAY['tt0076759', 'tt0050083'], NOW(), NOW()),
-  ('88888888-8888-8888-8888-888888888888', 'hannah_hollywood', true, 'English', ARRAY['Korean'], NULL, 'South Korea', 'Seoul', ARRAY['Drama', 'Thriller'], ARRAY['tt6751668', 'tt0167260'], NOW(), NOW()),
-  ('99999999-9999-9999-9999-999999999999', 'isaac_indie', true, 'English', ARRAY[]::text[], NULL, 'UK', 'London', ARRAY['Independent', 'Documentary'], ARRAY['tt0114369', 'tt0120737'], NOW(), NOW()),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'julia_junkie', true, 'English', ARRAY['Portuguese'], NULL, 'Brazil', 'São Paulo', ARRAY['Drama', 'Romance'], ARRAY['tt0133093', 'tt0088763'], NOW(), NOW())
+  ('11111111-1111-1111-1111-111111111111', 'alice_movie_fan', true, 'English', ARRAY['Spanish'], NULL, 'USA', 'New York', ARRAY['Drama', 'Thriller'], ARRAY['tt0111161', 'tt0068646'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0073486', 'tt0099685']),
+  ('22222222-2222-2222-2222-222222222222', 'bob_cineaste', true, 'English', ARRAY['French'], NULL, 'USA', 'Los Angeles', ARRAY['Action', 'Sci-Fi'], ARRAY['tt0468569', 'tt0137523'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0468569', 'tt0137523']),
+  ('33333333-3333-3333-3333-333333333333', 'charlie_critic', true, 'English', ARRAY[]::text[], NULL, 'Canada', 'Toronto', ARRAY['Comedy', 'Romance'], ARRAY['tt0109830', 'tt1375666'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0109830', 'tt1375666']),
+  ('44444444-4444-4444-4444-444444444444', 'diana_director', true, 'English', ARRAY['Italian'], NULL, 'Italy', 'Rome', ARRAY['Drama', 'Biography'], ARRAY['tt0073486', 'tt0099685'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0073486', 'tt0099685']),
+  ('55555555-5555-5555-5555-555555555555', 'evan_enthusiast', true, 'English', ARRAY['Japanese'], NULL, 'USA', 'San Francisco', ARRAY['Animation', 'Fantasy'], ARRAY['tt0245429', 'tt1853728'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0245429', 'tt1853728']),
+  ('66666666-6666-6666-6666-666666666666', 'fiona_film_buff', true, 'English', ARRAY['German'], NULL, 'Germany', 'Berlin', ARRAY['Horror', 'Mystery'], ARRAY['tt0816692', 'tt0110912'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0816692', 'tt0110912']),
+  ('77777777-7777-7777-7777-777777777777', 'george_genre_fan', true, 'English', ARRAY[]::text[], NULL, 'USA', 'Chicago', ARRAY['Western', 'Crime'], ARRAY['tt0076759', 'tt0050083'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0076759', 'tt0050083']),
+  ('88888888-8888-8888-8888-888888888888', 'hannah_hollywood', true, 'English', ARRAY['Korean'], NULL, 'South Korea', 'Seoul', ARRAY['Drama', 'Thriller'], ARRAY['tt6751668', 'tt0167260'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt6751668', 'tt0167260']),
+  ('99999999-9999-9999-9999-999999999999', 'isaac_indie', true, 'English', ARRAY[]::text[], NULL, 'UK', 'London', ARRAY['Independent', 'Documentary'], ARRAY['tt0114369', 'tt0120737'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0114369', 'tt0120737']),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'julia_junkie', true, 'English', ARRAY['Portuguese'], NULL, 'Brazil', 'São Paulo', ARRAY['Drama', 'Romance'], ARRAY['tt0133093', 'tt0088763'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0133093', 'tt0088763'])
+  "spoiler"
+) VALUES
+  ('11111111-1111-1111-1111-111111111111',
+    'alice_movie_fan', true, 'English', ARRAY['Spanish'], NULL, 'USA', 'New York',
+    'Alice', ARRAY['Drama','Thriller'], ARRAY['tt0111161','tt0068646'],
+    false, false, NULL,
+    ARRAY['e1111111-1111-1111-1111-111111111111','e4444444-4444-4444-4444-444444444444'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e5555555-5555-5555-5555-555555555555'],
+    NOW(), NOW()
+  ),
+  ('22222222-2222-2222-2222-222222222222',
+    'bob_cineaste', true, 'English', ARRAY['French'], NULL, 'USA', 'Los Angeles',
+    'Bob', ARRAY['Action','Sci-Fi'], ARRAY['tt0468569','tt0137523'],
+    false, false, NULL,
+    ARRAY['e2222222-2222-2222-2222-222222222222','e3333333-3333-3333-3333-333333333333'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e2222222-2222-2222-2222-222222222222'],
+    NOW(), NOW()
+  ),
+  ('33333333-3333-3333-3333-333333333333',
+    'charlie_critic', true, 'English', ARRAY[]::text[], NULL, 'Canada', 'Toronto',
+    'Charlie', ARRAY['Comedy','Romance'], ARRAY['tt0109830','tt1375666'],
+    false, false, NULL,
+    ARRAY['e3333333-3333-3333-3333-333333333333'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e3333333-3333-3333-3333-333333333333'],
+    NOW(), NOW()
+  ),
+  ('44444444-4444-4444-4444-444444444444',
+    'diana_director', true, 'English', ARRAY['Italian'], NULL, 'Italy', 'Rome',
+    'Diana', ARRAY['Drama','Biography'], ARRAY['tt0073486','tt0099685'],
+    false, false, NULL,
+    ARRAY['e4444444-4444-4444-4444-444444444444'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e3333333-3333-3333-3333-333333333333','e5555555-5555-5555-5555-555555555555'],
+    NOW(), NOW()
+  ),
+  ('55555555-5555-5555-5555-555555555555',
+    'evan_enthusiast', true, 'English', ARRAY['Japanese'], NULL, 'USA', 'San Francisco',
+    'Evan', ARRAY['Animation','Fantasy'], ARRAY['tt0245429','tt1853728'],
+    false, false, NULL,
+    ARRAY['e1111111-1111-1111-1111-111111111111','e5555555-5555-5555-5555-555555555555'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e3333333-3333-3333-3333-333333333333','e5555555-5555-5555-5555-555555555555'],
+    NOW(), NOW()
+  ),
+  ('66666666-6666-6666-6666-666666666666',
+    'fiona_film_buff', true, 'English', ARRAY['German'], NULL, 'Germany', 'Berlin',
+    'Fiona', ARRAY['Horror','Mystery'], ARRAY['tt0816692','tt0110912'],
+    false, false, NULL,
+    ARRAY['e3333333-3333-3333-3333-333333333333','e5555555-5555-5555-5555-555555555555'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e3333333-3333-3333-3333-333333333333'],
+    NOW(), NOW()
+  ),
+  ('77777777-7777-7777-7777-777777777777',
+    'george_genre_fan', true, 'English', ARRAY[]::text[], NULL, 'USA', 'Chicago',
+    'George', ARRAY['Western','Crime'], ARRAY['tt0076759','tt0050083'],
+    false, false, NULL,
+    ARRAY['e2222222-2222-2222-2222-222222222222','e5555555-5555-5555-5555-555555555555'],
+    ARRAY['e3333333-3333-3333-3333-333333333333','e5555555-5555-5555-5555-555555555555'],
+    NOW(), NOW()
+  ),
+  ('88888888-8888-8888-8888-888888888888',
+    'hannah_hollywood', true, 'English', ARRAY['Korean'], NULL, 'South Korea', 'Seoul',
+    'Hannah', ARRAY['Drama','Thriller'], ARRAY['tt6751668','tt0167260'],
+    false, false, NULL,
+    ARRAY['e2222222-2222-2222-2222-222222222222','e4444444-4444-4444-4444-444444444444'],
+    ARRAY['e1111111-1111-1111-1111-111111111111','e4444444-4444-4444-4444-444444444444','e5555555-5555-5555-5555-555555555555'],
+    NOW(), NOW()
+  ),
+  ('99999999-9999-9999-9999-999999999999',
+    'isaac_indie', true, 'English', ARRAY[]::text[], NULL, 'UK', 'London',
+    'Isaac', ARRAY['Independent','Documentary'], ARRAY['tt0114369','tt0120737'],
+    false, false, NULL,
+    ARRAY['e2222222-2222-2222-2222-222222222222','e4444444-4444-4444-4444-444444444444'],
+    ARRAY['e4444444-4444-4444-4444-444444444444','e5555555-5555-5555-5555-555555555555'],
+    NOW(), NOW()
+  ),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'julia_junkie', true, 'English', ARRAY['Portuguese'], NULL, 'Brazil', 'São Paulo',
+    'Julia', ARRAY['Drama','Romance'], ARRAY['tt0133093','tt0088763'],
+    false, false, NULL,
+    ARRAY['e2222222-2222-2222-2222-222222222222','e4444444-4444-4444-4444-444444444444'],
+    ARRAY['e4444444-4444-4444-4444-444444444444'],
+    NOW(), NOW()
+  )
 ON CONFLICT ("userId") DO NOTHING;
 
 -- ============================================
@@ -732,4 +822,3 @@ ON CONFLICT ("id") DO NOTHING;
 -- Success Message
 -- ============================================
 SELECT 'Seed data inserted successfully!' as message;
-

@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 import RecByFriendsScreen from './RecByFriendsScreen';
 import SearchBar from '../components/SearchBar';
-import { getAllMovies } from '../services/moviesService';
+import {
+  getAllMovies,
+  getMoviesAfterYear,
+  getMoviesRandom10,
+} from '../services/moviesService';
 import type { components } from '../types/api-generated';
 import { t, getLanguage } from '../il8n/_il8n';
 import { UiTextKey } from '../il8n/_keys';
@@ -27,58 +31,8 @@ interface MovieCard {
   image: string;
 }
 
-const MOCK_MOVIES: MovieCard[] = [
-  {
-    id: '1',
-    title: 'Inception',
-    badge: 'New!',
-    image: 'https://via.placeholder.com/150x220/667eea/ffffff?text=Movie+1',
-  },
-  {
-    id: '2',
-    title: 'The Matrix',
-    badge: 'Hot!',
-    image: 'https://via.placeholder.com/150x220/f093fb/ffffff?text=Movie+2',
-  },
-  {
-    id: '3',
-    title: 'Interstellar',
-    image: 'https://via.placeholder.com/150x220/4facfe/ffffff?text=Movie+3',
-  },
-  {
-    id: '4',
-    title: 'The Dark Knight',
-    badge: 'New!',
-    image: 'https://via.placeholder.com/150x220/00f2fe/ffffff?text=Movie+4',
-  },
-  {
-    id: '5',
-    title: 'Pulp Fiction',
-    image: 'https://via.placeholder.com/150x220/43e97b/ffffff?text=Movie+5',
-  },
-  {
-    id: '6',
-    title: 'Fight Club',
-    image: 'https://via.placeholder.com/150x220/fa709a/ffffff?text=Movie+6',
-  },
-  {
-    id: '7',
-    title: 'Forrest Gump',
-    badge: 'New!',
-    image: 'https://via.placeholder.com/150x220/fee140/ffffff?text=Movie+7',
-  },
-  {
-    id: '8',
-    title: 'The Godfather',
-    image: 'https://via.placeholder.com/150x220/30cfd0/ffffff?text=Movie+8',
-  },
-  {
-    id: '9',
-    title: 'Goodfellas',
-    image: 'https://via.placeholder.com/150x220/a8edea/ffffff?text=Movie+9',
-  },
-];
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+const MOVIES_AFTER_YEAR = 2015;
 
 export default function MoviesScreen() {
   const [activeTab, setActiveTab] = useState<'forYou' | 'recommended'>(
@@ -86,9 +40,20 @@ export default function MoviesScreen() {
   );
   const [searchText, setSearchText] = useState('');
 
+  // 🔹 New Releases
   const [newReleases, setNewReleases] = useState<MovieCard[]>([]);
   const [loadingNewReleases, setLoadingNewReleases] = useState(false);
   const [newReleasesError, setNewReleasesError] = useState<string | null>(null);
+
+  // 🔹 Movies after a certain year
+  const [moviesAfterYear, setMoviesAfterYear] = useState<MovieCard[]>([]);
+  const [loadingAfterYear, setLoadingAfterYear] = useState(false);
+  const [afterYearError, setAfterYearError] = useState<string | null>(null);
+
+  // 🔹 Random 10 movies
+  const [randomMovies, setRandomMovies] = useState<MovieCard[]>([]);
+  const [loadingRandom, setLoadingRandom] = useState(false);
+  const [randomError, setRandomError] = useState<string | null>(null);
 
   const handleSearchSubmit = (text: string): void => {
     const query = (text || '').trim();
@@ -105,65 +70,98 @@ export default function MoviesScreen() {
     });
   };
 
-  // 🔍 Log every render to see what language + labels we get
   console.log('[MoviesScreen] render', {
     lang: getLanguage(),
     forYouLabel: t(UiTextKey.ForYou),
     newReleasesLabel: t(UiTextKey.NewReleases),
   });
 
+  // Helper to map backend Movie → MovieCard
+  const mapMoviesToCards = (
+    apiMovies: Movie[],
+    withBadgesForFirstThree: boolean
+  ): MovieCard[] => {
+    return apiMovies.map((m: Movie, index) => {
+      const title = m.title ?? 'Untitled';
+      const movieId = m.movieId ?? String(index);
+      const badge: MovieCard['badge'] | undefined =
+        withBadgesForFirstThree && index < 3 ? 'New!' : undefined;
+
+      const imagePath = m.imageUrl ?? '';
+
+      const image =
+        imagePath && imagePath.trim().length > 0
+          ? `${TMDB_IMAGE_BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`
+          : `https://via.placeholder.com/150x220/667eea/ffffff?text=${encodeURIComponent(
+              title
+            )}`;
+
+      return { id: movieId, title, badge, image };
+    });
+  };
+
   useEffect(() => {
     const init = async () => {
       // 1) Fetch user profile and set language
       try {
         console.log('[MoviesScreen] calling fetchUserProfile...');
-        await fetchUserProfile(); // should log [user] ... and call setLanguage()
+        await fetchUserProfile();
       } catch (err) {
         console.log('[MoviesScreen] fetchUserProfile error:', err);
       }
 
-      // 2) Fetch New Releases
+      // 2) Fetch sections in parallel
       try {
         setLoadingNewReleases(true);
+        setLoadingAfterYear(true);
+        setLoadingRandom(true);
         setNewReleasesError(null);
+        setAfterYearError(null);
+        setRandomError(null);
 
-        console.log('Fetching movies for New Releases...');
-        const apiMovies = await getAllMovies();
-        console.log('Movies from API:', apiMovies);
+        const [allMovies, afterYearMovies, random10Movies] = await Promise.all([
+          getAllMovies(),
+          getMoviesAfterYear(MOVIES_AFTER_YEAR),
+          getMoviesRandom10(),
+        ]);
 
-        if (!apiMovies || apiMovies.length === 0) {
+        // 🔸 New Releases: slice + badges
+        if (allMovies && allMovies.length > 0) {
+          const mappedNew = mapMoviesToCards(
+            allMovies.slice(0, 8),
+            true // badges for first few
+          );
+          setNewReleases(mappedNew);
+        } else {
           setNewReleases([]);
-          return;
         }
 
-        const mapped: MovieCard[] = apiMovies
-          .slice(0, 8)
-          .map((m: Movie, index) => {
-            const title = m.title ?? 'Untitled';
-            const movieId = m.movieId ?? String(index);
-            const badge: MovieCard['badge'] | undefined =
-              index < 3 ? 'New!' : undefined;
+        // 🔸 Movies after year (no badges)
+        if (afterYearMovies && afterYearMovies.length > 0) {
+          const mappedAfter = mapMoviesToCards(afterYearMovies, false);
+          setMoviesAfterYear(mappedAfter);
+        } else {
+          setMoviesAfterYear([]);
+        }
 
-            const imagePath = m.imageUrl ?? ''; // e.g. "/ii8QGacT3MXESqBckQlyrATY0lT.jpg"
-
-            const image =
-              imagePath && imagePath.trim().length > 0
-                ? `${TMDB_IMAGE_BASE_URL}${
-                    imagePath.startsWith('/') ? '' : '/'
-                  }${imagePath}`
-                : `https://via.placeholder.com/150x220/667eea/ffffff?text=${encodeURIComponent(
-                    title
-                  )}`;
-
-            return { id: movieId, title, badge, image };
-          });
-
-        setNewReleases(mapped);
-      } catch (error) {
-        console.error('Error fetching movies for New Releases:', error);
-        setNewReleasesError('Failed to load new releases');
+        // 🔸 Random 10 movies (no badges)
+        if (random10Movies && random10Movies.length > 0) {
+          const mappedRandom = mapMoviesToCards(random10Movies, false);
+          setRandomMovies(mappedRandom);
+        } else {
+          setRandomMovies([]);
+        }
+      } catch (error: any) {
+        console.error('Error fetching movie sections:', error);
+        if (!newReleases.length) {
+          setNewReleasesError('Failed to load new releases');
+        }
+        setAfterYearError('Failed to load movies');
+        setRandomError('Failed to load random picks');
       } finally {
         setLoadingNewReleases(false);
+        setLoadingAfterYear(false);
+        setLoadingRandom(false);
       }
     };
 
@@ -213,7 +211,7 @@ export default function MoviesScreen() {
     </TouchableOpacity>
   );
 
-  // ✅ Use UiTextKey instead of string, and branch on the enum
+  // 🔹 Generic section renderer (still used for New Releases)
   const renderSection = (titleKey: UiTextKey, movies: MovieCard[]) => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{t(titleKey)}</Text>
@@ -262,6 +260,92 @@ export default function MoviesScreen() {
   );
 
   const newReleasesToShow = newReleases;
+
+  // 🔹 Section for "Movies Since YEAR"
+  const renderAfterYearSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Movies Since {MOVIES_AFTER_YEAR}</Text>
+
+      {loadingAfterYear && (
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingBottom: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="small" />
+          <Text style={{ marginLeft: 8, color: '#666' }}>
+            Loading movies...
+          </Text>
+        </View>
+      )}
+
+      {afterYearError && !loadingAfterYear && (
+        <Text style={{ paddingHorizontal: 16, color: '#FF3B30' }}>
+          {afterYearError}
+        </Text>
+      )}
+
+      {!loadingAfterYear && !afterYearError && moviesAfterYear.length === 0 && (
+        <Text style={{ paddingHorizontal: 16, color: '#666' }}>
+          No movies found for this year range.
+        </Text>
+      )}
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.moviesList}
+      >
+        {moviesAfterYear.map(renderMovieCard)}
+      </ScrollView>
+    </View>
+  );
+
+  // 🔹 Section for "Random Picks"
+  const renderRandomSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Movies We Love For You</Text>
+
+      {loadingRandom && (
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingBottom: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="small" />
+          <Text style={{ marginLeft: 8, color: '#666' }}>
+            Loading random movies...
+          </Text>
+        </View>
+      )}
+
+      {randomError && !loadingRandom && (
+        <Text style={{ paddingHorizontal: 16, color: '#FF3B30' }}>
+          {randomError}
+        </Text>
+      )}
+
+      {!loadingRandom && !randomError && randomMovies.length === 0 && (
+        <Text style={{ paddingHorizontal: 16, color: '#666' }}>
+          No random picks available.
+        </Text>
+      )}
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.moviesList}
+      >
+        {randomMovies.map(renderMovieCard)}
+      </ScrollView>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -315,8 +399,8 @@ export default function MoviesScreen() {
           showsVerticalScrollIndicator={false}
         >
           {renderSection(UiTextKey.NewReleases, newReleasesToShow)}
-          {renderSection(UiTextKey.Genre, MOCK_MOVIES.slice(4, 7))}
-          {renderSection(UiTextKey.Genre, MOCK_MOVIES.slice(6, 9))}
+          {renderAfterYearSection()}
+          {renderRandomSection()}
         </ScrollView>
       ) : (
         <RecByFriendsScreen />

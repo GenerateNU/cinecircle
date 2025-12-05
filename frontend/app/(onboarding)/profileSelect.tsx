@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Button } from 'react-native';
 import { router } from 'expo-router';
 import NextButton from '../../components/NextButton';
 import { useOnboarding } from './_layout';
+import BackButton from '../../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -16,6 +17,9 @@ export default function ProfileSelect() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButtonContainer}>
+        <BackButton onPress={() => router.back()}/>
+      </TouchableOpacity>
       <View style={styles.inputWrapper}>
         <Text style={styles.title}>Profile picture coming soon!</Text>
         <Text style={styles.subtitle}>We'll add this feature later</Text>
@@ -45,6 +49,12 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 'auto',
     alignItems: 'center',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    top: height * 0.06,
+    left: width * 0.05,
+    zIndex: 10,
   },
   title: {
     fontSize: width * 0.06,

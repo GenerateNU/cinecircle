@@ -19,8 +19,7 @@ import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
 
 export default function Settings() {
   const [displayName, setDisplayName] = useState('');
-  const [bio, setBio] = useState('South Asian cinema enthusiast 🎬 | SRK forever ❤️');
-  const [whatsapp, setWhatsapp] = useState('+1 (555) 555-5555');
+  const [bio, setBio] = useState('');
   const [photoUri, setPhotoUri] = useState('https://i.pravatar.cc/150?img=3');
   const [hasCustomPhoto, setHasCustomPhoto] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,10 +37,12 @@ export default function Settings() {
       setLoading(true);
       const res = await getUserProfile();
       const username = res.userProfile?.username?.trim() || 'user';
-      setDisplayName(username);
+      const profileDisplayName = res.userProfile?.displayName?.trim() || '';
+      setDisplayName(profileDisplayName);
       const storedBio =
-        res.userProfile?.favoriteMovies?.[0] ||
-        'South Asian cinema enthusiast 🎬 | SRK forever ❤️';
+        res.userProfile?.bio ??
+        res.userProfile?.favoriteMovies?.[0] ??
+        '';
       setBio(storedBio);
       const customPhoto = !!res.userProfile?.profilePicture;
       setHasCustomPhoto(customPhoto);
@@ -79,15 +80,16 @@ export default function Settings() {
     if (saving) return;
     try {
       setSaving(true);
-      const normalizedName = displayName.trim() || 'user';
+      const normalizedDisplayName = displayName.trim() || null;
       await updateUserProfile({
-        username: normalizedName,
-        favoriteMovies: bio.trim() ? [bio.trim()] : [],
+        displayName: normalizedDisplayName,
+        bio: bio.trim() || null,
       });
+      const nameForAvatar = normalizedDisplayName || 'user';
       if (!hasCustomPhoto) {
         setPhotoUri(
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            normalizedName
+            nameForAvatar
           )}&size=200&background=667eea&color=fff`
         );
       }
@@ -241,21 +243,6 @@ export default function Settings() {
                 textAlignVertical="top"
                 style={[
                   tw`rounded-[6px] px-3 py-2 h-28`,
-                  { borderWidth: 1, borderColor: '#D62E05' },
-                ]}
-              />
-            </View>
-
-            {/* WhatsApp Section */}
-            <View style={tw`w-[92%] self-center rounded-[8px] p-4 mb-5`}>
-              <Text style={[tw`text-base font-semibold mb-2`, { color: '#D62E05' }]}>WhatsApp Number</Text>
-              <TextInput
-                value={whatsapp}
-                onChangeText={setWhatsapp}
-                keyboardType="phone-pad"
-                placeholder="+1 (___) ___-____"
-                style={[
-                  tw`rounded-[6px] px-3 py-2`,
                   { borderWidth: 1, borderColor: '#D62E05' },
                 ]}
               />

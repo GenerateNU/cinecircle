@@ -220,21 +220,59 @@ export const searchUsers = async (req: Request, res: Response) => {
     }
 
     try {
-        const users = await prisma.userProfile.findMany({
-            where: {
+        const orClauses: any[] = [
+            {
                 username: {
                     contains: q,
-                    mode: "insensitive"
-                }
+                    mode: "insensitive",
+                },
+            },
+        ];
+
+        // If the query looks like a UUID, also match on userId directly (no ILIKE on UUID)
+        const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        if (isUuid.test(q)) {
+            orClauses.push({ userId: q });
+        }
+
+        const users = await prisma.userProfile.findMany({
+            where: {
+                OR: orClauses,
             },
             take: limitNum,
         });
 
+        const toStrings = (val?: string[] | null) =>
+            Array.isArray(val) ? (val as string[]) : [];
+
+        const normalized = users.map((u) => ({
+            userId: u.userId,
+            username: u.username,
+            onboardingCompleted: u.onboardingCompleted,
+            primaryLanguage: u.primaryLanguage,
+            secondaryLanguage: toStrings(u.secondaryLanguage),
+            profilePicture: u.profilePicture,
+            country: u.country,
+            city: u.city,
+            displayName: u.displayName,
+            favoriteGenres: toStrings(u.favoriteGenres),
+            favoriteMovies: toStrings(u.favoriteMovies),
+            bio: u.bio,
+            moviesToWatch: toStrings(u.moviesToWatch),
+            moviesCompleted: toStrings(u.moviesCompleted),
+            eventsSaved: toStrings(u.eventsSaved),
+            eventsAttended: toStrings(u.eventsAttended),
+            privateAccount: u.privateAccount,
+            spoiler: u.spoiler,
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt,
+        }));
+
         return res.json({
             type: "users",
             query: q,
-            count: users.length,
-            results: users,
+            count: normalized.length,
+            results: normalized,
         });
     } catch (error) {
         console.error("searchUsers error:", error);

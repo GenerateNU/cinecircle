@@ -6,7 +6,7 @@ import {
   getMovieById,
   updateMovie,
 } from "../controllers/tmdb";
-import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserRatings, updateUserProfile } from '../controllers/user';
+import { deleteUserProfile, ensureUserProfile, getUserComments, getUserProfile, getUserProfileById, getUserRatings, updateUserProfile } from '../controllers/user';
 import { authenticateUser } from '../middleware/auth';
 import { protect } from "../controllers/protected";
 import { getLocalEvent, createLocalEvent, updateLocalEvent, deleteLocalEvent, getLocalEvents } from "../controllers/local-events"
@@ -14,11 +14,12 @@ import { createOrUpdateRsvp, getUserRsvp, deleteRsvp, getEventAttendees } from "
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
 import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree, toggleCommentLike, getCommentLikes } from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
-import { getAllMovies } from "../controllers/movies";
+import { getAllMovies, getMoviesAfterYear, getRandomTenMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReposts, toggleReaction, getPostReactions } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
 import { getMovieSummaryHandler } from "../controllers/movies.js";
+import { translateText, getSupportedLanguages } from "../controllers/translate";
 // backend/src/routes/index.ts
 
 const router = Router();
@@ -26,8 +27,8 @@ const router = Router();
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
 router.get('/movies/:movieId/summary', getMovieSummaryHandler);
-
-
+router.get("/api/translate", translateText);
+router.get("/api/languages", getSupportedLanguages);
 // Legacy endpoint
 router.get("/swagger-output.json", serveSwagger);  
 
@@ -44,6 +45,7 @@ router.get('/api/protected', protect);
   
 // User Profile Routes
 router.get('/api/user/profile', getUserProfile);
+router.get('/api/user/profile/:userId', getUserProfileById);
 router.put("/api/user/profile", updateUserProfile);
 router.delete("/api/user/profile", deleteUserProfile);
 
@@ -60,6 +62,8 @@ router.get("/api/user/comments", getUserComments);
 router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
+router.get("/movies/after/:year", getMoviesAfterYear);
+router.get("/movies/random/10", getRandomTenMovies);
 router.delete("/movies/:movieId", deleteMovie);
 
 router.get("/api/feed", getHomeFeed);
@@ -73,7 +77,6 @@ router.post("/api/comment/:id/like", toggleCommentLike);
 router.get("/api/comment/:id/likes", getCommentLikes);
 router.get("/api/:movieId/comments", getMovieComments);
 router.get("/api/comments/post/:postId", getCommentsTree);
-router.get("/api/comments/rating/:ratingId", getCommentsTree);
 
 // Ratings routes
 router.post('/api/ratings', createRating);

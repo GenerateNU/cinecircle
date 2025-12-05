@@ -409,6 +409,8 @@ export interface paths {
                         /** @example any */
                         username?: unknown;
                         /** @example any */
+                        displayName?: unknown;
+                        /** @example any */
                         onboardingCompleted?: unknown;
                         /** @example any */
                         primaryLanguage?: unknown;
@@ -425,7 +427,19 @@ export interface paths {
                         /** @example any */
                         favoriteMovies?: unknown;
                         /** @example any */
-                        updatedAt?: unknown;
+                        bio?: unknown;
+                        /** @example any */
+                        eventsSaved?: unknown;
+                        /** @example any */
+                        eventsAttended?: unknown;
+                        /** @example any */
+                        privateAccount?: unknown;
+                        /** @example any */
+                        spoiler?: unknown;
+                        /** @example any */
+                        bookmarkedToWatch?: unknown;
+                        /** @example any */
+                        bookmarkedWatched?: unknown;
                     };
                 };
             };
@@ -488,6 +502,71 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/profile/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -809,7 +888,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    user_id?: string;
+                };
                 header?: {
                     authorization?: string;
                 };
@@ -818,6 +899,20 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
                 /** @description Unauthorized */
                 401: {
                     headers: {
@@ -1027,6 +1122,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/movies/after/{year}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    year: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/movies/random/10": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/feed": {
         parameters: {
             query?: never;
@@ -1101,8 +1285,6 @@ export interface paths {
                     "application/json": {
                         /** @example any */
                         content?: unknown;
-                        /** @example any */
-                        ratingId?: unknown;
                         /** @example any */
                         postId?: unknown;
                         /** @example any */
@@ -1333,6 +1515,136 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/comment/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/{id}/likes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/{movieId}/comments": {
         parameters: {
             query?: never;
@@ -1406,64 +1718,6 @@ export interface paths {
                 };
                 path: {
                     postId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/comments/rating/{ratingId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: {
-                    authorization?: string;
-                };
-                path: {
-                    ratingId: string;
                 };
                 cookie?: never;
             };
@@ -2795,7 +3049,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    currentUserId?: string;
+                };
                 header?: {
                     authorization?: string;
                 };
@@ -3487,12 +3743,20 @@ export interface components {
             profilePicture: string | null;
             country: string | null;
             city: string | null;
+            displayName?: string | null;
             favoriteGenres: string[];
             favoriteMovies: string[];
+            bio?: string | null;
+            eventsSaved: string[];
+            eventsAttended: string[];
+            privateAccount: boolean;
+            spoiler: boolean;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            bookmarkedToWatch: string[];
+            bookmarkedWatched: string[];
         };
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
@@ -3502,8 +3766,16 @@ export interface components {
             secondaryLanguage?: string[];
             country?: string;
             city?: string;
+            displayName?: string | null;
             favoriteGenres?: string[];
             favoriteMovies?: string[];
+            bio?: string | null;
+            privateAccount?: boolean;
+            spoiler?: boolean;
+            bookmarkedToWatch?: string[];
+            bookmarkedWatched?: string[];
+            eventsSaved?: string[];
+            eventsAttended?: string[];
         };
         UpdateUserProfileResponse: {
             message: string;
@@ -3526,11 +3798,6 @@ export interface components {
             tags: string[];
             date: string;
             votes: number;
-            UserProfile?: {
-                userId: string;
-                username: string | null;
-            };
-            threadedComments?: unknown[];
         };
         GetUserCommentsResponse: {
             message: string;
@@ -3855,6 +4122,7 @@ export interface components {
             summary: components["schemas"]["MovieSummary"];
         };
         PostFormData: {
+            userId: string;
             movieId: string;
             content: string;
             /** @enum {string} */

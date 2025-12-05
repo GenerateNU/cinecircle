@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import type { AuthenticatedRequest } from "../middleware/auth";
 import { prisma } from "../services/db";
+import { randomUUID } from "crypto";
 
 /**
  * GET /api/comment/:id
@@ -63,24 +64,24 @@ export const getComment = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 /**
- * GET /api/comments/post/:postId or /api/comments/rating/:ratingId
- * Returns a flat list of comments for the post or rating
+ * GET /api/comments/post/:postId
+ * Returns a flat list of comments for the post
  */
 export const getCommentsTree = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
-  const { postId, ratingId } = req.params;
+  const { postId } = req.params;
   const userId = req.user?.id;
 
-  if (!postId && !ratingId) {
+  if (!postId) {
     return res.status(400).json({
-      message: "Missing postId or ratingId",
+      message: "Missing postId",
       timestamp,
     });
   }
 
   try {
     const comments = await prisma.comment.findMany({
-      where: postId ? { postId } : { ratingId },
+      where: { postId },
       orderBy: { createdAt: 'asc' },
       include: {
         UserProfile: { select: { userId: true, username: true, profilePicture: true } },
@@ -92,7 +93,6 @@ export const getCommentsTree = async (req: AuthenticatedRequest, res: Response) 
     const commentsWithLikes = comments.map((comment) => ({
       id: comment.id,
       userId: comment.userId,
-      ratingId: comment.ratingId,
       postId: comment.postId,
       parentId: comment.parentId,
       content: comment.content,
@@ -129,7 +129,7 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
     });
   }
 
-  const { content, ratingId, postId, parentId } = req.body;
+  const { content, postId, parentId } = req.body;
 
   if (!content || typeof content !== "string" || content.trim() === "") {
     return res.status(400).json({
@@ -142,8 +142,8 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
   try {
     const newComment = await prisma.comment.create({
       data: {
+        id: randomUUID(),
         userId: req.user.id,
-        ratingId: ratingId ?? null,
         postId: postId ?? null,
         parentId: parentId ?? null,
         content: content,
@@ -351,6 +351,7 @@ export const toggleCommentLike = async (req: AuthenticatedRequest, res: Response
       // Like - add a new like
       await prisma.commentLike.create({
         data: {
+          id: randomUUID(),
           commentId,
           userId: req.user.id,
         },
@@ -446,26 +447,21 @@ export async function getMovieComments(req: Request, res: Response) {
       return res.status(400).json({ message: "movieId is required" });
     }
 
-    // 1) Find all ratings for this movie
-    const ratingsForMovie = await prisma.rating.findMany({
+    // 1) Find all posts for this movie
+    const postsForMovie = await prisma.post.findMany({
       where: { movieId },
       select: { id: true },
     });
 
-    const ratingIds = ratingsForMovie.map((r) => r.id);
-    if (ratingIds.length === 0) {
+    const postIds = postsForMovie.map((p) => p.id);
+    if (postIds.length === 0) {
       return res.status(200).json({ comments: [] });
     }
 
-    // 2) Find comments that reference those ratings
+    // 2) Find comments that reference those posts
     const commentsFromDb = await prisma.comment.findMany({
       where: {
-        ratingId: { in: ratingIds },
-        // If you later want to also include post-based comments:
-        // OR: [
-        //   { ratingId: { in: ratingIds } },
-        //   { post: { movieId } } // if you have relation from comment -> post -> movie
-        // ]
+        postId: { in: postIds },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -474,7 +470,6 @@ export async function getMovieComments(req: Request, res: Response) {
     const comments = commentsFromDb.map((c) => ({
       id: c.id,
       userId: c.userId,
-      ratingId: c.ratingId,
       postId: c.postId,
       text: c.content,                 // frontend uses comment.text
       date: c.createdAt.toISOString(), // frontend uses comment.date

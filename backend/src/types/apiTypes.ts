@@ -51,10 +51,16 @@ export type UpdateUserProfileInput = {
   secondaryLanguage?: string[];
   country?: string;
   city?: string;
+  displayName?: string | null;
   favoriteGenres?: string[];
   favoriteMovies?: string[];
+  bio?: string | null;
   privateAccount?: boolean;
   spoiler?: boolean;
+  bookmarkedToWatch?: string[];
+  bookmarkedWatched?: string[];
+  eventsSaved?: string[];
+  eventsAttended?: string[];
 };
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };
