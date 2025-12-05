@@ -19,6 +19,7 @@ import { createPost, getPostById, getPosts, updatePost, deletePost, getPostRepos
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
 import { getMovieSummaryHandler } from "../controllers/movies.js";
+import { translateText, getSupportedLanguages } from "../controllers/translate";
 // backend/src/routes/index.ts
 
 const router = Router();
@@ -26,8 +27,8 @@ const router = Router();
 router.get("/api/ping", ping);
 router.get("/api/db-test", dbTest);
 router.get('/movies/:movieId/summary', getMovieSummaryHandler);
-
-
+router.get("/api/translate", translateText);
+router.get("/api/languages", getSupportedLanguages);
 // Legacy endpoint
 router.get("/swagger-output.json", serveSwagger);  
 
