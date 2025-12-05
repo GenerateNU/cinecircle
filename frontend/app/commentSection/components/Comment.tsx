@@ -1,3 +1,4 @@
+// components/Comment.tsx
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,6 +8,8 @@ import CommentInteractionBar from './CommentInteractionBar';
 import { commentStyles, INDENT_PER_LEVEL } from '../styles/Comment.styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { api } from '../../../services/apiClient';
+import { translateTextApi } from '../../../services/translationService';
+import { useAuth } from '../../../context/AuthContext';
 
 type CommentProps = {
   comment: CommentNode;
@@ -23,6 +26,32 @@ interface ToggleLikeResponse {
 
 const MAX_PREVIEW_CHARS = 400;
 
+function mapPrimaryLanguage(primaryLanguage?: string | null): {
+  code: string;
+  label: string;
+} {
+  if (!primaryLanguage) return { code: 'en', label: 'English' };
+
+  const lower = primaryLanguage.toLowerCase().trim();
+
+  switch (lower) {
+    case 'hindi':
+      return { code: 'hi', label: 'Hindi' };
+    case 'tamil':
+      return { code: 'ta', label: 'Tamil' };
+    case 'telugu':
+      return { code: 'te', label: 'Telugu' };
+    case 'bengali':
+    case 'bangla':
+      return { code: 'bn', label: 'Bengali' };
+    case 'english':
+    case 'en':
+      return { code: 'en', label: 'English' };
+    default:
+      return { code: 'en', label: primaryLanguage };
+  }
+}
+
 const Comment: React.FC<CommentProps> = ({
   comment,
   depth,
@@ -31,34 +60,50 @@ const Comment: React.FC<CommentProps> = ({
 }) => {
   const username = comment.UserProfile?.username ?? 'Anonymous';
   const profilePicture = comment.UserProfile?.profilePicture ?? null;
+
+  const { profile } = useAuth();
+  const mappedLang = mapPrimaryLanguage((profile as any)?.primaryLanguage);
+  const userLangCode = mappedLang.code;
+  const shouldShowTranslate = userLangCode !== 'en';
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [liked, setLiked] = useState(comment.liked);
   const [likeCount, setLikeCount] = useState(comment.likeCount);
   const [isLiking, setIsLiking] = useState(false);
 
-  const isLong = comment.content.length > MAX_PREVIEW_CHARS;
+  const [isTranslated, setIsTranslated] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Base text is either translated or original, depending on toggle state
+  const baseText =
+    isTranslated && translatedText ? translatedText : comment.content;
+
+  const isLong = baseText.length > MAX_PREVIEW_CHARS;
   const previewText = isLong
-    ? comment.content.slice(0, MAX_PREVIEW_CHARS).trimEnd() + '…'
-    : comment.content;
-  const displayText = isExpanded || !isLong ? comment.content : previewText;
+    ? baseText.slice(0, MAX_PREVIEW_CHARS).trimEnd() + '…'
+    : baseText;
+  const displayText = isExpanded || !isLong ? baseText : previewText;
 
   const handleLikePress = useCallback(async () => {
     if (isLiking) return;
 
-    // Optimistic update
     const previousLiked = liked;
     const previousCount = likeCount;
+
+    // optimistic update
     setLiked(!liked);
     setLikeCount(liked ? likeCount - 1 : likeCount + 1);
     setIsLiking(true);
 
     try {
-      const response = await api.post<ToggleLikeResponse>(`/api/comment/${comment.id}/like`);
-      // Sync with server response
+      const response = await api.post<ToggleLikeResponse>(
+        `/api/comment/${comment.id}/like`
+      );
+      // assuming api.post returns the JSON directly (as it did before)
       setLiked(response.liked);
       setLikeCount(response.likeCount);
     } catch (error) {
-      // Revert on error
       console.error('Failed to toggle like:', error);
       setLiked(previousLiked);
       setLikeCount(previousCount);
@@ -67,11 +112,60 @@ const Comment: React.FC<CommentProps> = ({
     }
   }, [comment.id, liked, likeCount, isLiking]);
 
+  const handleTranslatePress = useCallback(async () => {
+    console.log('=== [Comment] translate pressed ===', {
+      isTranslated,
+      hasTranslated: !!translatedText,
+      userLangCode,
+    });
+
+    const turningOn = !isTranslated;
+
+    if (turningOn && shouldShowTranslate && !translatedText) {
+      try {
+        if (isTranslating) return;
+        setIsTranslating(true);
+
+        console.log('[Comment] Calling translateTextApi with:', {
+          textSnippet: comment.content.slice(0, 80),
+          dest: userLangCode,
+        });
+
+        // assume original comments are in English
+        const response = await translateTextApi(
+          comment.content,
+          userLangCode,
+          'en'
+        );
+        console.log('[Comment] translateTextApi response =', response);
+
+        const tText = response.destinationText || comment.content;
+        setTranslatedText(tText);
+      } catch (err) {
+        console.error('[Comment] Translation ERROR:', err);
+        setTranslatedText(null);
+      } finally {
+        setIsTranslating(false);
+      }
+    }
+
+    setIsTranslated(prev => !prev);
+  }, [
+    comment.content,
+    isTranslated,
+    translatedText,
+    shouldShowTranslate,
+    userLangCode,
+    isTranslating,
+  ]);
+
   return (
-    <View style={[
-      commentStyles.container,
-      { marginLeft: depth * INDENT_PER_LEVEL }
-    ]}>
+    <View
+      style={[
+        commentStyles.container,
+        { marginLeft: depth * INDENT_PER_LEVEL },
+      ]}
+    >
       <View style={commentStyles.content}>
         <View style={commentStyles.headerRow}>
           <CommentUserRow
@@ -81,12 +175,11 @@ const Comment: React.FC<CommentProps> = ({
           />
         </View>
 
-
         <View style={commentStyles.bodyContainer}>
           <Text style={commentStyles.body}>{displayText}</Text>
           {isLong && (
             <View style={commentStyles.expandTextContainer}>
-              <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
+              <TouchableOpacity onPress={() => setIsExpanded(prev => !prev)}>
                 <Text style={commentStyles.expandText}>
                   {isExpanded ? 'Show less' : 'Expand Comment'}
                 </Text>
@@ -95,7 +188,11 @@ const Comment: React.FC<CommentProps> = ({
           )}
           {isLong && !isExpanded && (
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 1)']}
+              colors={[
+                'rgba(255, 255, 255, 0)',
+                'rgba(255, 255, 255, 0.8)',
+                'rgba(255, 255, 255, 1)',
+              ]}
               locations={[0, 0.3, 1]}
               style={commentStyles.fadeOverlay}
             />
@@ -109,7 +206,9 @@ const Comment: React.FC<CommentProps> = ({
                 likeCount={likeCount}
                 liked={liked}
                 onLikePress={handleLikePress}
-                onTranslatePress={() => { }}
+                onTranslatePress={
+                  shouldShowTranslate ? handleTranslatePress : undefined
+                }
                 onReplyPress={() => onReply?.(comment)}
               />
             </View>
@@ -117,8 +216,13 @@ const Comment: React.FC<CommentProps> = ({
               {onContinueThread && (
                 <TouchableOpacity onPress={onContinueThread}>
                   <View style={commentStyles.viewMoreTextContainer}>
-                    <Text style={commentStyles.viewMoreText}>Continue Thread</Text>
-                    <MaterialIcons name="arrow-forward" style={commentStyles.viewMoreIcon} />
+                    <Text style={commentStyles.viewMoreText}>
+                      Continue Thread
+                    </Text>
+                    <MaterialIcons
+                      name="arrow-forward"
+                      style={commentStyles.viewMoreIcon}
+                    />
                   </View>
                 </TouchableOpacity>
               )}
