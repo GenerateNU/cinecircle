@@ -3451,6 +3451,7 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            badges: string[];
         };
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {

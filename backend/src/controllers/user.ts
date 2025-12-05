@@ -4,6 +4,8 @@ import { prisma } from '../services/db.js';
 import { Prisma } from "@prisma/client";
 import { UserProfile } from "../types/models";
 
+const ONBOARDING_WELCOME_BADGE = "welcome";
+
 export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   const { user } = req;
   if (!user) return res.status(401).json({ message: "Unauthorized" });
@@ -19,9 +21,21 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     favoriteGenres,
     favoriteMovies,
     updatedAt,
+    // 🔒 ignore badges from client – server controls them
+    badges: _ignoredBadges,
   } = (req.body ?? {}) as Partial<UserProfile>;
 
   try {
+    // 1) Get existing profile so we can base badges on it
+    const existing = await prisma.userProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    // 2) Build normal update data (everything except badges)
     const data = mapUserProfilePatchToUpdateData({
       username,
       onboardingCompleted,
@@ -33,14 +47,34 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
       favoriteGenres,
       favoriteMovies,
       updatedAt,
+      // ⛔️ do NOT pass badges from the request
+      badges: undefined,
     });
+
+    // 3) Start from existing badges
+    let nextBadges = existing.badges ?? [];
+
+    // 4) If this request is marking onboarding as completed, award the welcome badge
+    if (onboardingCompleted === true) {
+      const hasWelcome = nextBadges.includes(ONBOARDING_WELCOME_BADGE);
+      if (!hasWelcome) {
+        nextBadges = [...nextBadges, ONBOARDING_WELCOME_BADGE];
+      }
+    }
+
+    // 5) Persist badges along with the rest of the update
+    //    (if mapUserProfilePatchToUpdateData already set data.badges, this will overwrite it)
+    (data as any).badges = nextBadges;
 
     const updated = await prisma.userProfile.update({
       where: { userId: user.id },
       data,
     });
 
-    res.json({ message: "Profile updated", data: mapUserProfileDbToApi(updated) });
+    res.json({
+      message: "Profile updated",
+      data: mapUserProfileDbToApi(updated),
+    });
   } catch (error) {
     console.error("updateUserProfile error:", error);
     res.status(500).json({ message: "Failed to update profile" });
@@ -88,6 +122,7 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           city: null,
           primaryLanguage: 'English',
           updatedAt: new Date(),
+          badges: [],
         },
       });
     }
@@ -308,6 +343,7 @@ export function mapUserProfileDbToApi(row: {
   favoriteMovies: string[];
   createdAt: Date;
   updatedAt: Date;
+  badges?: string[];
 }): UserProfile {
   return {
     userId: row.userId,
@@ -322,6 +358,7 @@ export function mapUserProfileDbToApi(row: {
     favoriteMovies: row.favoriteMovies ?? [],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    badges: row.badges ?? [],
   };
 }
 

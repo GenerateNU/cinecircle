@@ -497,6 +497,7 @@ model UserProfile {
   UserFollow_UserFollow_followerIdToUserProfile  UserFollow[]   @relation("UserFollow_followerIdToUserProfile")
   UserFollow_UserFollow_followingIdToUserProfile UserFollow[]   @relation("UserFollow_followingIdToUserProfile")
   event_rsvp                                     event_rsvp[]
+  badges                                         String[]        @default([])
 
   @@schema("public")
 }

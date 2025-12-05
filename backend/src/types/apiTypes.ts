@@ -11,6 +11,7 @@ import type {
   EventRsvp,
   EventAttendee,
   RsvpCounts,
+  Badge,
 } from "./models";
 
 /** -------- Health -------- */
@@ -55,7 +56,9 @@ export type UpdateUserProfileInput = {
   favoriteMovies?: string[];
 };
 
-export type UpdateUserProfileResponse = { message: string; data: UserProfile };
+
+
+export type UpdateUserProfileResponse = { message: string; data: UserProfile, newBadges?: Badge[]; };
 export type DeleteUserProfileResponse = { message: string };
 
 /** -------- Ratings & Comments (query returns arrays) -------- */

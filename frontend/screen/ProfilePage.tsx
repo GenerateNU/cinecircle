@@ -19,6 +19,21 @@ import type { components } from '../types/api-generated';
 
 type UserProfile = components["schemas"]["UserProfile"];
 
+// Map badge slugs from backend to label + icon
+const BADGE_META: Record<
+  string,
+  { label: string; iconName: keyof typeof MaterialIcons.glyphMap; description?: string }
+> = {
+  welcome: {
+    label: 'Welcome to CineCircle',
+    iconName: 'emoji-events',
+    description: 'Completed onboarding and joined the community.',
+  },
+  // later:
+  // critic: { label: 'Critic', iconName: 'rate-review' },
+};
+
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = Math.round(SCREEN_HEIGHT * 0.2); // ~1/5 screen
 const AVATAR_SIZE = 100;
@@ -73,9 +88,11 @@ const ProfilePage = ({ user, userId }: Props) => {
         bio: 'Movie enthusiast', // Placeholder - backend doesn't have bio field for now
         followers: followersCount,
         following: followingCount,
-        profilePic: profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          profile.username || 'User'
-        )}&size=200&background=667eea&color=fff`,
+        profilePic:
+          profile.profilePicture ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            profile.username || 'User'
+          )}&size=200&background=667eea&color=fff`,
       }
     : user || {
         name: 'User',
@@ -138,7 +155,7 @@ const ProfilePage = ({ user, userId }: Props) => {
           {/* Buttons (square outline) */}
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.buttonOutlineSquare}>
-              <Text style={styles.buttonOutlineSquareText}>Edit Profile</Text>
+              <Text style={styles.buttonOutlineSquareText}>Edit</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonOutlineSquare}>
               <Text style={styles.buttonOutlineSquareText}>Share</Text>
@@ -210,11 +227,20 @@ const ProfilePage = ({ user, userId }: Props) => {
         </View>
 
         {/* Tab-specific content */}
+        {/* Tab-specific content */}
         <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+          {activeTab === 'badges' && (
+            <Text style={{ fontSize: 12, color: '#999', marginBottom: 4 }}>
+              Debug badges: {JSON.stringify(profile?.badges)}
+            </Text>
+          )}
+
           {activeTab === 'movies' && <MoviesGrid />}
           {activeTab === 'posts' && <PostsList user={u} />}
           {activeTab === 'events' && <EventsList />}
-          {activeTab === 'badges' && <BadgesGrid />}
+          {activeTab === 'badges' && (
+            <BadgesGrid badgeSlugs={profile?.badges ?? []} />
+          )}
         </View>
 
         {/* Create Post CTA (only show on Posts tab; optional) */}
@@ -356,39 +382,48 @@ const EventsList = () => {
   );
 };
 
-const BadgesGrid = () => {
-  const badges = [
-    {
-      id: 'b1',
-      label: 'Critic',
-      icon: <MaterialIcons name="rate-review" size={20} />,
-    },
-    {
-      id: 'b2',
-      label: 'Marathoner',
-      icon: <MaterialIcons name="timer" size={20} />,
-    },
-    {
-      id: 'b3',
-      label: 'Blockbuster',
-      icon: <MaterialIcons name="local-movies" size={20} />,
-    },
-    {
-      id: 'b4',
-      label: 'Butter Popcorn',
-      icon: <MaterialIcons name="local-play" size={20} />,
-    },
-    {
-      id: 'b5',
-      label: 'Indie Lover',
-      icon: <MaterialIcons name="theaters" size={20} />,
-    },
-    {
-      id: 'b6',
-      label: 'Festival Goer',
-      icon: <MaterialIcons name="festival" size={20} />,
-    },
-  ];
+const BadgesGrid = ({ badgeSlugs }: { badgeSlugs: string[] }) => {
+  // Convert slugs from the backend into displayable badges using BADGE_META
+  const badges = badgeSlugs
+    .map(slug => {
+      const meta = BADGE_META[slug];
+      if (!meta) return null;
+      return {
+        id: slug,
+        label: meta.label,
+        iconName: meta.iconName,
+        description: meta.description,
+      };
+    })
+    .filter(Boolean) as {
+    id: string;
+    label: string;
+    iconName: keyof typeof MaterialIcons.glyphMap;
+    description?: string;
+  }[];
+
+  // If the user has no badges yet
+  if (!badges.length) {
+    return (
+      <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+        <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
+          No badges yet
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: '#666',
+            textAlign: 'center',
+            paddingHorizontal: 24,
+          }}
+        >
+          Start rating movies, posting, and completing activities to earn
+          badges.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
       {badges.map(b => (
@@ -405,9 +440,12 @@ const BadgesGrid = () => {
             backgroundColor: '#fff',
           }}
         >
-          <View style={{ marginBottom: 6 }}>{b.icon}</View>
+          <View style={{ marginBottom: 6 }}>
+            <MaterialIcons name={b.iconName} size={22} color="#9A0169" />
+          </View>
           <Text
             style={{ fontSize: 12, fontWeight: '600', textAlign: 'center' }}
+            numberOfLines={2}
           >
             {b.label}
           </Text>
@@ -416,6 +454,7 @@ const BadgesGrid = () => {
     </View>
   );
 };
+
 
 /* ===== Helpers ===== */
 

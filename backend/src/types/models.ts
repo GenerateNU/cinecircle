@@ -17,6 +17,13 @@ export type UserProfileBasic = {
   role: string;
 };
 
+export type Badge = {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+};
+
 export type UserProfile = {
   userId: string;
   username?: string | null;
