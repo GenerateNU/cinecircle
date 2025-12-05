@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import UserBar from './UserBar';
 import StarRating from './StarRating';
+import { getMoviePosterUrl } from '../services/imageService';
 
 const { width } = Dimensions.get('window');
 
@@ -47,58 +48,91 @@ export default function ReviewPost({
   onPress,
   spoiler = false,
 }: ReviewPostProps) {
+  // Get the full TMDB image URL using the image service
+  const imageUrl = movieImageUrl ? getMoviePosterUrl(movieImageUrl) : null;
+  const hasValidImage = !!imageUrl;
+
   const content = (
     <View style={styles.container}>
-      <ImageBackground
-        source={{ uri: movieImageUrl }}
-        style={styles.imageBackground}
-        imageStyle={styles.image}
-        resizeMode="cover"
-      >
-        {/* Top overlay row (spoiler badge, etc.) */}
-        <View style={styles.topOverlayRow}>
-          {spoiler && (
-            <View style={styles.spoilerPill}>
-              <Text style={styles.spoilerText}>Spoiler</Text>
-            </View>
-          )}
-        </View>
+      {hasValidImage ? (
+        <ImageBackground
+          source={{ uri: imageUrl as string }}
+          style={styles.imageBackground}
+          imageStyle={styles.image}
+          resizeMode="cover"
+        >
+          {/* Top overlay row (spoiler badge, etc.) */}
+          <View style={styles.topOverlayRow}>
+            {spoiler && (
+              <View style={styles.spoilerPill}>
+                <Text style={styles.spoilerText}>Spoiler</Text>
+              </View>
+            )}
+          </View>
 
-        <View style={styles.bottomContainer}>
-          <MaskedView
-            style={styles.maskedView}
-            maskElement={
-              <LinearGradient
-                colors={['transparent', 'white']}
-                locations={[0, 0.7]}
+          <View style={styles.bottomContainer}>
+            <MaskedView
+              style={styles.maskedView}
+              maskElement={
+                <LinearGradient
+                  colors={['transparent', 'white']}
+                  locations={[0, 0.7]}
+                  style={StyleSheet.absoluteFill}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                />
+              }
+            >
+              <Image
+                source={{ uri: imageUrl as string }}
                 style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
+                blurRadius={30}
+                resizeMode="cover"
               />
-            }
-          >
-            <Image
-              source={{ uri: movieImageUrl }}
-              style={StyleSheet.absoluteFill}
-              blurRadius={30}
-              resizeMode="cover"
-            />
-          </MaskedView>
-          <View style={styles.contentContainer}>
-            <UserBar
-              name={reviewerName}
-              avatarUri={reviewerAvatarUri}
-              avatarSize={width * 0.08}
-              userId={reviewerUserId}
-              nameColor="#FFFFFF"
-            />
-            <Text style={styles.movieTitle}>{movieTitle}</Text>
-            <View style={styles.ratingContainer}>
-              <StarRating maxStars={5} rating={rating} />
+            </MaskedView>
+            <View style={styles.contentContainer}>
+              <UserBar
+                name={reviewerName}
+                avatarUri={reviewerAvatarUri}
+                avatarSize={width * 0.08}
+                userId={reviewerUserId}
+                nameColor="#FFFFFF"
+              />
+              <Text style={styles.movieTitle}>{movieTitle}</Text>
+              <View style={styles.ratingContainer}>
+                <StarRating maxStars={5} rating={rating} />
+              </View>
+            </View>
+          </View>
+        </ImageBackground>
+      ) : (
+        <View style={[styles.imageBackground, styles.fallbackBackground]}>
+          {/* Top overlay row (spoiler badge, etc.) */}
+          <View style={styles.topOverlayRow}>
+            {spoiler && (
+              <View style={styles.spoilerPill}>
+                <Text style={styles.spoilerText}>Spoiler</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.bottomContainer}>
+            <View style={styles.contentContainer}>
+              <UserBar
+                name={reviewerName}
+                avatarUri={reviewerAvatarUri}
+                avatarSize={width * 0.08}
+                userId={reviewerUserId}
+                nameColor="#FFFFFF"
+              />
+              <Text style={styles.movieTitle}>{movieTitle}</Text>
+              <View style={styles.ratingContainer}>
+                <StarRating maxStars={5} rating={rating} />
+              </View>
             </View>
           </View>
         </View>
-      </ImageBackground>
+      )}
     </View>
   );
 
@@ -128,6 +162,9 @@ const styles = StyleSheet.create({
   },
   image: {
     borderRadius: width * 0.04,
+  },
+  fallbackBackground: {
+    backgroundColor: '#1a1a1a',
   },
   // row at the top of the card where the spoiler pill sits
   topOverlayRow: {
@@ -179,7 +216,7 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     marginTop: width * 0.01,
-    alignSelf: 'flex-start', // ← Add this to align stars to the left
+    alignItems: 'flex-start',
   },
   reviewText: {
     fontSize: width * 0.035,

@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { fetchHomeFeed, togglePostReaction } from '../services/feedService';
-import { getMoviePosterUrl } from '../services/imageService';
 import { getUserProfile } from '../services/userService';
 
 import TextPost from '../components/TextPost';
@@ -91,9 +90,8 @@ export default function RecByFriendsScreen() {
   };
 
   const openPostDetail = (post: Post, options?: { focusComment?: boolean }) => {
-    // TODO: Hook up to post detail page
     router.push({
-      pathname: '/post/[postId]',
+      pathname: `/postDetail/${post.id}`,
       params: {
         postId: post.id,
         movieId: post.movieId ?? '',
@@ -276,7 +274,6 @@ export default function RecByFriendsScreen() {
     const username = post.UserProfile?.username || 'Unknown';
     const movieTitle = post.movie?.title || `Movie #${post.movieId}`;
     const movieImagePath = post.movie?.imageUrl;
-    const moviePosterUrl = getMoviePosterUrl(movieImagePath);
 
     const containsSpoilers = Boolean(
       (post as any).containsSpoilers ??
@@ -328,9 +325,9 @@ export default function RecByFriendsScreen() {
             reviewerName={username}
             movieTitle={movieTitle}
             rating={post.stars || 0}
-            userId={post.userId}
-            reviewerUserId={post.userId}
-            movieImageUrl={moviePosterUrl}
+            userId={post.userId || ''}
+            reviewerUserId={post.userId || ''}
+            movieImageUrl={movieImagePath || ''}
             onPress={handleReviewPress}
             spoiler={containsSpoilers}
           />

@@ -5,7 +5,12 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  Image,
+  ScrollView,
+  Alert,
 } from 'react-native';
+import * as ExpoImagePicker from 'expo-image-picker';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import MovieSelectorModal from './MovieSelectorModal';
 import CreatePostToolBar from './CreatePostToolBar';
@@ -34,8 +39,59 @@ const ShortPostForm = forwardRef(
     const [spoiler, setSpoiler] = useState(false);
     const [content, setContent] = useState('');
     const [movieModalVisible, setMovieModalVisible] = useState(false);
+    const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
     const CHAR_LIMIT = 280;
+
+    const requestPermissions = async () => {
+      const { status } =
+        await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Enable permissions to upload a photo.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
+      return true;
+    };
+
+    const pickImage = async () => {
+      const hasPermission = await requestPermissions();
+      if (!hasPermission) return;
+
+      try {
+        const result = await ExpoImagePicker.launchImageLibraryAsync({
+          mediaTypes: ExpoImagePicker.MediaTypeOptions.Images,
+          allowsMultipleSelection: true,
+          quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets) {
+          const newImageUris = result.assets.map(asset => asset.uri);
+          setSelectedImages(prev => [...prev, ...newImageUris]);
+        }
+      } catch (error) {
+        console.error('Error picking image:', error);
+        Alert.alert('Error', 'Failed to pick image.');
+      }
+    };
+
+    const removeImage = (indexToRemove: number) => {
+      setSelectedImages(prev =>
+        prev.filter((_, index) => index !== indexToRemove)
+      );
+    };
+
+    const handleToolbarAction = (action: string) => {
+      if (action === 'video') {
+        pickImage();
+      } else {
+        onToolbarAction(action);
+      }
+    };
 
     useImperativeHandle(ref, () => ({
       submit() {
@@ -52,6 +108,7 @@ const ShortPostForm = forwardRef(
           movieId: movie.id,
           spoiler,
           content,
+          imageUrls: selectedImages.length > 0 ? selectedImages : undefined,
         });
       },
     }));
@@ -88,7 +145,27 @@ const ShortPostForm = forwardRef(
           {content.length}/{CHAR_LIMIT}
         </Text>
 
-        <CreatePostToolBar onToolbarAction={onToolbarAction} />
+        {selectedImages.length > 0 && (
+          <ScrollView
+            horizontal
+            style={styles.imagePreviewContainer}
+            showsHorizontalScrollIndicator={false}
+          >
+            {selectedImages.map((uri, index) => (
+              <View key={index} style={styles.imagePreviewWrapper}>
+                <Image source={{ uri }} style={styles.imagePreview} />
+                <TouchableOpacity
+                  style={styles.removeImageButton}
+                  onPress={() => removeImage(index)}
+                >
+                  <MaterialIcons name="close" size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+
+        <CreatePostToolBar onToolbarAction={handleToolbarAction} />
 
         <MovieSelectorModal
           visible={movieModalVisible}
@@ -138,5 +215,42 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_400Regular',
     color: '#aaa',
     fontSize: 12,
+  },
+
+  imagePreviewContainer: {
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
+  imagePreviewWrapper: {
+    position: 'relative',
+    marginRight: 8,
+  },
+
+  imagePreview: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+  },
+
+  removeImageButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#d32f2f',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
