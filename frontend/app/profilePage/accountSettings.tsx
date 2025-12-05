@@ -73,7 +73,7 @@ export default function AccountSettings() {
           setUsername(res.userProfile.username ?? '');
           setSelectedLanguages(res.userProfile.secondaryLanguage ?? []);
           setPrivateAccount(Boolean(res.userProfile.privateAccount));
-          setAllowSpoilers(Boolean(res.userProfile.spoilers));
+          setAllowSpoilers(Boolean(res.userProfile.spoiler));
         }
       } catch (err) {
         console.error('Failed to load user profile', err);
@@ -101,12 +101,12 @@ export default function AccountSettings() {
         username,
         secondaryLanguage: selectedLanguages,
         privateAccount,
-        spoilers: allowSpoilers,
+        spoiler: allowSpoilers,
       });
       if (res?.data) {
         setUsername(res.data.username ?? '');
         setPrivateAccount(Boolean(res.data.privateAccount));
-        setAllowSpoilers(Boolean(res.data.spoilers));
+        setAllowSpoilers(Boolean(res.data.spoiler));
         setSelectedLanguages(res.data.secondaryLanguage ?? []);
       }
       Alert.alert('Saved', 'Personal details have been saved.');
@@ -145,12 +145,12 @@ export default function AccountSettings() {
         username,
         secondaryLanguage: selectedLanguages,
         privateAccount,
-        spoilers: allowSpoilers,
+        spoiler: allowSpoilers,
       });
       if (res?.data) {
         setUsername(res.data.username ?? '');
         setPrivateAccount(Boolean(res.data.privateAccount));
-        setAllowSpoilers(Boolean(res.data.spoilers));
+        setAllowSpoilers(Boolean(res.data.spoiler));
         setSelectedLanguages(res.data.secondaryLanguage ?? []);
       }
       Alert.alert('Saved', 'Language preferences have been saved.');
@@ -169,12 +169,12 @@ export default function AccountSettings() {
         username,
         secondaryLanguage: selectedLanguages,
         privateAccount,
-        spoilers: allowSpoilers,
+        spoiler: allowSpoilers,
       });
       if (res?.data) {
         setUsername(res.data.username ?? '');
         setPrivateAccount(Boolean(res.data.privateAccount));
-        setAllowSpoilers(Boolean(res.data.spoilers));
+        setAllowSpoilers(Boolean(res.data.spoiler));
       }
       Alert.alert('Saved', 'Privacy preferences have been saved.');
     } catch (err) {
