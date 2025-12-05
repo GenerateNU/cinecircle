@@ -90,6 +90,7 @@ function RootNavigator() {
         <Stack.Protected guard={isFullyOnboarded}>
           <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
           <Stack.Screen name="movies/[movieId]" />
+          <Stack.Screen name="postDetail/[postId]" />
           <Stack.Screen name="events" />
           <Stack.Screen name="profilePage" />
           <Stack.Screen name="search" />

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../services/db';
 import type { AuthenticatedRequest } from '../middleware/auth';
-import { Post, Rating } from '@prisma/client';
 
 export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
   const { user } = req;
@@ -33,7 +32,7 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       userReactionsByPost.set(reaction.postId, existing);
     });
 
-    const recentRatings = await prisma.rating.findMany({
+    const recentPosts = await prisma.post.findMany({
       where: {
         userId: { in: followingIds },
       },
@@ -49,22 +48,6 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             movieId: true,
             title: true,
             imageUrl: true,
-          },
-        },
-      },
-      orderBy: { date: 'desc' },
-      take: limit,
-    });
-
-    const recentPosts = await prisma.post.findMany({
-      where: {
-        userId: { in: followingIds },
-      },
-      include: {
-        UserProfile: {
-          select: {
-            userId: true,
-            username: true,
           },
         },
         PostReaction: {
@@ -83,10 +66,9 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       take: limit,
     });
 
-
-    const trendingRatings = await prisma.rating.findMany({
+    const trendingPosts = await prisma.post.findMany({
       where: {
-        date: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
       },
       include: {
         UserProfile: {
@@ -100,22 +82,6 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
             movieId: true,
             title: true,
             imageUrl: true,
-          },
-        },
-      },
-      orderBy: { votes: 'desc' },
-      take: 5,
-    });
-
-    const trendingPosts = await prisma.post.findMany({
-      where: {
-        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-      },
-      include: {
-        UserProfile: {
-          select: {
-            userId: true,
-            username: true,
           },
         },
         PostReaction: {
@@ -166,21 +132,16 @@ export const getHomeFeed = async (req: AuthenticatedRequest, res: Response) => {
       };
     });
 
+    // All feed items are now posts (SHORT and LONG, where LONG with stars are reviews)
     const feed = [
-      ...recentRatings.map((r) => ({ type: 'rating', data: r })),
       ...recentPostsWithCounts.map((p) => ({ type: 'post', data: p })),
-      ...trendingRatings.map((r) => ({ type: 'trending_rating', data: r })),
       ...trendingPostsWithCounts.map((p) => ({ type: 'trending_post', data: p })),
     ];
 
-    function getTimestamp(item: Rating | Post): Date {
-        return 'createdAt' in item ? item.createdAt : item.date;
-    }
-
     // sort by newest
     const sortedFeed = feed.sort((a, b) => {
-        const aDate = getTimestamp(a.data);
-        const bDate = getTimestamp(b.data);
+        const aDate = a.data.createdAt;
+        const bDate = b.data.createdAt;
         return bDate.getTime() - aDate.getTime();
     });
 

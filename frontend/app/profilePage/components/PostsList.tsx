@@ -8,11 +8,11 @@ import {
   FlatList,
 } from 'react-native';
 import tw from 'twrnc';
-import { User } from '../_types';
+import { User } from '../../../lib/profilePage/_types';
 import { Feather } from '@expo/vector-icons';
 import { getPosts } from '../../../services/postsService';
 import type { components } from '../../../types/api-generated';
-import { formatCount } from '../_utils';
+import { formatCount } from '../../../lib/profilePage/_utils';
 
 type Props = {
   user: User;
@@ -53,7 +53,7 @@ const PostsList = ({ user, userId }: Props) => {
       setError(null);
       const res = await getPosts({
         userId: resolvedUserId,
-        parentPostId: null,
+        repostedPostId: null, // Only show original posts, not reposts
         limit: 50,
       });
       setPosts(res);
@@ -115,7 +115,7 @@ const PostsList = ({ user, userId }: Props) => {
   return (
     <FlatList
       data={posts}
-      keyExtractor={(item) => item.id}
+      keyExtractor={item => item.id}
       scrollEnabled={false}
       removeClippedSubviews={false}
       initialNumToRender={posts.length || 10}
@@ -125,7 +125,7 @@ const PostsList = ({ user, userId }: Props) => {
       renderItem={({ item: p }) => {
         const likeCount = formatCount(p.reactionCount ?? 0);
         const commentCount = formatCount(p.commentCount ?? 0);
-        const replyCount = formatCount(p.replyCount ?? 0);
+        const repostCount = formatCount(p.repostCount ?? 0);
         const avatar = user.profilePic;
         const displayName =
           p.UserProfile?.username?.trim() ||
@@ -146,15 +146,21 @@ const PostsList = ({ user, userId }: Props) => {
               <View style={tw`flex-row justify-between w-4/5 mt-2`}>
                 <View style={tw`flex-row items-center`}>
                   <Feather name="heart" size={18} color="#111" />
-                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>{likeCount}</Text>
+                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>
+                    {likeCount}
+                  </Text>
                 </View>
                 <View style={tw`flex-row items-center`}>
                   <Feather name="message-circle" size={18} color="#111" />
-                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>{commentCount}</Text>
+                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>
+                    {commentCount}
+                  </Text>
                 </View>
                 <View style={tw`flex-row items-center`}>
                   <Feather name="repeat" size={18} color="#111" />
-                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>{replyCount}</Text>
+                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>
+                    {repostCount}
+                  </Text>
                 </View>
                 <View style={tw`flex-row items-center`}>
                   <Feather name="send" size={18} color="#111" />

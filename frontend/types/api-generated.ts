@@ -135,6 +135,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/movies/{movieId}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    movieId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/swagger-output.json": {
         parameters: {
             query?: never;
@@ -384,6 +426,10 @@ export interface paths {
                         favoriteMovies?: unknown;
                         /** @example any */
                         updatedAt?: unknown;
+                        /** @example any */
+                        privateAccount?: unknown;
+                        /** @example any */
+                        spoiler?: unknown;
                     };
                 };
             };
@@ -397,6 +443,13 @@ export interface paths {
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1286,6 +1339,136 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/{id}/likes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    authorization?: string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2631,7 +2814,15 @@ export interface paths {
                         /** @example any */
                         imageUrls?: unknown;
                         /** @example any */
-                        parentPostId?: unknown;
+                        repostedPostId?: unknown;
+                        /** @example any */
+                        movieId?: unknown;
+                        /** @example any */
+                        stars?: unknown;
+                        /** @example any */
+                        spoiler?: unknown;
+                        /** @example any */
+                        tags?: unknown;
                     };
                 };
             };
@@ -2691,9 +2882,11 @@ export interface paths {
                 query?: {
                     userId?: string;
                     type?: string;
-                    parentPostId?: string;
+                    movieId?: string;
+                    repostedPostId?: string;
                     limit?: string;
                     offset?: string;
+                    currentUserId?: string;
                 };
                 header?: {
                     authorization?: string;
@@ -3040,7 +3233,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/post/{postId}/replies": {
+    "/api/post/{postId}/reposts": {
         parameters: {
             query?: never;
             header?: never;
@@ -3437,6 +3630,8 @@ export interface components {
             city: string | null;
             favoriteGenres: string[];
             favoriteMovies: string[];
+            privateAccount: boolean;
+            spoiler: boolean;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -3452,6 +3647,8 @@ export interface components {
             city?: string;
             favoriteGenres?: string[];
             favoriteMovies?: string[];
+            privateAccount?: boolean;
+            spoiler?: boolean;
         };
         UpdateUserProfileResponse: {
             message: string;
@@ -3575,16 +3772,26 @@ export interface components {
         Post: {
             id: string;
             userId: string;
+            movieId: string;
             content: string;
             /** @enum {string} */
             type: "SHORT" | "LONG";
+            stars: number | null;
+            spoiler: boolean;
+            tags: string[];
             createdAt: string;
             imageUrls: string[];
-            parentPostId: string | null;
+            repostedPostId: string | null;
             UserProfile?: {
                 userId: string;
                 username: string | null;
             };
+            movie?: {
+                movieId: string;
+                title: string | null;
+                imageUrl: string | null;
+            };
+            OriginalPost?: components["schemas"]["Post"];
             PostReaction?: {
                 id: string;
                 userId: string;
@@ -3593,11 +3800,11 @@ export interface components {
             Comment?: {
                 id: string;
             }[];
-            Replies?: {
+            Reposts?: {
                 id: string;
             }[];
             commentCount?: number;
-            replyCount?: number;
+            repostCount?: number;
             reactionCount?: number;
             reactionCounts?: {
                 SPICY: number;
@@ -3615,11 +3822,15 @@ export interface components {
         };
         CreatePostInput: {
             userId: string;
+            movieId: string;
             content: string;
             /** @enum {string} */
             type?: "SHORT" | "LONG";
+            stars?: number;
+            spoiler?: boolean;
+            tags?: string[];
             imageUrls?: string[];
-            parentPostId?: string;
+            repostedPostId?: string;
         };
         CreatePostResponse: {
             message: string;
@@ -3629,6 +3840,9 @@ export interface components {
             content?: string;
             /** @enum {string} */
             type?: "SHORT" | "LONG";
+            stars?: number;
+            spoiler?: boolean;
+            tags?: string[];
             imageUrls?: string[];
         };
         UpdatePostResponse: {
@@ -3764,6 +3978,59 @@ export interface components {
                 userId: string;
                 username: string | null;
             };
+        };
+        SentimentStats: {
+            positive: number;
+            neutral: number;
+            negative: number;
+            total: number;
+            positivePercent: number;
+            neutralPercent: number;
+            negativePercent: number;
+        };
+        MovieSummary: {
+            movieId: string;
+            overall: string;
+            pros: string[];
+            cons: string[];
+            stats: components["schemas"]["SentimentStats"];
+            quotes: string[];
+        };
+        GetMovieSummaryEnvelope: {
+            summary: components["schemas"]["MovieSummary"];
+        };
+        PostFormData: {
+            movieId: string;
+            content: string;
+            /** @enum {string} */
+            type: "SHORT" | "LONG";
+            stars?: number | null;
+            spoiler?: boolean;
+            tags?: string[];
+            imageUrls?: string[];
+            repostedPostId?: string | null;
+        };
+        LongPostFormData: {
+            movieId: string;
+            content: string;
+            rating?: number;
+            title?: string;
+            subtitle?: string;
+            tags?: string[];
+            spoiler?: boolean;
+            imageUrls?: string[];
+        };
+        ShortPostFormData: {
+            movieId: string;
+            content: string;
+            spoiler?: boolean;
+            imageUrls?: string[];
+        };
+        ChunkSummary: {
+            pros: string[];
+            cons: string[];
+            stats: components["schemas"]["SentimentStats"];
+            quotes: string[];
         };
     };
     responses: never;
