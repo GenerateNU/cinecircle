@@ -33,14 +33,15 @@ export default function BookmarkModal({
 }: Props) {
   // Track the initial selection to detect changes
   const initialSelectionRef = useRef<BookmarkStatus>(propSelection);
-  const [currentSelection, setCurrentSelection] = useState<BookmarkStatus>(propSelection);
-  
+  const [currentSelection, setCurrentSelection] =
+    useState<BookmarkStatus>(propSelection);
+
   // Update current selection when prop changes
   useEffect(() => {
     setCurrentSelection(propSelection);
     initialSelectionRef.current = propSelection;
   }, [propSelection]);
-  
+
   const hasChanges = currentSelection !== initialSelectionRef.current;
   const slideAnim = useRef(new Animated.Value(300)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -100,11 +101,10 @@ export default function BookmarkModal({
                 isToWatch
                   ? wantToWatchSelected
                   : isWatched
-                  ? wantToWatchSmall
-                  : wantToWatchDefault
+                    ? wantToWatchSmall
+                    : wantToWatchDefault
               }
               resizeMode="contain"
-              style={styles.ticketImage}
             />
           </TouchableOpacity>
 
@@ -117,11 +117,10 @@ export default function BookmarkModal({
                 isWatched
                   ? watchedSelected
                   : isToWatch
-                  ? watchedSmall
-                  : watchedDefault
+                    ? watchedSmall
+                    : watchedDefault
               }
               resizeMode="contain"
-              style={styles.ticketImage}
             />
           </TouchableOpacity>
         </View>
