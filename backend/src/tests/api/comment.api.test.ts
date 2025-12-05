@@ -324,7 +324,6 @@ jest.mock("../../middleware/auth", () => ({
 describe("Comment API Tests", () => {
   let app: express.Express;
   let testCommentId: string;
-  let testRatingId: string;
   let testPostId: string;
 
   const TEST_USER_ID = "123e4567-e89b-12d3-a456-426614174000";
@@ -358,7 +357,6 @@ describe("Comment API Tests", () => {
       } 
     });
     await prisma.post.deleteMany({ where: { userId: TEST_USER_ID } });
-    await prisma.rating.deleteMany({ where: { userId: TEST_USER_ID } });
 
     // Create test user profile
     await prisma.userProfile.upsert({
@@ -385,21 +383,11 @@ describe("Comment API Tests", () => {
 
   // Create a fresh comment for each test
   beforeEach(async () => {
-    // Create a new rating for each test
-    const rating = await prisma.rating.create({
-      data: {
-        userId: TEST_USER_ID,
-        movieId: "test-movie-555",
-        stars: 5,
-        date: new Date(),
-      },
-    });
-    testRatingId = rating.id;
-
     // Create a new post for each test
     const post = await prisma.post.create({
       data: {
         userId: TEST_USER_ID,
+        movieId: "test-movie-555",
         type: "SHORT",
         content: "This is a test post!",
         createdAt: new Date(),
@@ -411,7 +399,6 @@ describe("Comment API Tests", () => {
     const comment = await prisma.comment.create({
       data: {
         userId: TEST_USER_ID,
-        ratingId: testRatingId,
         postId: testPostId,
         content: "This is a test comment!",
         createdAt: new Date(),
@@ -422,25 +409,21 @@ describe("Comment API Tests", () => {
 
   // Clean up after each test
   afterEach(async () => {
-    // Delete comments first (they reference ratings and posts)
+    // Delete comments first (they reference posts)
     if (testCommentId) {
       await prisma.comment.deleteMany({ 
         where: { 
           OR: [
             { id: testCommentId },
-            { ratingId: testRatingId },
             { postId: testPostId }
           ]
         } 
       }).catch(() => {});
     }
     
-    // Then delete posts and ratings
+    // Then delete posts
     if (testPostId) {
       await prisma.post.delete({ where: { id: testPostId } }).catch(() => {});
-    }
-    if (testRatingId) {
-      await prisma.rating.delete({ where: { id: testRatingId } }).catch(() => {});
     }
   });
 
@@ -455,7 +438,6 @@ describe("Comment API Tests", () => {
       } 
     });
     await prisma.post.deleteMany({ where: { userId: TEST_USER_ID } });
-    await prisma.rating.deleteMany({ where: { userId: TEST_USER_ID } });
     await prisma.$disconnect();
   });
 
@@ -475,7 +457,6 @@ describe("Comment API Tests", () => {
         id: testCommentId,
         userId: TEST_USER_ID,
         content: "This is a test comment!",
-        ratingId: testRatingId,
         postId: testPostId,
       });
     });
@@ -521,7 +502,6 @@ describe("Comment API Tests", () => {
       const otherUserComment = await prisma.comment.create({
         data: {
           userId: OTHER_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Another user's comment",
           createdAt: new Date(),
@@ -612,7 +592,6 @@ describe("Comment API Tests", () => {
       const otherUserComment = await prisma.comment.create({
         data: {
           userId: OTHER_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Another user's comment",
           createdAt: new Date(),
@@ -644,7 +623,6 @@ describe("Comment API Tests", () => {
       const childComment1 = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "First child comment",
           parentId: testCommentId,
@@ -655,7 +633,6 @@ describe("Comment API Tests", () => {
       const childComment2 = await prisma.comment.create({
         data: {
           userId: OTHER_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Second child comment",
           parentId: testCommentId,
@@ -691,7 +668,6 @@ describe("Comment API Tests", () => {
       const payload = {
         content: "This is a reply to the parent comment",
         parentId: testCommentId,
-        ratingId: testRatingId,
         postId: testPostId,
       };
 
@@ -724,7 +700,6 @@ describe("Comment API Tests", () => {
       const reply1 = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "First reply",
           parentId: testCommentId,
@@ -735,7 +710,6 @@ describe("Comment API Tests", () => {
       const reply2 = await prisma.comment.create({
         data: {
           userId: OTHER_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Second reply",
           parentId: testCommentId,
@@ -790,7 +764,6 @@ describe("Comment API Tests", () => {
       const reply = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "A reply",
           parentId: testCommentId,
@@ -816,7 +789,6 @@ describe("Comment API Tests", () => {
       const childComment = await prisma.comment.create({
         data: {
           userId: OTHER_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Child comment",
           parentId: testCommentId,
@@ -828,7 +800,6 @@ describe("Comment API Tests", () => {
       const grandchildComment = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Grandchild comment",
           parentId: childComment.id,
@@ -863,7 +834,6 @@ describe("Comment API Tests", () => {
       const childComment = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Child comment",
           parentId: testCommentId,
@@ -893,7 +863,6 @@ describe("Comment API Tests", () => {
       const childComment = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Child comment",
           parentId: testCommentId,
@@ -937,7 +906,6 @@ describe("Comment API Tests", () => {
       const separateParent = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Separate parent comment",
           createdAt: new Date(),
@@ -948,7 +916,6 @@ describe("Comment API Tests", () => {
       const child1 = await prisma.comment.create({
         data: {
           userId: TEST_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Child 1",
           parentId: separateParent.id,
@@ -959,7 +926,6 @@ describe("Comment API Tests", () => {
       const child2 = await prisma.comment.create({
         data: {
           userId: OTHER_USER_ID,
-          ratingId: testRatingId,
           postId: testPostId,
           content: "Child 2",
           parentId: separateParent.id,
@@ -1105,84 +1071,6 @@ describe("Comment API Tests", () => {
 
       // Clean up
       await prisma.comment.delete({ where: { id: replyComment.id } });
-    });
-  });
-
-  describe("GET /api/comments/rating/:ratingId (getCommentsTree)", () => {
-    it("should retrieve all comments for a rating with user profile info", async () => {
-      const res = await request(app)
-        .get(`/api/comments/rating/${testRatingId}`)
-        .set(authHeader())
-        .expect(HTTP_STATUS.OK)
-        .expect("Content-Type", /json/);
-
-      expect(res.body).toHaveProperty("message", "Comments retrieved");
-      expect(res.body).toHaveProperty("comments");
-      expect(Array.isArray(res.body.comments)).toBe(true);
-
-      // The test comment is associated with both the post and rating
-      const testComment = res.body.comments.find((c: any) => c.id === testCommentId);
-      expect(testComment).toBeDefined();
-      expect(testComment.ratingId).toBe(testRatingId);
-    });
-
-    it("should return empty array for rating with no comments", async () => {
-      // Create a new rating with no comments
-      const emptyRating = await prisma.rating.create({
-        data: {
-          userId: TEST_USER_ID,
-          movieId: "empty-rating-movie",
-          stars: 4,
-          date: new Date(),
-        },
-      });
-
-      const res = await request(app)
-        .get(`/api/comments/rating/${emptyRating.id}`)
-        .set(authHeader())
-        .expect(HTTP_STATUS.OK);
-
-      expect(res.body.comments).toEqual([]);
-
-      // Clean up
-      await prisma.rating.delete({ where: { id: emptyRating.id } });
-    });
-
-    it("should only return comments for the specific rating", async () => {
-      // Create another rating with its own comment
-      const otherRating = await prisma.rating.create({
-        data: {
-          userId: TEST_USER_ID,
-          movieId: "other-movie",
-          stars: 3,
-          date: new Date(),
-        },
-      });
-
-      const otherComment = await prisma.comment.create({
-        data: {
-          userId: TEST_USER_ID,
-          ratingId: otherRating.id,
-          content: "Comment on other rating",
-          createdAt: new Date(),
-        },
-      });
-
-      // Fetch comments for original rating
-      const res = await request(app)
-        .get(`/api/comments/rating/${testRatingId}`)
-        .set(authHeader())
-        .expect(HTTP_STATUS.OK);
-
-      // Should not include the other rating's comment
-      const otherCommentInResponse = res.body.comments.find(
-        (c: any) => c.id === otherComment.id
-      );
-      expect(otherCommentInResponse).toBeUndefined();
-
-      // Clean up
-      await prisma.comment.delete({ where: { id: otherComment.id } });
-      await prisma.rating.delete({ where: { id: otherRating.id } });
     });
   });
 });
