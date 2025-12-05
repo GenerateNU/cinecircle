@@ -35,6 +35,7 @@ import { useAuth } from '../context/AuthContext';
 import type { components } from '../types/api-generated';
 import { t } from '../il8n/_il8n';
 import { UiTextKey } from '../il8n/_keys';
+import { getUserProfile } from '../services/userService';
 
 type MovieChosenScreenProps = {
   movieId: string;
@@ -122,6 +123,34 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       fetchMovieData();
     }
   }, [movieId]);
+  // Initialize spoiler toggle from user profile preference
+  // Initialize spoiler toggle from user profile preference
+  useEffect(() => {
+    const loadSpoilerPreference = async () => {
+      try {
+        const res = await getUserProfile();
+        const profile = res?.userProfile;
+
+        if (!profile) {
+          console.log('No userProfile found');
+          return;
+        }
+
+        // 👇 this matches your backend field
+        const pref = (profile as any).spoiler;
+
+        console.log('Loaded spoiler pref from profile:', pref);
+
+        if (typeof pref === 'boolean') {
+          setShowSpoilers(pref);
+        }
+      } catch (err) {
+        console.log('Failed to load spoiler preference:', err);
+      }
+    };
+
+    loadSpoilerPreference();
+  }, []);
 
   // Auto-generate summary when movieId changes
   useEffect(() => {
