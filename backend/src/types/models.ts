@@ -32,6 +32,8 @@ export type UserProfile = {
   spoiler: boolean;
   createdAt: Date;
   updatedAt: Date;
+  bookmarkedToWatch: string[];
+  bookmarkedWatched: string[];
 };
 
 export type Rating = {
