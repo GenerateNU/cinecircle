@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import UserBar from './UserBar';
 import StarRating from './StarRating';
+import { getMoviePosterUrl } from '../services/imageService';
 
 const { width } = Dimensions.get('window');
 
@@ -47,14 +48,15 @@ export default function ReviewPost({
   onPress,
   spoiler = false,
 }: ReviewPostProps) {
-  // Check if we have a valid image URL
-  const hasValidImage = movieImageUrl && movieImageUrl.length > 0;
+  // Get the full TMDB image URL using the image service
+  const imageUrl = movieImageUrl ? getMoviePosterUrl(movieImageUrl) : null;
+  const hasValidImage = !!imageUrl;
 
   const content = (
     <View style={styles.container}>
       {hasValidImage ? (
         <ImageBackground
-          source={{ uri: movieImageUrl }}
+          source={{ uri: imageUrl as string }}
           style={styles.imageBackground}
           imageStyle={styles.image}
           resizeMode="cover"
@@ -82,7 +84,7 @@ export default function ReviewPost({
               }
             >
               <Image
-                source={{ uri: movieImageUrl }}
+                source={{ uri: imageUrl as string }}
                 style={StyleSheet.absoluteFill}
                 blurRadius={30}
                 resizeMode="cover"

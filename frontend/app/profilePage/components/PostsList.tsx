@@ -20,7 +20,6 @@ import PicturePost from '../../../components/PicturePost';
 import TextPost from '../../../components/TextPost';
 import UserBar from '../../../components/UserBar';
 import InteractionBar from '../../../components/InteractionBar';
-import { getMoviePosterUrl } from '../../../services/imageService';
 import { togglePostReaction } from '../../../services/feedService';
 import { useAuth } from '../../../context/AuthContext';
 import { router } from 'expo-router';
@@ -223,9 +222,7 @@ const PostsList = ({ user, userId }: Props) => {
         const hasStars = post.stars !== null && post.stars !== undefined;
         const containsSpoilers = post.spoiler || false;
         const movieTitle = post.movie?.title || 'Unknown Movie';
-        const moviePosterUrl = post.movie?.imageUrl
-          ? getMoviePosterUrl(post.movie.imageUrl)
-          : '';
+        const movieImagePath = post.movie?.imageUrl;
 
         // Build reaction data from post
         const reactions = [
@@ -281,7 +278,7 @@ const PostsList = ({ user, userId }: Props) => {
                   rating={post.stars || 0}
                   userId={post.userId}
                   reviewerUserId={post.userId}
-                  movieImageUrl={moviePosterUrl}
+                  movieImageUrl={movieImagePath}
                   onPress={() => handlePostPress(post)}
                   spoiler={containsSpoilers}
                 />
