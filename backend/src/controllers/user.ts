@@ -25,6 +25,8 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     bio,
     moviesToWatch,
     moviesCompleted,
+    eventsSaved,
+    eventsAttended,
   } = (req.body ?? {}) as Partial<UserProfile>;
 
   try {
@@ -61,6 +63,8 @@ export const updateUserProfile = async (req: AuthenticatedRequest, res: Response
     if (bio !== undefined) patch.bio = bio;
     if (moviesToWatch !== undefined) patch.moviesToWatch = moviesToWatch;
     if (moviesCompleted !== undefined) patch.moviesCompleted = moviesCompleted;
+    if (eventsSaved !== undefined) patch.eventsSaved = eventsSaved;
+    if (eventsAttended !== undefined) patch.eventsAttended = eventsAttended;
     if (privateAccount !== undefined) patch.privateAccount = privateAccount;
     if (spoiler !== undefined) patch.spoiler = spoiler;
     if (updatedAt !== undefined) patch.updatedAt = updatedAt;
@@ -125,6 +129,8 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           bio: null,
           moviesToWatch: [],
           moviesCompleted: [],
+          eventsSaved: [],
+          eventsAttended: [],
           updatedAt: new Date(),
         },
       });
@@ -179,25 +185,31 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
       profilePicture: userProfile.profilePicture,
       country: userProfile.country,
       city: userProfile.city,
-      displayName: userProfile.displayName,
-      favoriteGenres: Array.isArray(userProfile.favoriteGenres)
-        ? userProfile.favoriteGenres as string[]
-        : [],
-      favoriteMovies: Array.isArray(userProfile.favoriteMovies)
-        ? userProfile.favoriteMovies as string[]
-        : [],
-      bio: userProfile.bio ?? null,
-      moviesToWatch: Array.isArray(userProfile.moviesToWatch)
-        ? (userProfile.moviesToWatch as string[])
-        : [],
-      moviesCompleted: Array.isArray(userProfile.moviesCompleted)
-        ? (userProfile.moviesCompleted as string[])
-        : [],
-      privateAccount: Boolean(userProfile.privateAccount),
-      spoiler: Boolean(userProfile.spoiler),
-      createdAt: userProfile.createdAt,
-      updatedAt: userProfile.updatedAt,
-    });
+    displayName: userProfile.displayName,
+    favoriteGenres: Array.isArray(userProfile.favoriteGenres)
+      ? userProfile.favoriteGenres as string[]
+      : [],
+    favoriteMovies: Array.isArray(userProfile.favoriteMovies)
+      ? userProfile.favoriteMovies as string[]
+      : [],
+    bio: userProfile.bio ?? null,
+    moviesToWatch: Array.isArray(userProfile.moviesToWatch)
+      ? (userProfile.moviesToWatch as string[])
+      : [],
+    moviesCompleted: Array.isArray(userProfile.moviesCompleted)
+      ? (userProfile.moviesCompleted as string[])
+      : [],
+    eventsSaved: Array.isArray(userProfile.eventsSaved)
+      ? (userProfile.eventsSaved as string[])
+      : [],
+    eventsAttended: Array.isArray(userProfile.eventsAttended)
+      ? (userProfile.eventsAttended as string[])
+      : [],
+    privateAccount: Boolean(userProfile.privateAccount),
+    spoiler: Boolean(userProfile.spoiler),
+    createdAt: userProfile.createdAt,
+    updatedAt: userProfile.updatedAt,
+  });
     
     const basicUser = req.user
       ? {
@@ -285,6 +297,12 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
         moviesCompleted: Array.isArray(userProfile.moviesCompleted)
           ? (userProfile.moviesCompleted as string[])
           : [],
+        eventsSaved: Array.isArray(userProfile.eventsSaved)
+          ? (userProfile.eventsSaved as string[])
+          : [],
+        eventsAttended: Array.isArray(userProfile.eventsAttended)
+          ? (userProfile.eventsAttended as string[])
+          : [],
         privateAccount: Boolean(userProfile.privateAccount),
         spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
@@ -344,17 +362,23 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
         favoriteMovies: Array.isArray(userProfile.favoriteMovies)
           ? userProfile.favoriteMovies as string[]
         : [],
-      moviesToWatch: Array.isArray(userProfile.moviesToWatch)
-        ? (userProfile.moviesToWatch as string[])
-        : [],
-      moviesCompleted: Array.isArray(userProfile.moviesCompleted)
-        ? (userProfile.moviesCompleted as string[])
-        : [],
-      privateAccount: Boolean(userProfile.privateAccount),
-      spoiler: Boolean(userProfile.spoiler),
-      createdAt: userProfile.createdAt,
-      updatedAt: userProfile.updatedAt,
-    });
+        moviesToWatch: Array.isArray(userProfile.moviesToWatch)
+          ? (userProfile.moviesToWatch as string[])
+          : [],
+        moviesCompleted: Array.isArray(userProfile.moviesCompleted)
+          ? (userProfile.moviesCompleted as string[])
+          : [],
+        eventsSaved: Array.isArray(userProfile.eventsSaved)
+          ? (userProfile.eventsSaved as string[])
+          : [],
+        eventsAttended: Array.isArray(userProfile.eventsAttended)
+          ? (userProfile.eventsAttended as string[])
+          : [],
+        privateAccount: Boolean(userProfile.privateAccount),
+        spoiler: Boolean(userProfile.spoiler),
+        createdAt: userProfile.createdAt,
+        updatedAt: userProfile.updatedAt,
+      });
     }
 
     res.json({ 
@@ -387,6 +411,8 @@ export function mapUserProfileDbToApi(row: {
   bio?: string | null;
   moviesToWatch?: string[] | null;
   moviesCompleted?: string[] | null;
+  eventsSaved?: string[] | null;
+  eventsAttended?: string[] | null;
   privateAccount?: boolean | null;
   spoiler?: boolean | null;
   createdAt: Date;
@@ -407,6 +433,8 @@ export function mapUserProfileDbToApi(row: {
     bio: row.bio ?? null,
     moviesToWatch: row.moviesToWatch ?? [],
     moviesCompleted: row.moviesCompleted ?? [],
+    eventsSaved: row.eventsSaved ?? [],
+    eventsAttended: row.eventsAttended ?? [],
     privateAccount: Boolean(row.privateAccount),
     spoiler: Boolean(row.spoiler),
     createdAt: row.createdAt,
@@ -417,7 +445,7 @@ export function mapUserProfileDbToApi(row: {
 export function mapUserProfilePatchToUpdateData(
   patch: Partial<Pick<
     UserProfile,
-    "username" | "displayName" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "bio" | "moviesToWatch" | "moviesCompleted" | "updatedAt" | "privateAccount" | "spoiler" | "spoilers"
+    "username" | "displayName" | "onboardingCompleted" | "primaryLanguage" | "secondaryLanguage" | "profilePicture" | "country" | "city" | "favoriteGenres" | "favoriteMovies" | "bio" | "moviesToWatch" | "moviesCompleted" | "eventsSaved" | "eventsAttended" | "updatedAt" | "privateAccount" | "spoiler" | "spoilers"
   >>
 ): Prisma.UserProfileUpdateInput {
   const data: Prisma.UserProfileUpdateInput = {};
@@ -460,6 +488,12 @@ export function mapUserProfilePatchToUpdateData(
   }
   if (Object.prototype.hasOwnProperty.call(patch, "moviesCompleted")) {
     data.moviesCompleted = patch.moviesCompleted ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "eventsSaved")) {
+    data.eventsSaved = patch.eventsSaved ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "eventsAttended")) {
+    data.eventsAttended = patch.eventsAttended ?? [];
   }
   if (Object.prototype.hasOwnProperty.call(patch, "privateAccount")) {
     data.privateAccount = patch.privateAccount ?? false;

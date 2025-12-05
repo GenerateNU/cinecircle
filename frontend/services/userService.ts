@@ -12,6 +12,8 @@ type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"] & 
     secondaryLanguage?: string[];
     moviesToWatch?: string[];
     moviesCompleted?: string[];
+    eventsSaved?: string[];
+    eventsAttended?: string[];
     bio?: string | null;
   }) | null;
 };
@@ -21,8 +23,10 @@ type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"] & 
   spoiler?: boolean;
   secondaryLanguage?: string[];
   username?: string;
-    moviesToWatch?: string[];
-    moviesCompleted?: string[];
+  moviesToWatch?: string[];
+  moviesCompleted?: string[];
+  eventsSaved?: string[];
+  eventsAttended?: string[];
   bio?: string | null;
 };
 type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];

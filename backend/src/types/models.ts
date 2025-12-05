@@ -32,6 +32,8 @@ export type UserProfile = {
   bio?: string | null;
   moviesToWatch: string[];
   moviesCompleted: string[];
+  eventsSaved: string[];
+  eventsAttended: string[];
   privateAccount: boolean;
   spoiler: boolean;
   createdAt: Date;

@@ -508,6 +508,8 @@ model UserProfile {
   bio                                            String?        @db.Text
   moviesToWatch                                  String[]       @default([])
   moviesCompleted                                String[]       @default([])
+  eventsSaved                                    String[]       @default([])
+  eventsAttended                                 String[]       @default([])
   createdAt                                      DateTime       @default(now())
   updatedAt                                      DateTime       @updatedAt
   Comment                                        Comment[]

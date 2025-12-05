@@ -28,6 +28,8 @@ import { getUserProfile } from '../../services/userService';
 type UserProfile = components['schemas']['UserProfile'] & {
   moviesToWatch?: string[];
   moviesCompleted?: string[];
+  eventsSaved?: string[];
+  eventsAttended?: string[];
 };
 
 type Props = {
@@ -549,7 +551,13 @@ const ProfilePage = ({
             />
           )}
           {activeTab === 'posts' && <PostsList user={u} userId={targetUserId ?? null} />}
-          {activeTab === 'events' && <EventsList userId={targetUserId ?? null} />}
+          {activeTab === 'events' && (
+            <EventsList
+              userId={targetUserId ?? null}
+              eventsSaved={profile?.eventsSaved}
+              eventsAttended={profile?.eventsAttended}
+            />
+          )}
           {activeTab === 'badges' && <BadgesGrid />}
         </View>
 

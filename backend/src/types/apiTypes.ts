@@ -59,6 +59,8 @@ export type UpdateUserProfileInput = {
   spoiler?: boolean;
   moviesToWatch?: string[];
   moviesCompleted?: string[];
+  eventsSaved?: string[];
+  eventsAttended?: string[];
 };
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };
