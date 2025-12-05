@@ -47,7 +47,6 @@ export default function AccountSettings() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [privateAccount, setPrivateAccount] = useState(false);
-  const [allowWhatsApp, setAllowWhatsApp] = useState(false);
   const [allowSpoilers, setAllowSpoilers] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -372,13 +371,6 @@ export default function AccountSettings() {
                             desc: 'Control who can see your profile and posts. Only approved followers will have access.',
                             value: privateAccount,
                             setter: setPrivateAccount,
-                          },
-                          {
-                            key: 'whatsapp',
-                            title: 'Allow WhatsApp',
-                            desc: 'Show your WhatsApp contact link on your profile so friends can reach you easily.',
-                            value: allowWhatsApp,
-                            setter: setAllowWhatsApp,
                           },
                           {
                             key: 'spoilers',
