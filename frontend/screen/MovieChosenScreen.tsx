@@ -248,11 +248,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     : null;
 
   const handleReviewPress = (post: Post) => {
-    console.log('Review pressed:', post.id, 'Movie:', post.movieId);
+    router.push(`/postDetail/${post.id}`);
   };
 
   const handlePostPress = (post: Post) => {
-    console.log('Post pressed:', post.id, 'Movie:', post.movieId);
+    router.push(`/postDetail/${post.id}`);
   };
 
   const handleAddPost = () => {
@@ -286,7 +286,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   };
 
   const handleComment = (post: Post) => {
-    console.log('Comment button pressed for post:', post.id);
+    router.push(`/postDetail/${post.id}`);
   };
 
   const getFeedItems = (): FeedItem[] =>

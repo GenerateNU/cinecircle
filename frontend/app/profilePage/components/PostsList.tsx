@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   FlatList,
+  StyleSheet,
+  Dimensions,
 } from 'react-native';
 import tw from 'twrnc';
 import { User } from '../../../lib/profilePage/_types';
@@ -13,6 +15,17 @@ import { Feather } from '@expo/vector-icons';
 import { getPosts } from '../../../services/postsService';
 import type { components } from '../../../types/api-generated';
 import { formatCount } from '../../../lib/profilePage/_utils';
+import ReviewPost from '../../../components/ReviewPost';
+import PicturePost from '../../../components/PicturePost';
+import TextPost from '../../../components/TextPost';
+import UserBar from '../../../components/UserBar';
+import InteractionBar from '../../../components/InteractionBar';
+import { getMoviePosterUrl } from '../../../services/imageService';
+import { togglePostReaction } from '../../../services/feedService';
+import { useAuth } from '../../../context/AuthContext';
+import { router } from 'expo-router';
+
+const { width } = Dimensions.get('window');
 
 type Props = {
   user: User;
@@ -22,6 +35,7 @@ type Props = {
 type Post = components['schemas']['Post'];
 
 const PostsList = ({ user, userId }: Props) => {
+  const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +67,7 @@ const PostsList = ({ user, userId }: Props) => {
       setError(null);
       const res = await getPosts({
         userId: resolvedUserId,
+        currentUserId: currentUser?.id, // Pass current user ID to get their reactions
         repostedPostId: null, // Only show original posts, not reposts
         limit: 50,
       });
@@ -63,7 +78,7 @@ const PostsList = ({ user, userId }: Props) => {
     } finally {
       setLoading(false);
     }
-  }, [resolvedUserId, isValidUuid]);
+  }, [resolvedUserId, isValidUuid, currentUser?.id]);
 
   useEffect(() => {
     loadPosts();
@@ -112,6 +127,73 @@ const PostsList = ({ user, userId }: Props) => {
     );
   }
 
+  const formatDate = (dateString: string | Date) => {
+    const date =
+      typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const handlePostPress = (post: Post) => {
+    router.push(`/postDetail/${post.id}`);
+  };
+
+  const handleComment = (post: Post) => {
+    router.push(`/postDetail/${post.id}`);
+  };
+
+  const handleReaction = async (post: Post, reactionIndex: number) => {
+    if (!currentUser?.id) return;
+
+    const reactionTypes: Array<
+      'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+    > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
+    const reactionType = reactionTypes[reactionIndex];
+
+    try {
+      // Optimistically update UI
+      setPosts(prevPosts =>
+        prevPosts.map(p => {
+          if (p.id !== post.id) return p;
+
+          const wasSelected = p.userReactions?.includes(reactionType) || false;
+
+          const newCounts = {
+            SPICY: p.reactionCounts?.SPICY ?? 0,
+            STAR_STUDDED: p.reactionCounts?.STAR_STUDDED ?? 0,
+            THOUGHT_PROVOKING: p.reactionCounts?.THOUGHT_PROVOKING ?? 0,
+            BLOCKBUSTER: p.reactionCounts?.BLOCKBUSTER ?? 0,
+          };
+          newCounts[reactionType] = Math.max(
+            0,
+            newCounts[reactionType] + (wasSelected ? -1 : 1)
+          );
+
+          let newUserReactions = [...(p.userReactions || [])];
+          if (wasSelected) {
+            newUserReactions = newUserReactions.filter(r => r !== reactionType);
+          } else {
+            newUserReactions.push(reactionType);
+          }
+
+          return {
+            ...p,
+            reactionCounts: newCounts,
+            userReactions: newUserReactions,
+          };
+        })
+      );
+
+      await togglePostReaction(post.id, currentUser.id, reactionType);
+    } catch (err) {
+      console.error('Error toggling reaction:', err);
+      await loadPosts();
+    }
+  };
+
   return (
     <FlatList
       data={posts}
@@ -122,57 +204,178 @@ const PostsList = ({ user, userId }: Props) => {
       maxToRenderPerBatch={posts.length || 10}
       windowSize={Math.max(5, posts.length || 5)}
       showsVerticalScrollIndicator={false}
-      renderItem={({ item: p }) => {
-        const likeCount = formatCount(p.reactionCount ?? 0);
-        const commentCount = formatCount(p.commentCount ?? 0);
-        const repostCount = formatCount(p.repostCount ?? 0);
+      renderItem={({ item: post }) => {
+        const username = post.UserProfile?.username || user.username || 'User';
         const avatar = user.profilePic;
-        const displayName =
-          p.UserProfile?.username?.trim() ||
-          user.name ||
-          user.username ||
-          'User';
-        return (
-          <View
-            style={tw`flex-row rounded-[8px] bg-white mb-[10px] border-b border-[#eee] p-[15px]`}
-          >
-            <Image
-              source={{ uri: avatar }}
-              style={tw`w-10 h-10 rounded-full mr-2.5`}
-            />
-            <View style={tw`flex-1`}>
-              <Text style={tw`font-semibold`}>{displayName}</Text>
-              <Text style={tw`text-[#333] my-1.5`}>{p.content}</Text>
-              <View style={tw`flex-row justify-between w-4/5 mt-2`}>
-                <View style={tw`flex-row items-center`}>
-                  <Feather name="heart" size={18} color="#111" />
-                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>
-                    {likeCount}
-                  </Text>
-                </View>
-                <View style={tw`flex-row items-center`}>
-                  <Feather name="message-circle" size={18} color="#111" />
-                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>
-                    {commentCount}
-                  </Text>
-                </View>
-                <View style={tw`flex-row items-center`}>
-                  <Feather name="repeat" size={18} color="#111" />
-                  <Text style={tw`ml-1 text-[12px] text-gray-600`}>
-                    {repostCount}
-                  </Text>
-                </View>
-                <View style={tw`flex-row items-center`}>
-                  <Feather name="send" size={18} color="#111" />
+        const hasImage = post.imageUrls && post.imageUrls.length > 0;
+        const hasStars = post.stars !== null && post.stars !== undefined;
+        const containsSpoilers = post.spoiler || false;
+        const movieTitle = post.movie?.title || 'Unknown Movie';
+        const moviePosterUrl = post.movie?.imageUrl
+          ? getMoviePosterUrl(post.movie.imageUrl)
+          : '';
+
+        // Build reaction data from post
+        const reactions = [
+          {
+            emoji: '🌶️',
+            count: post.reactionCounts?.SPICY || 0,
+            selected: post.userReactions?.includes('SPICY') || false,
+          },
+          {
+            emoji: '✨',
+            count: post.reactionCounts?.STAR_STUDDED || 0,
+            selected: post.userReactions?.includes('STAR_STUDDED') || false,
+          },
+          {
+            emoji: '🧠',
+            count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
+            selected:
+              post.userReactions?.includes('THOUGHT_PROVOKING') || false,
+          },
+          {
+            emoji: '🧨',
+            count: post.reactionCounts?.BLOCKBUSTER || 0,
+            selected: post.userReactions?.includes('BLOCKBUSTER') || false,
+          },
+        ];
+
+        // Determine which component to use:
+        // - ReviewPost for LONG posts with stars
+        // - PicturePost for SHORT posts with images
+        // - TextPost for SHORT posts without images
+
+        if (hasStars) {
+          // LONG post with rating - use ReviewPost with wrapper
+          return (
+            <React.Fragment key={post.id}>
+              <View style={styles.ratingContainer}>
+                <UserBar
+                  name={username}
+                  username={username}
+                  userId={post.userId}
+                />
+                <Text style={styles.shareText}>
+                  Check out this new review that I just dropped!
+                </Text>
+                <ReviewPost
+                  userName={username}
+                  username={username}
+                  date={formatDate(post.createdAt)}
+                  avatarUri={avatar}
+                  reviewerName={username}
+                  reviewerAvatarUri={avatar}
+                  movieTitle={movieTitle}
+                  rating={post.stars || 0}
+                  userId={post.userId}
+                  reviewerUserId={post.userId}
+                  movieImageUrl={moviePosterUrl}
+                  onPress={() => handlePostPress(post)}
+                  spoiler={containsSpoilers}
+                />
+                <View style={styles.interactionWrapper}>
+                  <InteractionBar
+                    initialComments={post.commentCount || 0}
+                    reactions={reactions}
+                    onCommentPress={() => handleComment(post)}
+                    onReactionPress={index => handleReaction(post, index)}
+                  />
                 </View>
               </View>
-            </View>
-          </View>
-        );
+            </React.Fragment>
+          );
+        } else if (hasImage) {
+          // SHORT post with images - use PicturePost
+          return (
+            <React.Fragment key={post.id}>
+              <View style={styles.postContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => handlePostPress(post)}
+                >
+                  <PicturePost
+                    userName={username}
+                    username={username}
+                    date={formatDate(post.createdAt)}
+                    avatarUri={avatar}
+                    content={post.content}
+                    imageUrls={post.imageUrls || []}
+                    userId={post.userId}
+                    spoiler={containsSpoilers}
+                  />
+                </TouchableOpacity>
+                <View style={styles.interactionWrapper}>
+                  <InteractionBar
+                    initialComments={post.commentCount || 0}
+                    reactions={reactions}
+                    onCommentPress={() => handleComment(post)}
+                    onReactionPress={index => handleReaction(post, index)}
+                  />
+                </View>
+              </View>
+            </React.Fragment>
+          );
+        } else {
+          // SHORT post without images - use TextPost
+          return (
+            <React.Fragment key={post.id}>
+              <View style={styles.postContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => handlePostPress(post)}
+                >
+                  <TextPost
+                    userName={username}
+                    username={username}
+                    date={formatDate(post.createdAt)}
+                    avatarUri={avatar}
+                    content={post.content}
+                    userId={post.userId}
+                    spoiler={containsSpoilers}
+                  />
+                </TouchableOpacity>
+                <View style={styles.interactionWrapper}>
+                  <InteractionBar
+                    initialComments={post.commentCount || 0}
+                    reactions={reactions}
+                    onCommentPress={() => handleComment(post)}
+                    onReactionPress={index => handleReaction(post, index)}
+                  />
+                </View>
+              </View>
+            </React.Fragment>
+          );
+        }
       }}
       ListFooterComponent={<View style={tw`h-2`} />}
     />
   );
 };
+
+const styles = StyleSheet.create({
+  ratingContainer: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: width * 0.04,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.04,
+    marginBottom: width * 0.04,
+  },
+  shareText: {
+    fontSize: width * 0.04,
+    color: '#000',
+    marginTop: width * 0.03,
+    marginBottom: width * 0.04,
+  },
+  postContainer: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: width * 0.04,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.04,
+    marginBottom: width * 0.04,
+  },
+  interactionWrapper: {
+    marginTop: width * 0.04,
+  },
+});
 
 export default PostsList;

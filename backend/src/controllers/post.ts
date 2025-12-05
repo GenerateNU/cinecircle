@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../services/db.js";
 import { Prisma } from "@prisma/client";
+import { randomUUID } from "crypto";
 
 // CREATE POST
 export const createPost = async (req: Request, res: Response) => {
@@ -53,18 +54,19 @@ export const createPost = async (req: Request, res: Response) => {
         }
       }
   
-      const newPost = await prisma.post.create({
-        data: {
-          userId,
-          movieId,
-          content,
-          type: type || "SHORT",
-          stars: stars ? parseInt(stars, 10) : null,
-          spoiler: spoiler || false,
-          tags: tags || [],
-          imageUrls: imageUrls || [],
-          repostedPostId,
-        },
+    const newPost = await prisma.post.create({
+      data: {
+        id: randomUUID(),
+        userId,
+        movieId,
+        content,
+        type: type || "SHORT",
+        stars: stars ? parseInt(stars, 10) : null,
+        spoiler: spoiler || false,
+        tags: tags || [],
+        imageUrls: imageUrls || [],
+        repostedPostId,
+      },
         include: {
           UserProfile: {
             select: {
@@ -99,6 +101,7 @@ export const createPost = async (req: Request, res: Response) => {
 export const getPostById = async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
+      const { currentUserId } = req.query;
   
       if (!postId) {
         return res.status(400).json({ message: "Post ID is required" });
@@ -133,7 +136,12 @@ export const getPostById = async (req: Request, res: Response) => {
               createdAt: "desc",
             },
           },
-          PostReaction: true,
+          PostReaction: {
+            select: {
+              reactionType: true,
+              userId: true,
+            },
+          },
           other_Post: {
             include: {
               UserProfile: {
@@ -153,6 +161,19 @@ export const getPostById = async (req: Request, res: Response) => {
       if (!post) {
         return res.status(404).json({ message: "Post not found" });
       }
+
+      // Count reactions by type
+      const reactionCounts = post.PostReaction.reduce((acc: Record<string, number>, r: any) => {
+        acc[r.reactionType] = (acc[r.reactionType] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Get current user's reactions if provided
+      const userReactions = currentUserId 
+        ? post.PostReaction
+            .filter(r => r.userId === currentUserId)
+            .map(r => r.reactionType)
+        : [];
   
       res.json({
         message: "Post found successfully",
@@ -160,6 +181,8 @@ export const getPostById = async (req: Request, res: Response) => {
           ...post,
           Reposts: post.other_Post,
           reactionCount: post.PostReaction.length,
+          reactionCounts,
+          userReactions,
           commentCount: post.Comment.length,
           repostCount: post.other_Post.length,
         },
@@ -438,6 +461,7 @@ export const toggleReaction = async (req: Request, res: Response) => {
         // Add reaction
         await prisma.postReaction.create({
           data: {
+            id: randomUUID(),
             postId,
             userId,
             reactionType,

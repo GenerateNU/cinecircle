@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import type { AuthenticatedRequest } from "../middleware/auth";
 import { prisma } from "../services/db";
+import { randomUUID } from "crypto";
 
 /**
  * GET /api/comment/:id
@@ -141,6 +142,7 @@ export const createComment = async (req: AuthenticatedRequest, res: Response) =>
   try {
     const newComment = await prisma.comment.create({
       data: {
+        id: randomUUID(),
         userId: req.user.id,
         postId: postId ?? null,
         parentId: parentId ?? null,
@@ -349,6 +351,7 @@ export const toggleCommentLike = async (req: AuthenticatedRequest, res: Response
       // Like - add a new like
       await prisma.commentLike.create({
         data: {
+          id: randomUUID(),
           commentId,
           userId: req.user.id,
         },

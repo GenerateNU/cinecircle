@@ -1,6 +1,7 @@
 import type { Response,Request } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { prisma } from '../services/db';
+import { randomUUID } from 'crypto';
 
 export const createRating = async (req: AuthenticatedRequest, res: Response) => {
   const timestamp = new Date().toISOString();
@@ -13,6 +14,7 @@ export const createRating = async (req: AuthenticatedRequest, res: Response) => 
       return res.status(400).json({ message: 'Stars must be between 0 and 5', timestamp, endpoint: '/api/ratings' });
     }
     const newRatingData = {
+      id: randomUUID(),
       userId: req.user.id,
       movieId: req.body.movieId,
       stars,

@@ -91,9 +91,8 @@ export default function RecByFriendsScreen() {
   };
 
   const openPostDetail = (post: Post, options?: { focusComment?: boolean }) => {
-    // TODO: Hook up to post detail page
     router.push({
-      pathname: '/post/[postId]',
+      pathname: `/postDetail/${post.id}`,
       params: {
         postId: post.id,
         movieId: post.movieId ?? '',

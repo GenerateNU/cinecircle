@@ -4120,6 +4120,7 @@ export interface components {
             summary: components["schemas"]["MovieSummary"];
         };
         PostFormData: {
+            userId: string;
             movieId: string;
             content: string;
             /** @enum {string} */
