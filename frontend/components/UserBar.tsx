@@ -1,27 +1,35 @@
+// components/UserBar.tsx
 import React from 'react';
 import {
   View,
   Text,
-  Image,
   StyleSheet,
+  Image,
   TouchableOpacity,
+  ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import Avatar from './Avatar';
 
 const { width } = Dimensions.get('window');
 
-type UserBarProps = {
+// ⬇️ adjust if your icon lives somewhere else
+const translateIcon = require('../assets/translate.png');
+
+export type UserBarProps = {
   name: string;
   username?: string;
   date?: string;
   avatarUri?: string;
-  avatarSize?: number;
   userId?: string;
+
+  // old props used by ReviewPost
+  avatarSize?: number; // in px
   nameColor?: string;
-  usernameColor?: string;
-  dateColor?: string;
+
+  // new translation props
+  showTranslate?: boolean;
+  onPressTranslate?: () => void;
+  loadingTranslate?: boolean;
 };
 
 export default function UserBar({
@@ -29,46 +37,64 @@ export default function UserBar({
   username,
   date,
   avatarUri,
-  avatarSize = width * 0.1,
-  userId,
-  nameColor = '#000',
-  usernameColor = '#666',
-  dateColor = '#999',
+  userId, // not used visually yet, but kept for navigation if you want
+  avatarSize,
+  nameColor,
+  showTranslate = false,
+  onPressTranslate,
+  loadingTranslate = false,
 }: UserBarProps) {
-  const router = useRouter();
-
-  const handlePress = () => {
-    if (userId) {
-      router.push(`/profilePage?userId=${userId}`);
-    }
-  };
+  // default avatar size if not provided
+  const size = avatarSize ?? width * 0.1;
 
   return (
     <View style={styles.container}>
-      <View style={styles.avatar}>
-        <Avatar
-          uri={
-            avatarUri ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=200&background=667eea&color=fff`
-          }
-          size={24}
-        />
-      </View>
-      <View style={styles.textContainer}>
-        <TouchableOpacity
-          onPress={handlePress}
-          disabled={!userId}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.name, { color: nameColor }]}>{name}</Text>
-        </TouchableOpacity>
-        {username && (
-          <Text style={[styles.username, { color: usernameColor }]}>
-            @{username}
-          </Text>
+      {/* Left: avatar + name/username */}
+      <View style={styles.leftRow}>
+        {avatarUri ? (
+          <Image
+            source={{ uri: avatarUri }}
+            style={[
+              styles.avatar,
+              { width: size, height: size, borderRadius: size / 2 },
+            ]}
+          />
+        ) : (
+          <View
+            style={[
+              styles.avatar,
+              styles.avatarPlaceholder,
+              { width: size, height: size, borderRadius: size / 2 },
+            ]}
+          />
         )}
+
+        <View>
+          <Text style={[styles.name, nameColor ? { color: nameColor } : null]}>
+            {name}
+          </Text>
+          {username ? <Text style={styles.username}>@{username}</Text> : null}
+        </View>
       </View>
-      {date && <Text style={[styles.date, { color: dateColor }]}>{date}</Text>}
+
+      {/* Right: translate icon (optional) + date (optional) */}
+      <View style={styles.rightRow}>
+        {showTranslate && (
+          <TouchableOpacity
+            onPress={onPressTranslate}
+            disabled={loadingTranslate}
+            style={styles.translateButton}
+          >
+            {loadingTranslate ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Image source={translateIcon} style={styles.translateIcon} />
+            )}
+          </TouchableOpacity>
+        )}
+
+        {date ? <Text style={styles.date}>{date}</Text> : null}
+      </View>
     </View>
   );
 }
@@ -76,27 +102,43 @@ export default function UserBar({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
+  },
+  leftRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   avatar: {
     marginRight: width * 0.03,
   },
-  textContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: width * 0.02,
+  avatarPlaceholder: {
+    backgroundColor: '#DDD',
   },
   name: {
-    fontSize: 12,
+    fontSize: width * 0.04,
     fontWeight: '600',
+    color: '#000',
   },
   username: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: width * 0.032,
+    color: '#666',
   },
   date: {
-    fontSize: width * 0.035,
+    fontSize: width * 0.032,
+    color: '#888',
+  },
+  translateButton: {
+    marginRight: 4,
+  },
+  translateIcon: {
+    width: 16,
+    height: 16,
+    resizeMode: 'contain',
   },
 });

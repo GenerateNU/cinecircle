@@ -1,9 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import UserBar from './UserBar';
 import MyCarousel from './Carousel';
+import { useAuth } from '../context/AuthContext';
+import { translateTextApi } from '../services/translationService';
 
 const { width } = Dimensions.get('window');
+
+function mapPrimaryLanguage(primaryLanguage?: string | null): {
+  code: string;
+  label: string;
+} {
+  if (!primaryLanguage) return { code: 'en', label: 'English' };
+
+  const lower = primaryLanguage.toLowerCase().trim();
+
+  switch (lower) {
+    case 'hindi':
+      return { code: 'hi', label: 'Hindi' };
+    case 'tamil':
+      return { code: 'ta', label: 'Tamil' };
+    case 'telugu':
+      return { code: 'te', label: 'Telugu' };
+    case 'bengali':
+    case 'bangla':
+      return { code: 'bn', label: 'Bengali' };
+    case 'english':
+    case 'en':
+      return { code: 'en', label: 'English' };
+    default:
+      return { code: 'en', label: primaryLanguage };
+  }
+}
 
 type PicturePostProps = {
   userName: string;
@@ -27,6 +55,60 @@ export default function PicturePost({
   userId,
   spoiler = false,
 }: PicturePostProps) {
+  const { profile } = useAuth();
+
+  const mapped = mapPrimaryLanguage((profile as any)?.primaryLanguage);
+  const userLangCode = mapped.code;
+
+  const [isTranslated, setIsTranslated] = useState(false);
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [loadingTranslation, setLoadingTranslation] = useState(false);
+
+  const shouldShowTranslate = userLangCode !== 'en';
+
+  console.log(
+    '[PicturePost] RENDER: langRaw =',
+    (profile as any)?.primaryLanguage
+  );
+  console.log('[PicturePost] mapped lang =', mapped);
+  console.log('[PicturePost] shouldShowTranslate =', shouldShowTranslate);
+
+  const captionToShow = isTranslated && translated ? translated : content;
+
+  const toggleTranslation = async () => {
+    console.log('=== [PicturePost] toggleTranslation pressed ===', {
+      isTranslated,
+      hasTranslated: !!translated,
+    });
+
+    const turningOn = !isTranslated;
+
+    if (turningOn && shouldShowTranslate && !translated) {
+      try {
+        setLoadingTranslation(true);
+
+        console.log('[PicturePost] Calling translateTextApi with:', {
+          textSnippet: content.slice(0, 80),
+          dest: userLangCode,
+        });
+
+        // assume original caption is English; force 'en' as source
+        const response = await translateTextApi(content, userLangCode, 'en');
+        console.log('[PicturePost] translateTextApi response =', response);
+
+        const translatedText = response.destinationText || content;
+        setTranslated(translatedText);
+      } catch (err) {
+        console.error('[PicturePost] Translation ERROR:', err);
+        setTranslated(null);
+      } finally {
+        setLoadingTranslation(false);
+      }
+    }
+
+    setIsTranslated(prev => !prev);
+  };
+
   const imageComponents = imageUrls.map((url, index) => (
     <Image
       source={{ uri: url }}
@@ -51,8 +133,12 @@ export default function PicturePost({
         date={date}
         avatarUri={avatarUri}
         userId={userId}
+        showTranslate={shouldShowTranslate}
+        onPressTranslate={toggleTranslation}
+        loadingTranslate={loadingTranslation}
       />
-      <Text style={styles.content}>{content}</Text>
+
+      <Text style={styles.content}>{captionToShow}</Text>
 
       {imageUrls.length > 0 ? (
         <MyCarousel components={imageComponents} width={100} height={40} />
@@ -72,7 +158,7 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     marginBottom: width * 0.04,
     width: '100%',
-    position: 'relative', // 👈 needed for pill positioning
+    position: 'relative', // for spoiler pill
   },
   content: {
     fontSize: width * 0.0375,
