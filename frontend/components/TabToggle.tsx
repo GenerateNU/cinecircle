@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabText: {
-    fontSize: width * 0.04,
+    fontSize: width * 0.036,
     fontWeight: '500',
     color: '#666',
   },
