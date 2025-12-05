@@ -21,8 +21,9 @@ import PicturePost from '../components/PicturePost';
 import InteractionBar from '../components/InteractionBar';
 import UserBar from '../components/UserBar';
 import StarRating from '../components/StarRating';
+import AiConsensus from '../components/AiConsensus';
 import {
-  // getMovieSummary,
+  getMovieSummary,
   getMovieByCinecircleId,
 } from '../services/moviesService';
 import { getPosts } from '../services/postsService';
@@ -39,7 +40,7 @@ type MovieChosenScreenProps = {
 
 type Post = components['schemas']['Post'];
 type Movie = components['schemas']['Movie'];
-// type Summary = components["schemas"]["Summary"];
+type Summary = components['schemas']['MovieSummary'];
 
 type FeedItem = {
   type: 'post';
@@ -53,9 +54,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // const [summary, setSummary] = useState<Summary | null>(null);
-  // const [summaryLoading, setSummaryLoading] = useState(false);
-  // const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const [movieEnvelope, setMovieEnvelope] = useState<Movie | null>(null);
   const [showSpoilers, setShowSpoilers] = useState(false);
@@ -75,7 +76,11 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
         setLoading(true);
         setError(null);
-        // setSummaryError(null);
+
+        // Reset summary when switching movies
+        setSummary(null);
+        setSummaryError(null);
+        setSummaryLoading(false);
 
         // Optional: fetch movie meta (title, description, etc.)
         try {
@@ -93,24 +98,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         });
 
         setPosts(postsResponse || []);
-
-        // setSummaryLoading(true);
-        // try {
-        //   const summaryResponse = await getMovieSummary(movieId);
-        //   // setSummary(summaryResponse);
-        // } catch (summaryErr: any) {
-        //   console.error('Error fetching AI summary:', summaryErr?.message);
-        //   // setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
-        // }
       } catch (err: any) {
         console.error('=== FETCH MOVIE DATA ERROR ===');
         console.error('Error type:', err?.constructor?.name);
         console.error('Error message:', err?.message);
         setError(t(UiTextKey.FailedToLoadMovieData));
-        // setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
       } finally {
         setLoading(false);
-        // setSummaryLoading(false);
         console.log('=== FETCH MOVIE DATA END ===');
       }
     };
@@ -128,6 +122,35 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       useNativeDriver: true,
     }).start();
   }, [showSpoilers]);
+
+  // Auto-generate summary when movieId changes
+  useEffect(() => {
+    const generateSummary = async () => {
+      console.log('Auto-generating AI summary for movieId:', movieId);
+
+      if (!movieId) return;
+
+      try {
+        setSummaryError(null);
+        setSummary(null);
+        setSummaryLoading(true);
+
+        const summaryResponse = await getMovieSummary(movieId);
+        console.log('AI summary response:', summaryResponse);
+
+        setSummary(summaryResponse);
+      } catch (err: any) {
+        console.error('Error fetching AI summary:', err?.message);
+        setSummaryError(t(UiTextKey.FailedToLoadAiSummary));
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    if (movieId) {
+      generateSummary();
+    }
+  }, [movieId]);
 
   const calculateAverageRating = () => {
     // Only calculate average from posts that have star ratings (reviews)
@@ -664,6 +687,13 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         )}
       </View>
 
+      {/* AI Consensus / Sentiment Analysis */}
+      <AiConsensus
+        summary={summary}
+        summaryLoading={summaryLoading}
+        summaryError={summaryError}
+      />
+
       {/* Feed Items */}
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -683,92 +713,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           </Text>
         </View>
       )}
-
-      {/* Bar w/ spoiler button and trending dropdown */}
-
-      {/* AI Consensus */}
-
-      {/* <View style={styles.summaryContainer}>
-        <Text style={styles.sectionHeader}>{t(UiTextKey.AiSummary)}</Text>
-
-        {summaryLoading && (
-          <View style={styles.summaryLoadingRow}>
-            <ActivityIndicator size="small" />
-            <Text style={styles.summaryLoadingText}>
-              {/* can i18n this sentence later if you want */}
-      {/* Analyzing reviews...
-            </Text>
-          </View>
-        )}
-
-        {summaryError && !summaryLoading && (
-          <Text style={styles.summaryErrorText}>{summaryError}</Text>
-        )}
-
-        {summary && !summaryLoading && !summaryError && (
-          <>
-            <Text style={styles.summaryOverall}>{summary.movieId}</Text>
-
-            <View style={styles.summaryRow}>
-              {summary.pros?.length > 0 && (
-                <View style={styles.summaryColumn}>
-                  <Text style={styles.summarySubheader}>
-                    {t(UiTextKey.PeopleLiked)}
-                  </Text>
-                  {summary.pros.slice(0, 3).map((item, idx) => (
-                    <Text key={`pro-${idx}`} style={styles.summaryBullet}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              )}
-
-              {summary.cons?.length > 0 && (
-                <View style={styles.summaryColumn}>
-                  <Text style={styles.summarySubheader}>
-                    {t(UiTextKey.CommonComplaints)}
-                  </Text>
-                  {summary.cons.slice(0, 3).map((item, idx) => (
-                    <Text key={`con-${idx}`} style={styles.summaryBullet}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              )}
-            </View>
-            
-            {summary.stats && (
-              <View style={styles.statsRow}>
-                <Text style={styles.statsText}>
-                  👍 {summary.stats.positive} {t(UiTextKey.PositiveCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  😐 {summary.stats.neutral} {t(UiTextKey.NeutralCount)}
-                </Text>
-                <Text style={styles.statsText}>
-                  👎 {summary.stats.negative} {t(UiTextKey.NegativeCount)}
-                </Text>
-                <Text style={styles.statsTotalText}>
-                  {t(UiTextKey.BasedOnReviews).replace(
-                    "{count}",
-                    String(summary.stats.total ?? 0)
-                  )}
-                </Text>
-              </View>
-            )}
-
-            {summary.quotes && summary.quotes.length > 0 && (
-              <View style={styles.quoteContainer}>
-                <Text style={styles.quoteLabel}>
-                  {t(UiTextKey.RepresentativeComment)}
-                </Text>
-                <Text style={styles.quoteText}>"{summary.quotes[0]}"</Text>
-              </View>
-            )}
-           
-          </>
-        )}
-      </View> */}
     </ScrollView>
   );
 }
@@ -832,27 +776,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingTop: 8,
   },
-  summaryContainer: { backgroundColor: '#FFF', padding: 16, marginTop: 8 },
-  sectionHeader: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  summaryLoadingRow: { flexDirection: 'row', alignItems: 'center' },
-  summaryLoadingText: { marginLeft: 8, fontSize: 14, color: '#999' },
-  summaryErrorText: { fontSize: 14, color: '#FF3B30' },
-  summaryOverall: { fontSize: 15, color: '#333', marginBottom: 8 },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-    gap: 16,
-  },
-  summaryColumn: { flex: 1 },
-  summarySubheader: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
-  summaryBullet: { fontSize: 13, color: '#555' },
-  statsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, gap: 8 },
-  statsText: { fontSize: 12, color: '#666' },
-  statsTotalText: { fontSize: 12, color: '#999' },
-  quoteContainer: { marginTop: 10 },
-  quoteLabel: { fontSize: 13, fontWeight: '500', marginBottom: 2 },
-  quoteText: { fontSize: 13, fontStyle: 'italic', color: '#444' },
   ratingsContainer: {
     backgroundColor: '#FFF',
     paddingHorizontal: 16,
@@ -973,8 +896,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginTop: 8,
     position: 'relative',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    zIndex: 10,
   },
   spoilerContainer: {
     flexDirection: 'row',
@@ -1038,8 +966,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
-    zIndex: 100,
+    elevation: 10,
+    zIndex: 9999,
     minWidth: 150,
   },
   dropdownItem: {

@@ -167,3 +167,37 @@ export type PostReaction = {
     username: string | null;
   };
 };
+
+// backend/src/types/summary.ts
+
+export type SentimentStats = {
+  positive: number;
+  neutral: number;
+  negative: number;
+  total: number;
+  positivePercent: number;
+  neutralPercent: number;
+  negativePercent: number;
+};
+
+export type MovieSummary = {
+  movieId: string;
+  overall: string;
+  pros: string[];
+  cons: string[];
+  stats: SentimentStats;
+  quotes: string[];
+};
+
+export type GetMovieSummaryEnvelope = {
+  summary: MovieSummary;
+};
+
+// For chunk-level aggregation
+export type ChunkSummary = {
+  pros: string[];
+  cons: string[];
+  stats: SentimentStats;
+  quotes: string[];
+};
+

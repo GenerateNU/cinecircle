@@ -2,6 +2,9 @@
 import type { Request, Response } from "express";
 import { prisma } from "../services/db.js";
 import type { Movie } from "../types/models";
+import type { GetMovieSummaryEnvelope } from '../types/models';
+import { generateMovieSummary } from '../services/summaryService.js';
+
 
 function mapPrismaMovie(m: any): Movie {
   // Normalize languages: JsonValue -> string[] | null
@@ -53,3 +56,19 @@ export async function getAllMovies(req: Request, res: Response) {
     });
   }
 }
+
+export async function getMovieSummaryHandler(req: Request, res: Response) {
+  const movieId = req.params.movieId;
+
+  try {
+    const summary = await generateMovieSummary(movieId);
+    return res.status(200).json({ summary });
+  } catch (err: any) {
+    console.error('getMovieSummaryHandler error:', err); // ⬅️ check this in backend logs
+    return res.status(500).json({
+      message: 'Failed to generate AI summary',
+      error: err?.message,
+    });
+  }
+}
+
