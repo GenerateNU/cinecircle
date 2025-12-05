@@ -14,16 +14,16 @@ export const styles = StyleSheet.create({
     paddingHorizontal: width * 0.015,
   },
   item: { alignItems: "center", justifyContent: "center" },
-  postButton: { color: "#000", fontSize: width * 0.105},
+  postButton: { color: "#561202", fontSize: width * 0.105},
   activeIcon: { 
-    color: "#9A0169", 
+    color: "#D62E05", 
     fontWeight: "600",
     fontSize: width * 0.07 
   },
   icon: { 
-    color: "#9A0169", 
+    color: "#F7D5CD", 
     fontWeight: "100", 
-    opacity: 0.6, 
+    opacity: 1, 
     fontSize: width * 0.07
   },
 });
