@@ -374,7 +374,6 @@ export const searchReviews = async (req: Request, res: Response) => {
 export const searchPosts = async (req: Request, res: Response) => {
     const { q, type, limit = "10" } = req.query;
 
-    // Validate query parameter
     if (!q || typeof q !== "string") {
         return res.status(400).json({ message: "Query parameter 'q' is required" });
     }
@@ -388,7 +387,6 @@ export const searchPosts = async (req: Request, res: Response) => {
     }
 
     try {
-        // Build where clause dynamically
         const whereClause: any = {
             content: {
                 contains: q,
@@ -396,7 +394,6 @@ export const searchPosts = async (req: Request, res: Response) => {
             }
         };
 
-        // Add optional type filter
         if (type && (type === "SHORT" || type === "LONG")) {
             whereClause.type = type;
         }
@@ -405,31 +402,39 @@ export const searchPosts = async (req: Request, res: Response) => {
             where: whereClause,
             take: limitNum,
             orderBy: {
-                createdAt: "desc" // sorting by most votes to least, essentially most relevant
+                createdAt: "desc"
             },
             include: {
-    UserProfile: { 
-        select: {
-            userId: true,
-            username: true,
-        },
-    },
-    _count: {
-        select: {
-            Comment: true 
-        }
-    }
-},
+                UserProfile: { 
+                    select: {
+                        userId: true,
+                        username: true,
+                    },
+                },
+                movie: true,  // Just include all movie fields
+                _count: {
+                    select: {
+                        Comment: true 
+                    }
+                }
+            },
         });
+
+        // Serialize the response - convert all BigInts and handle _count
+        const serializedPosts = JSON.parse(
+            JSON.stringify(posts, (key, value) =>
+                typeof value === 'bigint' ? Number(value) : value
+            )
+        );
 
         return res.json({
             type: "posts",
             query: q,
-            count: posts.length,
+            count: serializedPosts.length,
             filters: {
                 postType: type || "any",
             },
-            results: posts,
+            results: serializedPosts,
         });
     } catch (error) {
         console.error("searchPosts error:", error);

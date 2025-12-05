@@ -1,32 +1,32 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 
-const { width } = Dimensions.get('window');
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 type MovieCardProps = {
   movieId: string;
   title: string;
   imageUrl?: string | null;
-  rating?: number;
+  badge?: 'New!' | 'Hot!';
   onPress?: () => void;
 };
-
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export default function MovieCard({
   movieId,
   title,
   imageUrl,
-  rating,
+  badge,
   onPress,
 }: MovieCardProps) {
   const handlePress = () => {
     if (onPress) {
       onPress();
     } else {
-      // Default navigation to movie detail
-      router.push(`/movies/${movieId}`);
+      router.push({
+        pathname: '/movies/[movieId]',
+        params: { movieId },
+      });
     }
   };
 
@@ -44,55 +44,61 @@ export default function MovieCard({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={styles.movieCard}
       onPress={handlePress}
       activeOpacity={0.7}
     >
-      <Image 
-        source={{ uri: formatImageUrl(imageUrl) }} 
-        style={styles.image} 
-      />
-      <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={2}>
-          {title}
-        </Text>
-        {rating !== undefined && rating !== null && (
-          <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>⭐ {rating.toFixed(1)}</Text>
-          </View>
-        )}
-      </View>
+      <Image source={{ uri: formatImageUrl(imageUrl) }} style={styles.movieImage} />
+      {badge && (
+        <View
+          style={[
+            styles.badge,
+            badge === 'New!' ? styles.badgeNew : styles.badgeHot,
+          ]}
+        >
+          <Text style={styles.badgeText}>{badge}</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: (width - (width * 0.04 * 2) - (width * 0.03)) / 2,  // Calculate proper width for 2 columns with gap
-    marginRight: width * 0.03,
-    marginBottom: width * 0.04,
-  },
-  image: {
-    width: '100%',
-    aspectRatio: 2/3, 
-    borderRadius: width * 0.02,
+  movieCard: {
+    width: 150,
+    height: 220,
+    borderRadius: 12,
     backgroundColor: '#E0E0E0',
+    position: 'relative',
+    overflow: 'hidden',
+    marginRight: 12,
+    marginBottom: 12,
   },
-  infoContainer: {
-    marginTop: width * 0.02,
+  movieImage: { 
+    width: '100%', 
+    height: '100%', 
+    borderRadius: 12 
   },
-  title: {
-    fontSize: width * 0.035,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: width * 0.01,
+  badge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 2,
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  badgeNew: { 
+    backgroundColor: '#fff', 
+    borderColor: '#E91E63' 
   },
-  ratingText: {
-    fontSize: width * 0.03,
-    color: '#666',
+  badgeHot: { 
+    backgroundColor: '#fff', 
+    borderColor: '#000' 
+  },
+  badgeText: { 
+    fontSize: 14, 
+    fontWeight: '600', 
+    color: '#000' 
   },
 });

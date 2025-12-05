@@ -117,18 +117,26 @@ export default function SearchResultsScreen() {
   };
 
   const renderMovieResults = () => (
-    <View style={styles.movieGrid}>
-      {results.map((movie: Movie) => (
-        <MovieCard
-          key={movie.movieId}
-          movieId={movie.movieId}
-          title={movie.title || 'Untitled'}
-          imageUrl={movie.imageUrl}
-          rating={movie.imdbRating ? movie.imdbRating / 10 : undefined}
-        />
-      ))}
-    </View>
-  );
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.moviesScroll}
+  >
+    {results.map((movie: Movie, index) => (
+      <MovieCard
+        key={`${movie.movieId}-${index}`}  // ← Add index to ensure uniqueness
+        movieId={movie.movieId}
+        title={movie.title || 'Untitled'}
+        imageUrl={movie.imageUrl}
+        badge={index < 3 ? 'New!' : undefined}
+        onPress={() => router.push({
+          pathname: '/movies/[movieId]',
+          params: { movieId: movie.movieId },
+        })}
+      />
+    ))}
+  </ScrollView>
+);
 
   const renderUserResults = () => (
     <View>
@@ -147,25 +155,65 @@ export default function SearchResultsScreen() {
   );
 
   const renderPostResults = () => (
-    <View style={styles.postsList}>
-      {results.map((post: Post) => {
-        const username = post.UserProfile?.username || 'Unknown';
-        const hasImage = post.imageUrls !== null;
+  <View style={styles.postsList}>
+    {results.map((post: Post) => {
+      const username = post.UserProfile?.username || 'Unknown';
+      const userId = post.userId;
+      const hasImages = post.imageUrls && post.imageUrls.length > 0;
+      const isLongPost = post.type === 'LONG';
+      const isShortPost = post.type === 'SHORT';
+      const hasStars = post.stars !== null && post.stars !== undefined;
 
-        if (hasImage) {
-          return (
-            <PicturePost
-              key={post.id}
-              userName={username}
-              username={username}
-              date={formatDate(post.createdAt)}
-              content={post.content}
-              imageUrls={post.imageUrls ? post.imageUrls : []}
-              userId={post.userId}
-            />
-          );
-        }
+      // DEBUG: Log post details
+      console.log('Post debug:', {
+        id: post.id,
+        type: post.type,
+        isLongPost,
+        isShortPost,
+        hasStars,
+        stars: post.stars,
+        hasImages,
+        imageUrls: post.imageUrls,
+      });
 
+      // LONG post with stars = ReviewPost
+      if (isLongPost && hasStars) {
+        console.log('✅ Rendering ReviewPost for:', post.id);
+        return (
+          <ReviewPost
+            key={post.id}
+            userName={username}
+            username={username}
+            date={formatDate(post.createdAt)}
+            reviewerName={username}
+            movieTitle={post.movie?.title || 'Unknown Movie'}
+            rating={post.stars ?? undefined}
+            userId={userId}
+            reviewerUserId={userId}
+            movieImageUrl={post.movie?.imageUrl || "https://via.placeholder.com/400x600/667eea/ffffff?text=Movie"}
+          />
+        );
+      }
+
+      // SHORT post with images = PicturePost
+      if (isShortPost && hasImages) {
+        console.log('✅ Rendering PicturePost for:', post.id);
+        return (
+          <PicturePost
+            key={post.id}
+            userName={username}
+            username={username}
+            date={formatDate(post.createdAt)}
+            content={post.content}
+            imageUrls={post.imageUrls}
+            userId={userId}
+          />
+        );
+      }
+
+      // SHORT post without images = TextPost
+      if (isShortPost && !hasImages) {
+        console.log('✅ Rendering TextPost for:', post.id);
         return (
           <TextPost
             key={post.id}
@@ -173,34 +221,17 @@ export default function SearchResultsScreen() {
             username={username}
             date={formatDate(post.createdAt)}
             content={post.content}
-            userId={post.userId}
+            userId={userId}
           />
         );
-      })}
-    </View>
-  );
+      }
 
-  const renderReviewResults = () => (
-    <View style={styles.reviewsList}>
-      {results.map((rating: Rating) => {
-        const username = rating.UserProfile?.username || 'Unknown';
-        return (
-          <ReviewPost
-            key={rating.id}
-            userName={username}
-            username={username}
-            date={formatDate(rating.date)}
-            reviewerName={username}
-            movieTitle={`Movie #${rating.movieId}`}
-            rating={rating.stars}
-            userId={rating.userId}
-            reviewerUserId={rating.userId}
-            movieImageUrl="https://via.placeholder.com/400x600/667eea/ffffff?text=Movie"
-          />
-        );
-      })}
-    </View>
-  );
+      // Fallback
+      console.warn('❌ Post did not match any type:', post.type, post);
+      return null;
+    })}
+  </View>
+);
 
   const renderEventResults = () => (
     <ScrollView
@@ -349,12 +380,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#EEEEEE',
     marginBottom: height * 0.01,
   },
-  movieGrid: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  justifyContent: 'flex-start',  // ✅ Add the value and comma
-  paddingHorizontal: width * 0.02,
- },
+  moviesScroll: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   postsList: {
     paddingHorizontal: width * 0.04,
   },
@@ -364,4 +393,4 @@ const styles = StyleSheet.create({
   eventsScroll: {
     paddingHorizontal: width * 0.04,
   },
-});
+}); 
