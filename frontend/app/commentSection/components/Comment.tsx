@@ -64,7 +64,7 @@ const Comment: React.FC<CommentProps> = ({
   const { profile } = useAuth();
   const mappedLang = mapPrimaryLanguage((profile as any)?.primaryLanguage);
   const userLangCode = mappedLang.code;
-  const shouldShowTranslate = userLangCode !== 'en';
+  const shouldShowTranslate = userLangCode == 'en';
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [liked, setLiked] = useState(comment.liked);
@@ -128,13 +128,12 @@ const Comment: React.FC<CommentProps> = ({
 
         console.log('[Comment] Calling translateTextApi with:', {
           textSnippet: comment.content.slice(0, 80),
-          dest: userLangCode,
+          dest: 'en',
         });
 
-        // assume original comments are in English
+        // Translate to English, auto-detect source language
         const response = await translateTextApi(
           comment.content,
-          userLangCode,
           'en'
         );
         console.log('[Comment] translateTextApi response =', response);
@@ -155,7 +154,6 @@ const Comment: React.FC<CommentProps> = ({
     isTranslated,
     translatedText,
     shouldShowTranslate,
-    userLangCode,
     isTranslating,
   ]);
 
