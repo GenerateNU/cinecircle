@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router, useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles as bottomNavStyles } from '../../styles/BottomNavBar.styles';
-import { deleteUserProfile } from '../../services/userService';
+import { deleteUserProfile, getUserProfile, updateUserProfile } from '../../services/userService';
 import { useAuth } from '../../context/AuthContext';
 
 type SectionKey = 'personal' | 'privacy' | 'language';
@@ -50,20 +50,72 @@ export default function AccountSettings() {
   const [allowWhatsApp, setAllowWhatsApp] = useState(false);
   const [allowSpoilers, setAllowSpoilers] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
+  const isBusy = isSaving || isLoading;
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setIsLoading(true);
+        const res = await getUserProfile();
+        try {
+          console.log(
+            '[AccountSettings] loaded profile payload:',
+            JSON.stringify(res, null, 2),
+          );
+        } catch {
+          console.log('[AccountSettings] loaded profile payload (raw):', res);
+        }
+        if (res?.userProfile) {
+          setUsername(res.userProfile.username ?? '');
+          setSelectedLanguages(res.userProfile.secondaryLanguage ?? []);
+          setPrivateAccount(Boolean(res.userProfile.privateAccount));
+          setAllowSpoilers(Boolean(res.userProfile.spoilers));
+        }
+      } catch (err) {
+        console.error('Failed to load user profile', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   const toggle = (key: SectionKey) => {
     setOpenSection((prev) => (prev === key ? null : key));
   };
 
-  const handleSavePersonal = () => {
+  const handleSavePersonal = async () => {
     if (password && password !== confirmPassword) {
       Alert.alert('Passwords do not match', 'Please ensure both passwords are identical.');
       return;
     }
-    Alert.alert('Saved', 'Personal details have been saved.');
+
+    try {
+      setIsSaving(true);
+      const res = await updateUserProfile({
+        username,
+        secondaryLanguage: selectedLanguages,
+        privateAccount,
+        spoilers: allowSpoilers,
+      });
+      if (res?.data) {
+        setPrivateAccount(Boolean(res.data.privateAccount));
+        setAllowSpoilers(Boolean(res.data.spoilers));
+        setSelectedLanguages(res.data.secondaryLanguage ?? []);
+      }
+      Alert.alert('Saved', 'Personal details have been saved.');
+    } catch (err) {
+      console.error('Failed to save personal details', err);
+      Alert.alert('Unable to save', 'Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const inputBorder = { borderColor: '#AB2504', borderWidth: 1 };
@@ -86,8 +138,49 @@ export default function AccountSettings() {
     );
   };
 
-  const handleSaveLanguages = () => {
-    Alert.alert('Saved', 'Language preferences have been saved.');
+  const handleSaveLanguages = async () => {
+    try {
+      setIsSaving(true);
+      const res = await updateUserProfile({
+        username,
+        secondaryLanguage: selectedLanguages,
+        privateAccount,
+        spoilers: allowSpoilers,
+      });
+      if (res?.data) {
+        setPrivateAccount(Boolean(res.data.privateAccount));
+        setAllowSpoilers(Boolean(res.data.spoilers));
+        setSelectedLanguages(res.data.secondaryLanguage ?? []);
+      }
+      Alert.alert('Saved', 'Language preferences have been saved.');
+    } catch (err) {
+      console.error('Failed to save languages', err);
+      Alert.alert('Unable to save', 'Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSavePrivacy = async () => {
+    try {
+      setIsSaving(true);
+      const res = await updateUserProfile({
+        username,
+        secondaryLanguage: selectedLanguages,
+        privateAccount,
+        spoilers: allowSpoilers,
+      });
+      if (res?.data) {
+        setPrivateAccount(Boolean(res.data.privateAccount));
+        setAllowSpoilers(Boolean(res.data.spoilers));
+      }
+      Alert.alert('Saved', 'Privacy preferences have been saved.');
+    } catch (err) {
+      console.error('Failed to save privacy settings', err);
+      Alert.alert('Unable to save', 'Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteProfile = () => {
@@ -249,12 +342,14 @@ export default function AccountSettings() {
                         )}
                         <TouchableOpacity
                           onPress={handleSavePersonal}
+                          disabled={isBusy}
                           style={[
                             tw`self-start px-3 py-2 rounded border`,
                             {
                               backgroundColor: '#F7D5CD',
                               borderColor: '#D62E05',
                               borderWidth: 1,
+                              opacity: isBusy ? 0.7 : 1,
                             },
                           ]}
                           accessibilityRole="button"
@@ -311,6 +406,25 @@ export default function AccountSettings() {
                             </Text>
                           </View>
                         ))}
+                        <TouchableOpacity
+                          onPress={handleSavePrivacy}
+                          disabled={isBusy}
+                          style={[
+                            tw`self-start mt-2 px-3 py-2 rounded border`,
+                            {
+                              backgroundColor: '#F7D5CD',
+                              borderColor: '#D62E05',
+                              borderWidth: 1,
+                              opacity: isBusy ? 0.7 : 1,
+                            },
+                          ]}
+                          accessibilityRole="button"
+                          accessibilityLabel="Save privacy settings"
+                        >
+                          <Text style={[tw`font-semibold`, { color: '#D62E05' }]}>
+                            Save
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     ) : section.key === 'language' ? (
                       <View>
@@ -349,12 +463,14 @@ export default function AccountSettings() {
                         </View>
                         <TouchableOpacity
                           onPress={handleSaveLanguages}
+                          disabled={isBusy}
                           style={[
                             tw`self-start mt-4 px-3 py-2 rounded border`,
                             {
                               backgroundColor: '#F7D5CD',
                               borderColor: '#D62E05',
                               borderWidth: 1,
+                              opacity: isBusy ? 0.7 : 1,
                             },
                           ]}
                           accessibilityRole="button"

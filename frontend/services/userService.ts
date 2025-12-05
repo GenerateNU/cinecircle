@@ -5,9 +5,20 @@ import type { LanguageCode } from "../il8n/_languages";
 
 
 type ProtectedResponse = components["schemas"]["ProtectedResponse"];
-type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"];
+type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"] & {
+  userProfile: (components["schemas"]["UserProfile"] & {
+    privateAccount?: boolean;
+    spoilers?: boolean;
+    secondaryLanguage?: string[];
+  }) | null;
+};
 type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
-type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"];
+type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"] & {
+  privateAccount?: boolean;
+  spoilers?: boolean;
+  secondaryLanguage?: string[];
+  username?: string;
+};
 type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
 type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
 type GetUserRatingsResponse = components["schemas"]["GetUserRatingsResponse"];
@@ -23,14 +34,19 @@ export function getUserProfile() {
 
 export async function getUserProfileBasic() {
   const res = await getUserProfile();
+  const profile = res.userProfile;
+
+  if (!profile) {
+    throw new Error('User profile missing from response');
+  }
 
   const fallbackEmail =
-    res.userProfile.username && res.userProfile.username.length > 0
-      ? `${res.userProfile.username}@cinecircle.app`
-      : `${res.userProfile.userId}@cinecircle.app`;
+    profile.username && profile.username.length > 0
+      ? `${profile.username}@cinecircle.app`
+      : `${profile.userId}@cinecircle.app`;
 
   const basicUser = res.user ?? {
-    id: res.userProfile.userId,
+    id: profile.userId,
     email: fallbackEmail,
     role: 'USER',
   };
