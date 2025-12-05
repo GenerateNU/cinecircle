@@ -288,7 +288,34 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     }
   }, [movieId, user?.id]);
 
-  /** ---- Auto-generate summary ---- */
+  // Initialize spoiler toggle from user profile preference
+  useEffect(() => {
+    const loadSpoilerPreference = async () => {
+      try {
+        const res = await getUserProfile();
+        const profile = res?.userProfile;
+
+        if (!profile) {
+          console.log('No userProfile found');
+          return;
+        }
+
+        const pref = (profile as any).spoiler;
+
+        console.log('Loaded spoiler pref from profile:', pref);
+
+        if (typeof pref === 'boolean') {
+          setShowSpoilers(pref);
+        }
+      } catch (err) {
+        console.log('Failed to load spoiler preference:', err);
+      }
+    };
+
+    loadSpoilerPreference();
+  }, []);
+
+  // Auto-generate summary when movieId changes
   useEffect(() => {
     const generateSummary = async () => {
       console.log('Auto-generating AI summary for movieId:', movieId);
@@ -453,8 +480,8 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
       // Unified spoiler flag for this post
       const containsSpoilers = Boolean(
         (post as any).containsSpoilers ??
-          (post as any).hasSpoilers ??
-          (post as any).spoiler
+        (post as any).hasSpoilers ??
+        (post as any).spoiler
       );
 
       // Is this post allowed to be fully visible?
