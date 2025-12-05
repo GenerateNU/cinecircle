@@ -17,6 +17,7 @@ export const updateUserProfile = async (req, res) => {
 
     const normalized = {
       username: body.username ?? null,
+      displayName: body.displayName ?? null,
       onboardingCompleted: body.onboardingCompleted,
       primaryLanguage: body.primaryLanguage,
       secondaryLanguage: Array.isArray(body.secondaryLanguage)
@@ -31,6 +32,13 @@ export const updateUserProfile = async (req, res) => {
       favoriteMovies: Array.isArray(body.favoriteMovies)
         ? body.favoriteMovies
         : [],
+      bio: body.bio ?? null,
+      eventsSaved: Array.isArray(body.eventsSaved)
+        ? Array.from(new Set(body.eventsSaved))
+        : undefined,
+      eventsAttended: Array.isArray(body.eventsAttended)
+        ? Array.from(new Set(body.eventsAttended))
+        : undefined,
       privateAccount:
         typeof body.privateAccount === 'boolean'
           ? body.privateAccount
@@ -57,6 +65,9 @@ export const updateUserProfile = async (req, res) => {
       ...(normalized.username !== undefined && {
         username: normalized.username,
       }),
+      ...(normalized.displayName !== undefined) && {
+        displayName: normalized.displayName,
+      },
       ...(normalized.onboardingCompleted !== undefined && {
         onboardingCompleted: normalized.onboardingCompleted,
       }),
@@ -76,6 +87,15 @@ export const updateUserProfile = async (req, res) => {
       }),
       ...(normalized.favoriteMovies !== undefined && {
         favoriteMovies: normalized.favoriteMovies,
+      }),
+      ...(normalized.bio !== undefined && {
+        bio: normalized.bio,
+      }),
+      ...(normalized.eventsSaved !== undefined && {
+        eventsSaved: normalized.eventsSaved,
+      }),
+      ...(normalized.eventsAttended !== undefined && {
+        eventsAttended: normalized.eventsAttended,
       }),
       ...(normalized.privateAccount !== undefined && {
         privateAccount: normalized.privateAccount,
