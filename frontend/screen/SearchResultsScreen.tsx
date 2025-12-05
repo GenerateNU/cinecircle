@@ -29,7 +29,7 @@ import {
   type MovieSearchResponse,
   type UserSearchResponse,
   type PostSearchResponse,
-  type ReviewSearchResponse,
+  // type ReviewSearchResponse,
 } from '../services/searchService';
 import type { components } from '../types/api-generated';
 

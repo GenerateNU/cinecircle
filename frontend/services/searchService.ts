@@ -1,5 +1,10 @@
 import { api } from './apiClient';
+import type { components } from '../types/api-generated';
 
+type Movie = components["schemas"]["Movie"];
+type Post = components["schemas"]["Post"];
+
+// Use the detailed SearchUser type from main
 type SearchUser = {
   userId?: string;
   username?: string;
@@ -24,17 +29,43 @@ type SearchUser = {
   eventsAttended?: string[];
 };
 
-type SearchUsersResponse = {
-  data?: SearchUser[];
-  results?: SearchUser[];
-  message?: string;
+export type MovieSearchResponse = {
+  type: 'movies';
+  query: string;
+  count: number;
+  results: Movie[];
 };
 
-export async function searchUsers(query: string, limit: number = 10): Promise<SearchUser[]> {
-  const res = await api.get<SearchUsersResponse>('/api/search/users', {
-    q: query,
-    limit: String(limit),
-  });
-  // Backend returns `{ results: [...] }` (and sometimes `{ data: [...] }`); normalize here.
-  return res.data ?? res.results ?? [];
+export type UserSearchResponse = {
+  type: 'users';
+  query: string;
+  count: number;
+  results: SearchUser[];
+};
+
+export type PostSearchResponse = {
+  type: 'posts';
+  query: string;
+  count: number;
+  results: Post[];
+};
+
+export async function searchMovies(query: string): Promise<MovieSearchResponse> {
+  return api.get<MovieSearchResponse>('/api/search/movies', { q: query });
+}
+
+export async function searchUsers(query: string): Promise<UserSearchResponse> {
+  return api.get<UserSearchResponse>('/api/search/users', { q: query, limit: '10' });
+}
+
+export async function searchPosts(query: string): Promise<PostSearchResponse> {
+  return api.get<PostSearchResponse>('/api/search/posts', { q: query });
+}
+
+export async function searchReviews(query: string): Promise<any> {
+  return api.get('/api/search/reviews', { q: query });
+}
+
+export async function searchEvents(query: string): Promise<any> {
+  return api.get('/api/search/events', { q: query });
 }
