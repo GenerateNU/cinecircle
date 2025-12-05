@@ -80,7 +80,10 @@ export default function SearchResultsScreen() {
       let response;
       switch (category) {
         case 'movies':
+          console.log('Calling movies API...');
           response = await searchMovies(query) as MovieSearchResponse;
+          console.log('Movies response:', JSON.stringify(response, null, 2));
+          console.log('First movie imageUrl:', response.results?.[0]?.imageUrl);
           setResults(response.results || []);
           break;
         case 'users':
@@ -139,20 +142,20 @@ export default function SearchResultsScreen() {
 );
 
   const renderUserResults = () => (
-    <View>
-      {results.map((user: any) => (
-        <UserCard
-          key={user.userId}
-          userId={user.userId}
-          username={user.username || 'Unknown'}
-          avatarUri={user.profilePicture}
-          favoriteGenres={user.favoriteGenres || []}
-          isFollowing={false}
-          onFollowPress={() => console.log('Follow user:', user.userId)}
-        />
-      ))}
-    </View>
-  );
+  <View>
+    {results.map((user: any, index: number) => (
+      <UserCard
+        key={`${user.userId}-${index}`}  // ← Add index for guaranteed uniqueness
+        userId={user.userId}
+        username={user.username || 'Unknown'}
+        avatarUri={user.profilePicture}
+        favoriteGenres={user.favoriteGenres || []}
+        isFollowing={false}
+        onFollowPress={() => console.log('Follow user:', user.userId)}
+      />
+    ))}
+  </View>
+);
 
   const renderPostResults = () => (
   <View style={styles.postsList}>
@@ -239,9 +242,9 @@ export default function SearchResultsScreen() {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.eventsScroll}
     >
-      {results.map((event: any) => (
+      {results.map((event: any, index: number) => (
         <EventCard
-          key={event.id}
+          key={`${event.id}-${index}`}
           event={event}
           onPress={() => router.push(`/events/eventDetail?eventId=${event.id}`)}
         />

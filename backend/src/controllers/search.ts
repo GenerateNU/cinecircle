@@ -9,6 +9,7 @@ type MovieResult = {
     localRating: string | null;
     languages: any;
     numRatings: string | null;
+    imageUrl: string | null;
     source: "local" | "tmdb";
 };
 
@@ -38,6 +39,7 @@ async function searchTMDB(query: string): Promise<any[]> {
         title: movie.title,
         overview: movie.overview,
         vote_average: movie.vote_average,
+        poster_path: movie.poster_path, 
         spoken_languages: [],
     }));
 }
@@ -104,6 +106,7 @@ export const searchMovies = async (req: Request, res: Response) => {
                 localRating: true,
                 languages: true,
                 numRatings: true,
+                imageUrl: true,
             },
         });
 
@@ -161,6 +164,7 @@ export const searchMovies = async (req: Request, res: Response) => {
                             localRating: saved.localRating,
                             languages: saved.languages,
                             numRatings: saved.numRatings,
+                            imageUrl: saved.imageUrl,
                             source: "tmdb" as const,
                         });
                     } catch (saveErr) {
@@ -244,11 +248,11 @@ export const searchUsers = async (req: Request, res: Response) => {
             select: {
                 userId: true,
                 username: true,
-                favoriteGenres: true,        // ← Changed from preferredCategories
-                secondaryLanguage: true,     // ← Changed from preferredLanguages
+                favoriteGenres: true,       
+                secondaryLanguage: true,  
                 favoriteMovies: true,
                 createdAt: true,
-                profilePicture: true,        // ← Added this too (might be useful)
+                profilePicture: true,     
             },
         });
 
