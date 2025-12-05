@@ -2,10 +2,10 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { DeviceEventEmitter } from 'react-native';
 import ProfilePage from '../index';
-import { followUser, unfollowUser, getFollowers, getFollowing } from './followServiceProxy';
+import { followUser, unfollowUser, getFollowers, getFollowing } from '../../../lib/profilePage/followServiceProxy';
 import { getUserProfile } from '../../../services/userService';
 import { searchUsers } from '../../../services/searchService';
-import type { User } from '../_types';
+import type { User } from '../../../lib/profilePage/_types';
 
 /**
  * Standalone profile screen for viewing another user's page.
