@@ -1,7 +1,7 @@
 import { mapUserProfileDbToApi, mapUserProfilePatchToUpdateData } from '../../controllers/user';
 
 describe('User profile mapping', () => {
-  it('maps DB payload to API shape including movies lists and displayName/bio', () => {
+  it('maps DB payload to API shape including displayName/bio', () => {
     const now = new Date();
     const api = mapUserProfileDbToApi({
       userId: 'u-1',
@@ -16,8 +16,6 @@ describe('User profile mapping', () => {
       favoriteMovies: ['tt0111161'],
       displayName: 'User One',
       bio: 'Cinephile',
-      moviesToWatch: ['m1', 'm2'],
-      moviesCompleted: ['m3'],
       privateAccount: false,
       spoiler: false,
       createdAt: now,
@@ -26,8 +24,6 @@ describe('User profile mapping', () => {
 
     expect(api.displayName).toBe('User One');
     expect(api.bio).toBe('Cinephile');
-    expect(api.moviesToWatch).toEqual(['m1', 'm2']);
-    expect(api.moviesCompleted).toEqual(['m3']);
   });
 
   it('builds patch only for provided fields, preserving displayName when not sent', () => {
@@ -41,15 +37,15 @@ describe('User profile mapping', () => {
     expect(data).not.toHaveProperty('displayName');
   });
 
-  it('sets displayName and movies lists when provided in patch', () => {
+  it('sets displayName and event lists when provided in patch', () => {
     const data = mapUserProfilePatchToUpdateData({
       displayName: 'Shown Name',
-      moviesToWatch: ['a', 'b'],
-      moviesCompleted: ['c'],
+      eventsSaved: ['a', 'b'],
+      eventsAttended: ['c'],
     });
 
     expect(data).toHaveProperty('displayName', 'Shown Name');
-    expect(data).toHaveProperty('moviesToWatch', ['a', 'b']);
-    expect(data).toHaveProperty('moviesCompleted', ['c']);
+    expect(data).toHaveProperty('eventsSaved', ['a', 'b']);
+    expect(data).toHaveProperty('eventsAttended', ['c']);
   });
 });

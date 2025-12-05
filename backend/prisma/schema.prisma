@@ -506,8 +506,6 @@ model UserProfile {
   privateAccount                                 Boolean        @default(false)
   spoiler                                        Boolean        @default(false)
   bio                                            String?        @db.Text
-  moviesToWatch                                  String[]       @default([])
-  moviesCompleted                                String[]       @default([])
   eventsSaved                                    String[]       @default([])
   eventsAttended                                 String[]       @default([])
   createdAt                                      DateTime       @default(now())

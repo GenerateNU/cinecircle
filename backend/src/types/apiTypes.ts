@@ -57,8 +57,6 @@ export type UpdateUserProfileInput = {
   bio?: string | null;
   privateAccount?: boolean;
   spoiler?: boolean;
-  moviesToWatch?: string[];
-  moviesCompleted?: string[];
   eventsSaved?: string[];
   eventsAttended?: string[];
 };

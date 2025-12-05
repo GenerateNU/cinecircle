@@ -14,8 +14,6 @@ describe('UserProfile events fields', () => {
     favoriteMovies: [],
     displayName: null,
     bio: null,
-    moviesToWatch: [],
-    moviesCompleted: [],
     eventsSaved: ['event-a', 'event-b'],
     eventsAttended: ['event-c'],
     privateAccount: false,

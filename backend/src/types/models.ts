@@ -30,8 +30,6 @@ export type UserProfile = {
   favoriteGenres: string[];
   favoriteMovies: string[];
   bio?: string | null;
-  moviesToWatch: string[];
-  moviesCompleted: string[];
   eventsSaved: string[];
   eventsAttended: string[];
   privateAccount: boolean;
