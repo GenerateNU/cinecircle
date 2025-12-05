@@ -444,3 +444,61 @@ export const searchPosts = async (req: Request, res: Response) => {
         });
     }
 };
+
+/**
+ * Search events by title or description
+ * GET /search/events?q={query}&limit=10
+ */
+export const searchEvents = async (req: Request, res: Response) => {
+    const { q, limit = "10" } = req.query;
+
+    if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Query parameter 'q' is required" });
+    }
+
+    const limitNum = parseInt(limit as string);
+
+    if (limitNum > 50) {
+        return res.status(400).json({
+            message: "limit cannot exceed 50"
+        });
+    }
+
+    try {
+        const events = await prisma.local_event.findMany({
+            where: {
+                OR: [
+                    {
+                        title: {
+                            contains: q,
+                            mode: "insensitive"
+                        }
+                    },
+                    {
+                        description: {
+                            contains: q,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
+            },
+            take: limitNum,
+            orderBy: {
+                time: "asc" // Show upcoming events first
+            },
+        });
+
+        return res.json({
+            type: "events",
+            query: q,
+            count: events.length,
+            results: events,
+        });
+    } catch (error) {
+        console.error("searchEvents error:", error);
+        return res.status(500).json({
+            message: "Failed to search events",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
