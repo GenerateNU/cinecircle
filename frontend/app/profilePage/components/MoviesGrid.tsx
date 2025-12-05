@@ -24,6 +24,8 @@ type MovieListItem = {
 
 type Props = {
   userId?: string | null;
+  moviesToWatch?: string[] | null;
+  moviesCompleted?: string[] | null;
 };
 
 const MoviesGrid = (props: Props | undefined) => {
@@ -119,12 +121,19 @@ const MoviesGrid = (props: Props | undefined) => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchMoviesForUser();
+  const hydrateFromProfile = useCallback(async () => {
+    try {
+      await fetchMoviesForUser();
+    } catch (error) {
+      console.error('Error hydrating profile:', error);
+    }
   }, [fetchMoviesForUser]);
 
+  useEffect(() => {
+    hydrateFromProfile();
+  }, [hydrateFromProfile]);
+
   const emptyMessage = useMemo(() => {
-    if (!userId) return 'Sign in to see your movies.';
     if (activeSubTab === 'toWatch') return 'No watchlist movies yet.';
     return 'No movies found for this user.';
   }, [activeSubTab, userId]);
@@ -236,7 +245,7 @@ const MoviesGrid = (props: Props | undefined) => {
         <View style={tw`py-4`}>
           <Text style={tw`text-red-600 mb-2`}>{error}</Text>
           <TouchableOpacity
-            onPress={fetchMoviesForUser}
+            onPress={hydrateFromProfile}
             style={tw`self-start px-3 py-2 rounded bg-black`}
           >
             <Text style={tw`text-white font-semibold`}>Retry</Text>

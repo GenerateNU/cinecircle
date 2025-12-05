@@ -10,6 +10,11 @@ type GetUserProfileResponse = components["schemas"]["GetUserProfileResponse"] & 
     privateAccount?: boolean;
     spoiler?: boolean;
     secondaryLanguage?: string[];
+    moviesToWatch?: string[];
+    moviesCompleted?: string[];
+    eventsSaved?: string[];
+    eventsAttended?: string[];
+    bio?: string | null;
   }) | null;
 };
 type GetUserProfileBasicResponse = components["schemas"]["GetUserProfileBasicResponse"];
@@ -18,6 +23,11 @@ type UpdateUserProfileInput = components["schemas"]["UpdateUserProfileInput"] & 
   spoiler?: boolean;
   secondaryLanguage?: string[];
   username?: string;
+  moviesToWatch?: string[];
+  moviesCompleted?: string[];
+  eventsSaved?: string[];
+  eventsAttended?: string[];
+  bio?: string | null;
 };
 type UpdateUserProfileResponse = components["schemas"]["UpdateUserProfileResponse"];
 type DeleteUserProfileResponse = components["schemas"]["DeleteUserProfileResponse"];
@@ -30,6 +40,10 @@ export function getProtected() {
 
 export function getUserProfile() {
   return api.get<GetUserProfileResponse>(`/api/user/profile`);
+}
+
+export function getUserProfileById(userId: string) {
+  return api.get<GetUserProfileResponse>(`/api/user/profile/${userId}`);
 }
 
 export async function getUserProfileBasic() {
