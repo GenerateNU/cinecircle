@@ -4,80 +4,114 @@ import { prisma } from '../services/db.js';
 import { Prisma } from "@prisma/client";
 import { UserProfile } from "../types/models";
 
-export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
-  const { user } = req;
-  if (!user) return res.status(401).json({ message: "Unauthorized" });
+import { prisma } from '../services/db'; // or wherever yours is
+import { Prisma } from '@prisma/client';
 
-  const {
-    username,
-    onboardingCompleted,
-    primaryLanguage,
-    secondaryLanguage,
-    profilePicture,
-    country,
-    city,
-    displayName,
-    favoriteGenres,
-    favoriteMovies,
-    updatedAt,
-    privateAccount,
-    spoiler,
-    bio,
-    eventsSaved,
-    eventsAttended,
-  } = (req.body ?? {}) as Partial<UserProfile>;
-
+// inside your handler:
+export const updateUserProfile = async (req, res) => {
   try {
-    const existingProfile = await prisma.userProfile.findUnique({
-      where: { userId: user.id },
+    // however you're getting this – body already validated / normalized
+    const body = req.body; 
+
+    console.log('🟠 [BE] raw body in updateUserProfile:', body);
+
+    const normalized = {
+      username: body.username ?? null,
+      onboardingCompleted: body.onboardingCompleted,
+      primaryLanguage: body.primaryLanguage,
+      secondaryLanguage: Array.isArray(body.secondaryLanguage)
+        ? body.secondaryLanguage
+        : [],
+      profilePicture: body.profilePicture,
+      country: body.country,
+      city: body.city,
+      favoriteGenres: Array.isArray(body.favoriteGenres)
+        ? body.favoriteGenres
+        : [],
+      favoriteMovies: Array.isArray(body.favoriteMovies)
+        ? body.favoriteMovies
+        : [],
+      privateAccount:
+        typeof body.privateAccount === 'boolean'
+          ? body.privateAccount
+          : undefined,
+      spoiler:
+        typeof body.spoiler === 'boolean' ? body.spoiler : undefined,
+
+      // 🔥 IMPORTANT PART: keep arrays exactly as passed, just dedupe
+      bookmarkedToWatch: Array.isArray(body.bookmarkedToWatch)
+        ? Array.from(new Set(body.bookmarkedToWatch))
+        : undefined,
+      bookmarkedWatched: Array.isArray(body.bookmarkedWatched)
+        ? Array.from(new Set(body.bookmarkedWatched))
+        : undefined,
+    };
+
+    console.log('🔍 [BE] normalized body before prisma:', {
+      bookmarkedToWatch: normalized.bookmarkedToWatch,
+      bookmarkedWatched: normalized.bookmarkedWatched,
     });
 
-    if (!existingProfile) {
-      return res.status(404).json({ message: "User profile not found" });
-    }
+    const prismaData: Prisma.UserProfileUpdateInput = {
+      // only set fields that are explicitly provided (!== undefined)
+      ...(normalized.username !== undefined && {
+        username: normalized.username,
+      }),
+      ...(normalized.onboardingCompleted !== undefined && {
+        onboardingCompleted: normalized.onboardingCompleted,
+      }),
+      ...(normalized.primaryLanguage !== undefined && {
+        primaryLanguage: normalized.primaryLanguage,
+      }),
+      ...(normalized.secondaryLanguage !== undefined && {
+        secondaryLanguage: normalized.secondaryLanguage,
+      }),
+      ...(normalized.profilePicture !== undefined && {
+        profilePicture: normalized.profilePicture,
+      }),
+      ...(normalized.country !== undefined && { country: normalized.country }),
+      ...(normalized.city !== undefined && { city: normalized.city }),
+      ...(normalized.favoriteGenres !== undefined && {
+        favoriteGenres: normalized.favoriteGenres,
+      }),
+      ...(normalized.favoriteMovies !== undefined && {
+        favoriteMovies: normalized.favoriteMovies,
+      }),
+      ...(normalized.privateAccount !== undefined && {
+        privateAccount: normalized.privateAccount,
+      }),
+      ...(normalized.spoiler !== undefined && { spoiler: normalized.spoiler }),
 
-    const mergedSecondaryLanguages = Array.isArray(secondaryLanguage)
-      ? Array.from(
-          new Set([
-            ...(Array.isArray(existingProfile.secondaryLanguage)
-              ? (existingProfile.secondaryLanguage as string[])
-              : []),
-            ...secondaryLanguage,
-          ]),
-        )
-      : undefined;
+      ...(normalized.bookmarkedToWatch !== undefined && {
+        bookmarkedToWatch: normalized.bookmarkedToWatch,
+      }),
+      ...(normalized.bookmarkedWatched !== undefined && {
+        bookmarkedWatched: normalized.bookmarkedWatched,
+      }),
 
-    const patch: Partial<UserProfile> = {};
-    if (username !== undefined) patch.username = username;
-    if (displayName !== undefined) patch.displayName = displayName;
-    if (onboardingCompleted !== undefined) patch.onboardingCompleted = onboardingCompleted;
-    if (primaryLanguage !== undefined) patch.primaryLanguage = primaryLanguage;
-    if (mergedSecondaryLanguages !== undefined) patch.secondaryLanguage = mergedSecondaryLanguages;
-    if (profilePicture !== undefined) patch.profilePicture = profilePicture;
-    if (country !== undefined) patch.country = country;
-    if (city !== undefined) patch.city = city;
-    if (favoriteGenres !== undefined) patch.favoriteGenres = favoriteGenres;
-    if (favoriteMovies !== undefined) patch.favoriteMovies = favoriteMovies;
-    if (bio !== undefined) patch.bio = bio;
-    if (eventsSaved !== undefined) patch.eventsSaved = eventsSaved;
-    if (eventsAttended !== undefined) patch.eventsAttended = eventsAttended;
-    if (privateAccount !== undefined) patch.privateAccount = privateAccount;
-    if (spoiler !== undefined) patch.spoiler = spoiler;
-    if (updatedAt !== undefined) patch.updatedAt = updatedAt;
+      updatedAt: new Date(),
+    };
 
-    const data = mapUserProfilePatchToUpdateData(patch);
+    console.log(
+      '🟡 [BE] updateUserProfile() prisma update data:',
+      prismaData
+    );
 
-    const updated = await prisma.userProfile.update({
-      where: { userId: user.id },
-      data,
+    const userId = req.user.id; // or however you attach auth
+    const result = await prisma.userProfile.update({
+      where: { userId },
+      data: prismaData,
     });
 
-    res.json({ message: "Profile updated", data: mapUserProfileDbToApi(updated) });
-  } catch (error) {
-    console.error("updateUserProfile error:", error);
-    res.status(500).json({ message: "Failed to update profile" });
+    console.log('🟢 [BE] updateUserProfile() prisma result:', result);
+
+    res.json({ userProfile: result });
+  } catch (err) {
+    console.error('🔴 [BE] updateUserProfile() error:', err);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 };
+
   
   export const deleteUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     const { user } = req;
@@ -126,7 +160,10 @@ export const ensureUserProfile = async (req: AuthenticatedRequest, res: Response
           eventsSaved: [],
           eventsAttended: [],
           updatedAt: new Date(),
+          bookmarkedToWatch: [],
+          bookmarkedWatched: [],
         },
+        
       });
     }
 
@@ -197,6 +234,12 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response) =
     spoiler: Boolean(userProfile.spoiler),
     createdAt: userProfile.createdAt,
     updatedAt: userProfile.updatedAt,
+      bookmarkedToWatch: Array.isArray(userProfile.bookmarkedToWatch)
+        ? userProfile.bookmarkedToWatch as string[]
+        : [],
+      bookmarkedWatched: Array.isArray(userProfile.bookmarkedWatched)
+        ? userProfile.bookmarkedWatched as string[]
+        : [],
   });
     
     const basicUser = req.user
@@ -346,6 +389,12 @@ export const getUserRatings = async (req: Request, res: Response): Promise<void>
         spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
+        bookmarkedToWatch: Array.isArray(userProfile.bookmarkedToWatch)
+          ? userProfile.bookmarkedToWatch as string[]
+          : [],
+        bookmarkedWatched: Array.isArray(userProfile.bookmarkedWatched)
+          ? userProfile.bookmarkedWatched as string[]
+          : [],
       });
     }
 
@@ -411,6 +460,12 @@ export const getUserComments = async (req: Request, res: Response): Promise<void
         spoiler: Boolean(userProfile.spoiler),
         createdAt: userProfile.createdAt,
         updatedAt: userProfile.updatedAt,
+        bookmarkedToWatch: Array.isArray(userProfile.bookmarkedToWatch)
+          ? userProfile.bookmarkedToWatch as string[]
+          : [],
+        bookmarkedWatched: Array.isArray(userProfile.bookmarkedWatched)
+          ? userProfile.bookmarkedWatched as string[]
+          : [],
       });
     }
 
@@ -448,6 +503,8 @@ export function mapUserProfileDbToApi(row: {
   spoiler?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
+  bookmarkedToWatch: string[];
+  bookmarkedWatched: string[];
 }): UserProfile {
   return {
     userId: row.userId,
@@ -468,6 +525,12 @@ export function mapUserProfileDbToApi(row: {
     spoiler: Boolean(row.spoiler),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    bookmarkedToWatch: Array.isArray(row.bookmarkedToWatch)
+      ? row.bookmarkedToWatch as string[]
+      : [],
+    bookmarkedWatched: Array.isArray(row.bookmarkedWatched)
+      ? row.bookmarkedWatched as string[]
+      : [],
   };
 }
 
@@ -528,6 +591,18 @@ export function mapUserProfilePatchToUpdateData(
     : undefined;
   if (spoilerValue !== undefined) {
     data.spoiler = spoilerValue ?? false;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedToWatch")) {
+    data.bookmarkedToWatch = patch.bookmarkedToWatch ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedWatched")) {
+    data.bookmarkedWatched = patch.bookmarkedWatched ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedToWatch")) {
+    data.bookmarkedToWatch = patch.bookmarkedToWatch ?? [];
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "bookmarkedWatched")) {
+    data.bookmarkedWatched = patch.bookmarkedWatched ?? [];
   }
 
   // Always refresh updatedAt to now unless caller explicitly provided one

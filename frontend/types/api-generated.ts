@@ -428,6 +428,8 @@ export interface paths {
                         favoriteMovies?: unknown;
                         /** @example any */
                         updatedAt?: unknown;
+                        bookmarkedToWatch?: unknown;
+                        bookmarkedWatched?: unknown;
                         /** @example any */
                         privateAccount?: unknown;
                         /** @example any */
@@ -3654,6 +3656,8 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            bookmarkedToWatch: string[];
+            bookmarkedWatched: string[];
         };
         /** @description -------- User Profile Update/Delete -------- */
         UpdateUserProfileInput: {
@@ -3666,6 +3670,8 @@ export interface components {
             displayName?: string | null;
             favoriteGenres?: string[];
             favoriteMovies?: string[];
+            bookmarkedToWatch?: string[];
+            bookmarkedWatched?: string[];
             bio?: string | null;
             privateAccount?: boolean;
             spoiler?: boolean;

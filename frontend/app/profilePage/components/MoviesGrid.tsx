@@ -9,8 +9,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import tw from 'twrnc';
-import { getUserRatings } from '../../../services/userService';
+import { router } from 'expo-router';
+
+import { getUserProfile } from '../../../services/userService';
 import { getMovieByCinecircleId } from '../../../services/moviesService';
+
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
 
 type MovieListItem = {
   id: string;
@@ -24,9 +28,12 @@ type Props = {
   moviesCompleted?: string[] | null;
 };
 
-const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
+const MoviesGrid = (props: Props | undefined) => {
+  // ✅ safely read userId even if props is undefined
+  const userId = props?.userId ?? null;
+
   const [activeSubTab, setActiveSubTab] = useState<'toWatch' | 'completed'>(
-    'completed'
+    'toWatch'
   );
   const [moviesByStatus, setMoviesByStatus] = useState<
     Record<'toWatch' | 'completed', MovieListItem[]>
@@ -38,68 +45,81 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   const movies = moviesByStatus[activeSubTab];
-  const showBookmark = activeSubTab === 'toWatch';
-  const hydrateList = useCallback(
-    async (ids: string[]): Promise<MovieListItem[]> => {
-      const validIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
-      if (!validIds.length) return [];
 
-      const results = await Promise.all(
-        validIds.map(async id => {
-          try {
-            const envelope = await getMovieByCinecircleId(id);
-            const movie =
-              (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
-            return {
-              id,
-              title: movie?.title || `Movie ${id}`,
-              poster: movie?.imageUrl ?? null,
-            } as MovieListItem;
-          } catch (err) {
-            console.error('Failed to fetch movie detail:', err);
-            return {
-              id,
-              title: `Movie ${id}`,
-              poster: null,
-            } as MovieListItem;
-          }
-        })
-      );
-
-      return results.filter(
-        (movie, index, self) => self.findIndex(m => m.id === movie.id) === index
-      );
-    },
-    []
-  );
-
-  const hydrateFromProfile = useCallback(async () => {
+  const fetchMoviesForUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [toWatchList, completedList] = await Promise.all([
-        hydrateList(moviesToWatch ?? []),
-        hydrateList(moviesCompleted ?? []),
+      const profileRes = await getUserProfile();
+      const profile = profileRes?.userProfile;
+      if (!profile) {
+        setMoviesByStatus({ toWatch: [], completed: [] });
+        return;
+      }
+
+      const toWatchIds: string[] = profile.bookmarkedToWatch ?? [];
+      const completedIds: string[] = profile.bookmarkedWatched ?? [];
+
+      const fetchMovie = async (id: string): Promise<MovieListItem> => {
+        try {
+          const envelope = await getMovieByCinecircleId(id);
+          const movie =
+            (envelope as any)?.data ?? (envelope as any)?.movie ?? null;
+
+          const title = movie?.title ?? `Movie ${id}`;
+          const imagePath: string = movie?.imageUrl ?? '';
+
+          const poster =
+            imagePath && imagePath.trim().length > 0
+              ? `${TMDB_IMAGE_BASE_URL}${
+                  imagePath.startsWith('/') ? '' : '/'
+                }${imagePath}`
+              : `https://via.placeholder.com/150x220/667eea/ffffff?text=${encodeURIComponent(
+                  title
+                )}`;
+
+          return { id, title, poster };
+        } catch (err) {
+          console.error('Failed to fetch movie detail:', err);
+          return {
+            id,
+            title: `Movie ${id}`,
+            poster: null,
+          };
+        }
+      };
+
+      const [toWatchMovies, completedMovies] = await Promise.all([
+        Promise.all(toWatchIds.map(fetchMovie)),
+        Promise.all(completedIds.map(fetchMovie)),
       ]);
 
+      const dedupe = (arr: MovieListItem[]) =>
+        arr.filter(
+          (m, idx, self) => self.findIndex(x => x.id === m.id) === idx
+        );
+
       setMoviesByStatus({
-        toWatch: toWatchList,
-        completed: completedList,
+        toWatch: dedupe(toWatchMovies),
+        completed: dedupe(completedMovies),
       });
 
-      if (toWatchList.length > 0) {
+      if (toWatchMovies.length > 0) {
         setActiveSubTab('toWatch');
-      } else if (completedList.length > 0) {
+      } else if (completedMovies.length > 0) {
         setActiveSubTab('completed');
+      } else {
+        setActiveSubTab('toWatch');
       }
     } catch (err: any) {
       console.error('Failed to load movies for user:', err);
       setError(err?.message || 'Failed to load movies');
+      setMoviesByStatus({ toWatch: [], completed: [] });
     } finally {
       setLoading(false);
     }
-  }, [hydrateList, moviesCompleted, moviesToWatch]);
+  }, []);
 
   useEffect(() => {
     hydrateFromProfile();
@@ -107,40 +127,48 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
 
   const emptyMessage = useMemo(() => {
     if (activeSubTab === 'toWatch') return 'No watchlist movies yet.';
-    return 'No completed movies yet.';
-  }, [activeSubTab]);
+    return 'No movies found for this user.';
+  }, [activeSubTab, userId]);
 
+  const handleMoviePress = (movieId: string) => {
+    router.push({
+      pathname: '/movies/[movieId]',
+      params: { movieId },
+    });
+  };
+
+  /** 🎬 Poster-only grid item */
   const renderMovie = ({ item }: { item: MovieListItem }) => (
-    <View style={tw`flex-row items-center py-3 border-b border-gray-100`}>
+    <TouchableOpacity
+      onPress={() => handleMoviePress(item.id)}
+      activeOpacity={0.85}
+      style={tw`w-1/3 p-1`}
+    >
       {item.poster ? (
         <Image
           source={{ uri: item.poster }}
-          style={tw`w-[56px] h-[84px] rounded-md`}
+          style={[
+            tw`w-full rounded-md`,
+            { aspectRatio: 2 / 3 }, // classic poster ratio
+          ]}
           resizeMode="cover"
         />
       ) : (
         <View
-          style={tw`w-[56px] h-[84px] rounded-md bg-gray-200 items-center justify-center`}
+          style={[
+            tw`w-full rounded-md items-center justify-center bg-gray-200`,
+            { aspectRatio: 2 / 3 },
+          ]}
         >
           <Ionicons name="film-outline" size={22} color="#555" />
         </View>
       )}
-      <Text
-        style={tw`flex-1 ml-4 text-base font-semibold text-black`}
-        numberOfLines={2}
-      >
-        {item.title}
-      </Text>
-      <Ionicons
-        name={showBookmark ? 'bookmark-outline' : 'checkmark-circle-outline'}
-        size={22}
-        color="#111"
-      />
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <View>
+      {/* Sub-tabs */}
       <View
         style={[
           tw`flex-row items-center mb-4`,
@@ -173,6 +201,7 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
             To Be Watched
           </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={[
             tw`flex-1 items-center justify-center`,
@@ -189,7 +218,9 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
           <Text
             style={[
               tw`text-sm font-semibold`,
-              { color: activeSubTab === 'completed' ? '#FBEAE6' : '#D62E05' },
+              {
+                color: activeSubTab === 'completed' ? '#FBEAE6' : '#D62E05',
+              },
             ]}
           >
             Completed
@@ -219,13 +250,14 @@ const MoviesGrid = ({ userId, moviesToWatch, moviesCompleted }: Props) => {
           data={movies}
           keyExtractor={item => item.id}
           renderItem={renderMovie}
+          numColumns={3}
           scrollEnabled={false}
           removeClippedSubviews={false}
-          initialNumToRender={movies.length || 10}
-          maxToRenderPerBatch={movies.length || 10}
+          initialNumToRender={movies.length || 9}
+          maxToRenderPerBatch={movies.length || 9}
           windowSize={Math.max(5, movies.length || 5)}
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={tw`h-0`} />}
+          columnWrapperStyle={tw`justify-start`}
           ListFooterComponent={<View style={tw`h-2`} />}
         />
       )}

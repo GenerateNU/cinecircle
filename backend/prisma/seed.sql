@@ -51,7 +51,21 @@ INSERT INTO "public"."UserProfile" (
   "eventsSaved",
   "eventsAttended",
   "createdAt",
-  "updatedAt"
+  "updatedAt",
+  "bookmarkedToWatch",
+  "bookmarkedWatched"
+) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'alice_movie_fan', true, 'English', ARRAY['Spanish'], NULL, 'USA', 'New York', ARRAY['Drama', 'Thriller'], ARRAY['tt0111161', 'tt0068646'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0073486', 'tt0099685']),
+  ('22222222-2222-2222-2222-222222222222', 'bob_cineaste', true, 'English', ARRAY['French'], NULL, 'USA', 'Los Angeles', ARRAY['Action', 'Sci-Fi'], ARRAY['tt0468569', 'tt0137523'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0468569', 'tt0137523']),
+  ('33333333-3333-3333-3333-333333333333', 'charlie_critic', true, 'English', ARRAY[]::text[], NULL, 'Canada', 'Toronto', ARRAY['Comedy', 'Romance'], ARRAY['tt0109830', 'tt1375666'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0109830', 'tt1375666']),
+  ('44444444-4444-4444-4444-444444444444', 'diana_director', true, 'English', ARRAY['Italian'], NULL, 'Italy', 'Rome', ARRAY['Drama', 'Biography'], ARRAY['tt0073486', 'tt0099685'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0073486', 'tt0099685']),
+  ('55555555-5555-5555-5555-555555555555', 'evan_enthusiast', true, 'English', ARRAY['Japanese'], NULL, 'USA', 'San Francisco', ARRAY['Animation', 'Fantasy'], ARRAY['tt0245429', 'tt1853728'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0245429', 'tt1853728']),
+  ('66666666-6666-6666-6666-666666666666', 'fiona_film_buff', true, 'English', ARRAY['German'], NULL, 'Germany', 'Berlin', ARRAY['Horror', 'Mystery'], ARRAY['tt0816692', 'tt0110912'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0816692', 'tt0110912']),
+  ('77777777-7777-7777-7777-777777777777', 'george_genre_fan', true, 'English', ARRAY[]::text[], NULL, 'USA', 'Chicago', ARRAY['Western', 'Crime'], ARRAY['tt0076759', 'tt0050083'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0076759', 'tt0050083']),
+  ('88888888-8888-8888-8888-888888888888', 'hannah_hollywood', true, 'English', ARRAY['Korean'], NULL, 'South Korea', 'Seoul', ARRAY['Drama', 'Thriller'], ARRAY['tt6751668', 'tt0167260'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt6751668', 'tt0167260']),
+  ('99999999-9999-9999-9999-999999999999', 'isaac_indie', true, 'English', ARRAY[]::text[], NULL, 'UK', 'London', ARRAY['Independent', 'Documentary'], ARRAY['tt0114369', 'tt0120737'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0114369', 'tt0120737']),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'julia_junkie', true, 'English', ARRAY['Portuguese'], NULL, 'Brazil', 'São Paulo', ARRAY['Drama', 'Romance'], ARRAY['tt0133093', 'tt0088763'], NOW(), NOW(), ARRAY[]::text[], ARRAY['tt0133093', 'tt0088763'])
+  "spoiler"
 ) VALUES
   ('11111111-1111-1111-1111-111111111111',
     'alice_movie_fan', true, 'English', ARRAY['Spanish'], NULL, 'USA', 'New York',

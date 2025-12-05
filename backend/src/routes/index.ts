@@ -14,7 +14,7 @@ import { createOrUpdateRsvp, getUserRsvp, deleteRsvp, getEventAttendees } from "
 import { followUser, unfollowUser, getFollowers, getFollowing } from "../controllers/userFollows";
 import { getComment, createComment, updateComment, deleteComment, getMovieComments, getCommentsTree, toggleCommentLike, getCommentLikes } from "../controllers/comment"
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
-import { getAllMovies } from "../controllers/movies";
+import { getAllMovies, getMoviesAfterYear, getRandomTenMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReposts, toggleReaction, getPostReactions } from "../controllers/post.js";
 import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
@@ -61,6 +61,8 @@ router.get("/api/user/comments", getUserComments);
 router.get("/movies/:movieId", getMovie);
 router.get("/movies/cinecircle/:movieId", getMovieById);
 router.put("/movies/cinecircle/:movieId", updateMovie);
+router.get("/movies/after/:year", getMoviesAfterYear);
+router.get("/movies/random/10", getRandomTenMovies);
 router.delete("/movies/:movieId", deleteMovie);
 
 router.get("/api/feed", getHomeFeed);

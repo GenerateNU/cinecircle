@@ -226,6 +226,7 @@ export const getLocalEvents = async (req: Request, res: Response) => {
       orderBy: { time: 'asc' }
     });
 
+    // Process events in parallel with optimized geocoding
     const data = await Promise.all(events.map(async event => {
       const eventDate = event.time || new Date();
       const date = eventDate.toLocaleDateString('en-US', { 
@@ -238,10 +239,10 @@ export const getLocalEvents = async (req: Request, res: Response) => {
         minute: '2-digit' 
       });
       
-      return {
+      // Create a base event object without location
+      const baseEvent = {
         id: event.id,
         title: event.title,
-        location: await reverseGeocode(event.lat, event.lon),
         date,
         time,
         genre: event.genre,
@@ -253,6 +254,23 @@ export const getLocalEvents = async (req: Request, res: Response) => {
         lon: event.lon,
         imageUrl: event.imageUrl,
       };
+
+      // Add location with timeout to prevent hanging
+      try {
+        const locationPromise = reverseGeocode(event.lat, event.lon);
+        const timeoutPromise = new Promise<string>((_, reject) => 
+          setTimeout(() => reject(new Error('Geocoding timeout')), 3000)
+        );
+        
+        const location = await Promise.race([locationPromise, timeoutPromise]);
+        return { ...baseEvent, location };
+      } catch (error) {
+        // Fallback to coordinates if geocoding fails or times out
+        return { 
+          ...baseEvent, 
+          location: `${(event.lat ?? 0).toFixed(2)}, ${(event.lon ?? 0).toFixed(2)}` 
+        };
+      }
     }));
 
     res.status(200).json({ message: "Local events retrieved.", data });

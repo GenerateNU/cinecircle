@@ -75,8 +75,11 @@ export async function getUserProfileBasic() {
   return payload;
 }
 
-export function updateUserProfile(payload: UpdateUserProfileInput) {
-  return api.put<UpdateUserProfileResponse>(`/api/user/profile`, payload);
+export async function updateUserProfile(payload: UpdateUserProfileInput) {
+  console.log("🔵 [FE] updateUserProfile() sending:", JSON.stringify(payload));
+  const response = await api.put<UpdateUserProfileResponse>(`/api/user/profile`, payload);
+  console.log("🔵 [FE] updateUserProfile() response:", JSON.stringify(response.data));
+  return response;
 }
 
 export function deleteUserProfile() {

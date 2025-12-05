@@ -71,4 +71,71 @@ export async function getMovieSummaryHandler(req: Request, res: Response) {
     });
   }
 }
+// GET /movies/after/:year
+export async function getMoviesAfterYear(req: Request, res: Response) {
+  try {
+    const year = Number(req.params.year);
 
+    if (isNaN(year)) {
+      return res.status(400).json({ error: "Invalid year parameter" });
+    }
+
+    const moviesFromDb = await prisma.movie.findMany({
+      where: {
+        releaseYear: {
+          gte: year,
+        },
+      },
+      orderBy: {
+        releaseYear: "asc",
+      },
+    });
+
+    const movies = moviesFromDb.map(mapPrismaMovie);
+
+    return res.status(200).json({
+      movies,
+      count: movies.length,
+      afterYear: year,
+    });
+  } catch (err) {
+    console.error("Error in GET /movies/after/:year:", err);
+    return res.status(500).json({ error: "Failed to fetch movies" });
+  }
+}
+// GET /movies/random/10
+export async function getRandomTenMovies(req: Request, res: Response) {
+  try {
+    const moviesFromDb = await prisma.movie.findMany({
+      take: 10,
+      orderBy: {
+        // Prisma trick to randomize:
+        // sqlite doesn't support random() but postgres does
+        // if sqlite, you must randomize manually after fetch
+        // Adjust depending on your database.
+        // For postgres:
+        // random() works!
+        // For MySQL: use `RAND()`
+        // So we detect DB or just do manual shuffle.
+        // Here is manual shuffle:
+      },
+    });
+
+    // Manual shuffle so it works across all DB engines:
+    const shuffled = moviesFromDb
+      .map((m) => ({ m, rand: Math.random() }))
+      .sort((a, b) => a.rand - b.rand)
+      .slice(0, 10)
+      .map((obj) => obj.m);
+
+    const movies = shuffled.map(mapPrismaMovie);
+
+    return res.status(200).json({
+      movies,
+      count: movies.length,
+    });
+  } catch (err) {
+    console.error("Error in GET /movies/random/10:", err);
+    return res.status(500).json({ error: "Failed to fetch movies" });
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import { router } from 'expo-router';
 import { getLocalEvents, type LocalEvent } from '../../services/eventsService';
@@ -34,24 +35,31 @@ export default function Events() {
     dates: [],
     eventType: [],
   });
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const loadEvents = async () => {
+  // Simple in-memory cache with 5-minute TTL
+  const loadEvents = useCallback(async (forceRefresh = false) => {
     try {
-      setLoading(true);
+      if (!forceRefresh) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
-      const response = await getLocalEvents();
+      const response = await getLocalEvents(forceRefresh);
       setEvents(response.data ?? []);
     } catch (err) {
       console.error('Failed to load events:', err);
       setError('Failed to load events. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
 
   const handleEventPress = (eventId: string) => {
     router.push(`/events/eventDetail?eventId=${eventId}`);
@@ -74,7 +82,7 @@ export default function Events() {
       [filterKey]: selectedValues,
     });
     // TODO: Call backend API with filters
-    loadEvents();
+    loadEvents(true); // Force refresh when filters change
   };
 
   if (loading) {
@@ -90,7 +98,7 @@ export default function Events() {
     return (
       <View style={[styles.container, styles.centered]}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity onPress={loadEvents} style={styles.retryButton}>
+        <TouchableOpacity onPress={() => loadEvents(true)} style={styles.retryButton}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -158,6 +166,14 @@ export default function Events() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 96 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => loadEvents(true)}
+            tintColor="#333"
+            colors={['#333']}
+          />
+        }
       >
       <SearchBar
         placeholder="Search events..."
