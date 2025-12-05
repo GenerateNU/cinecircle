@@ -2,6 +2,9 @@ import { searchMovies, searchUsers, searchReviews, searchPosts } from "../../con
 import { Request, Response } from "express";
 import { prisma } from "../../services/db";
 
+// Mock fetch globally before tests
+global.fetch = jest.fn();
+
 describe("Search Controller Unit Tests", () => {
     let mockRequest: Partial<Request>;
     let mockResponse: Partial<Response>;
@@ -19,6 +22,9 @@ describe("Search Controller Unit Tests", () => {
 
         mockResponse = responseObject;
         jest.clearAllMocks();
+        
+        // Reset fetch mock before each test
+        (global.fetch as jest.Mock).mockReset();
     });
 
     afterEach(() => {
@@ -91,10 +97,10 @@ describe("Search Controller Unit Tests", () => {
                 expect.objectContaining({
                     type: "movies",
                     query: "fight",
-                    count: 3,  // Changed to 3
+                    count: 3,
                     sources: {
-                        local: 3,  // All 3 from local
-                        tmdb: 0,   // None from TMDB
+                        local: 3,
+                        tmdb: 0,
                     },
                 })
             );
@@ -113,8 +119,27 @@ describe("Search Controller Unit Tests", () => {
                     languages: [],
                     numRatings: "0",
                 },
+                {
+                    movieId: "uuid-2",
+                    title: "Test Movie 2",
+                    description: "Test 2",
+                    imdbRating: BigInt(80),
+                    localRating: "0",
+                    languages: [],
+                    numRatings: "0",
+                },
+                {
+                    movieId: "uuid-3",
+                    title: "Test Movie 3",
+                    description: "Test 3",
+                    imdbRating: BigInt(85),
+                    localRating: "0",
+                    languages: [],
+                    numRatings: "0",
+                },
             ];
 
+            // Mock 3 movies to avoid TMDB fallback
             jest.spyOn(prisma.movie, "findMany").mockResolvedValueOnce(mockMovies as any);
 
             await searchMovies(mockRequest as Request, mockResponse as Response);
@@ -143,7 +168,7 @@ describe("Search Controller Unit Tests", () => {
             consoleErrorSpy.mockRestore();
         });
     });
-
+    
     describe("searchUsers", () => {
         it("should return 400 if query parameter is missing", async () => {
             mockRequest.query = {};
