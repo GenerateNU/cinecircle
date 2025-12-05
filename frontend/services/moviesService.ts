@@ -20,6 +20,22 @@ export function getMovieByCinecircleId(movieId: string) {
   return api.get<GetMovieEnvelope>(`/movies/cinecircle/${movieId}`);
 }
 
+export async function getMoviesAfterYear(year: number): Promise<Movie[]> {
+  const res = await api.get<{ movies: Movie[] }>(`/movies/after/${year}`);
+  return res.movies.map((m) => ({
+    ...m,
+    title: m.title ?? "",
+  }));
+}
+
+export async function getMoviesRandom10(): Promise<Movie[]> {
+  const res = await api.get<{ movies: Movie[] }>(`/movies/random/10`);
+  return res.movies.map((m) => ({
+    ...m,
+    title: m.title ?? "",
+  }));
+}
+
 export function updateMovieByCinecircleId(
   movieId: string,
   payload: UpdateMovieInput,
