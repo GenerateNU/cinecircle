@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Modal,
   View,
@@ -9,6 +9,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from "react-native";
 
 import { getAllMovies } from "../services/moviesService";
@@ -31,6 +32,8 @@ export default function MovieSelectorModal({
 }: Props) {
   const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [query, setQuery] = useState("");
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const sheetTranslateY = useRef(new Animated.Value(400)).current;
 
   useEffect(() => {
     if (visible) {
@@ -43,6 +46,24 @@ export default function MovieSelectorModal({
           console.log("Error fetching movies:", err);
         }
       })();
+
+      // Fade in backdrop first
+      Animated.timing(backdropOpacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+
+      // Then slide up sheet without bounce using easeOut
+      Animated.timing(sheetTranslateY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Reset animations
+      backdropOpacity.setValue(0);
+      sheetTranslateY.setValue(400);
     }
   }, [visible]);
 
@@ -53,61 +74,86 @@ export default function MovieSelectorModal({
     : [];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <TouchableOpacity
-        style={styles.backdrop}
-        activeOpacity={1}
-        onPress={onClose}
-      />
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.modalContainer}
-      >
-        <View style={styles.sheet}>
-          <View style={styles.dragHandle} />
-
-          <Text style={styles.label}>Select Movie</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="+ Start typing to select a movie..."
-            placeholderTextColor="#999"
-            value={query}
-            onChangeText={setQuery}
+    <Modal visible={visible} animationType="none" transparent>
+      <View style={styles.modalContainer}>
+        <Animated.View
+          style={[styles.backdrop, { opacity: backdropOpacity }]}
+        >
+          <TouchableOpacity
+            style={styles.backdropTouchable}
+            activeOpacity={1}
+            onPress={onClose}
           />
+        </Animated.View>
 
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item.movieId}
-            contentContainerStyle={styles.pillContainer}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.pill}
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-              >
-                <Text style={styles.pillText}>{item.title}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </KeyboardAvoidingView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "position" : undefined}
+          style={styles.keyboardAvoidingView}
+        >
+          <Animated.View
+            style={[
+              styles.sheet,
+              {
+                transform: [{ translateY: sheetTranslateY }],
+              },
+            ]}
+          >
+            <View style={styles.dragHandle} />
+
+            <Text style={styles.label}>Select Movie</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="+ Start typing to select a movie..."
+              placeholderTextColor="#999"
+              value={query}
+              onChangeText={setQuery}
+            />
+
+            <FlatList
+              data={filtered}
+              keyExtractor={(item) => item.movieId}
+              contentContainerStyle={styles.pillContainer}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.pill}
+                  onPress={() => {
+                    onSelect(item);
+                    onClose();
+                  }}
+                >
+                  <Text style={styles.pillText}>{item.title}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  modalContainer: {
     flex: 1,
   },
 
-  modalContainer: {
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+
+  backdropTouchable: {
+    flex: 1,
+  },
+
+  keyboardAvoidingView: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
   },
 
   sheet: {

@@ -49,7 +49,10 @@ const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProp
       onSubmit({
         movieId: movie.id,
         spoiler,
+        title,
         content,
+        rating,
+        tags: selectedTags,
       });
     },
   }));
@@ -129,10 +132,9 @@ const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProp
 
       <TagModal
         visible={tagModalVisible}
-        onClose={() => setMovieModalVisible(false)}
-        onSelect={(selectedMovie) => {
-          setMovie(selectedMovie);
-        }}
+        selected={selectedTags}
+        onChangeSelected={setSelectedTags}
+        onClose={() => setTagModalVisible(false)}
       />
     </View>
   );
