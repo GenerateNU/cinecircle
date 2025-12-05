@@ -55,6 +55,8 @@ export type UpdateUserProfileInput = {
   favoriteMovies?: string[];
   privateAccount?: boolean;
   spoiler?: boolean;
+  bookmarkedToWatch?: string[];
+  bookmarkedWatched?: string[];
 };
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };

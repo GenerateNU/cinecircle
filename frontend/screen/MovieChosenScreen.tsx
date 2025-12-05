@@ -7,9 +7,8 @@ import {
   ActivityIndicator,
   Dimensions,
   ImageBackground,
-  Animated,
 } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,7 +34,8 @@ import { useAuth } from '../context/AuthContext';
 import type { components } from '../types/api-generated';
 import { t } from '../il8n/_il8n';
 import { UiTextKey } from '../il8n/_keys';
-import { getUserProfile } from '../services/userService';
+import { getUserProfile, updateUserProfile } from '../services/userService';
+import BookmarkModal from '../components/bookmarkModal';
 
 type MovieChosenScreenProps = {
   movieId: string;
@@ -51,6 +51,10 @@ type FeedItem = {
   date: string;
 };
 
+type BookmarkStatus = 'TO_WATCH' | 'WATCHED' | null;
+
+const { width } = Dimensions.get('window');
+
 export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -62,22 +66,54 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const [movieEnvelope, setMovieEnvelope] = useState<Movie | null>(null);
+
   const [showSpoilers, setShowSpoilers] = useState(false);
+  const [revealedPostIds, setRevealedPostIds] = useState<string[]>([]);
+
   const [sortOrder, setSortOrder] = useState<'trending' | 'new' | 'top'>(
     'trending'
   );
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
-  const [revealedPostIds, setRevealedPostIds] = useState<string[]>([]);
+
+  const [bookmarkStatus, setBookmarkStatus] = useState<BookmarkStatus>(null);
+  const [bookmarkSelection, setBookmarkSelection] =
+    useState<BookmarkStatus>(null);
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false);
 
   const isPostRevealed = (id: string) => revealedPostIds.includes(id);
-
   const revealPost = (id: string) =>
     setRevealedPostIds(prev => (prev.includes(id) ? prev : [...prev, id]));
 
-  // Animation value for toggle
-  // const toggleAnimation = useRef(new Animated.Value(0)).current;
+  /** ---- Load bookmark state on mount / movie change ---- */
+  useEffect(() => {
+    const loadBookmarkState = async () => {
+      try {
+        const res = await getUserProfile();
+        const profile = res.userProfile;
+        if (!profile) return;
 
+        const toWatch = profile.bookmarkedToWatch ?? [];
+        const watched = profile.bookmarkedWatched ?? [];
+
+        if (toWatch.includes(movieId)) {
+          setBookmarkStatus('TO_WATCH');
+        } else if (watched.includes(movieId)) {
+          setBookmarkStatus('WATCHED');
+        } else {
+          setBookmarkStatus(null);
+        }
+      } catch (err) {
+        console.error('Failed to load bookmark state:', err);
+      }
+    };
+
+    if (movieId) {
+      loadBookmarkState();
+    }
+  }, [movieId]);
+
+  /** ---- Fetch movie + posts ---- */
   useEffect(() => {
     const fetchMovieData = async () => {
       try {
@@ -92,11 +128,10 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         setSummaryError(null);
         setSummaryLoading(false);
 
-        // Optional: fetch movie meta (title, description, etc.)
         try {
           const movieRes = await getMovieByCinecircleId(movieId);
           console.log('Movie envelope:', JSON.stringify(movieRes, null, 2));
-          const m = movieRes.data ?? movieRes;
+          const m = (movieRes as any).data ?? movieRes;
           setMovieEnvelope(m as Movie);
         } catch (metaErr) {
           console.log('Failed to fetch movie meta (non-fatal):', metaErr);
@@ -104,7 +139,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
         const postsResponse = await getPosts({
           movieId,
-          currentUserId: user?.id, // Pass current user ID for reactions
+          currentUserId: user?.id,
         });
 
         setPosts(postsResponse || []);
@@ -122,9 +157,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     if (movieId) {
       fetchMovieData();
     }
-  }, [movieId]);
+  }, [movieId, user?.id]);
 
-  // Initialize spoiler toggle from user profile preference
+  /** ---- Initialize spoiler toggle from user profile preference ---- */
   useEffect(() => {
     const loadSpoilerPreference = async () => {
       try {
@@ -137,7 +172,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         }
 
         const pref = (profile as any).spoiler;
-
         console.log('Loaded spoiler pref from profile:', pref);
 
         if (typeof pref === 'boolean') {
@@ -151,11 +185,10 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     loadSpoilerPreference();
   }, []);
 
-  // Auto-generate summary when movieId changes
+  /** ---- Auto-generate summary ---- */
   useEffect(() => {
     const generateSummary = async () => {
       console.log('Auto-generating AI summary for movieId:', movieId);
-
       if (!movieId) return;
 
       try {
@@ -180,8 +213,9 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
     }
   }, [movieId]);
 
+  /** ---- Helpers ---- */
+
   const calculateAverageRating = () => {
-    // Only calculate average from posts that have star ratings (reviews)
     const postsWithStars = posts.filter(
       p => p.stars !== null && p.stars !== undefined
     );
@@ -193,13 +227,12 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const getAllTags = () => {
     const allTags = posts.flatMap(p => p.tags || []);
     const uniqueTags = [...new Set(allTags)].slice(0, 5);
-    const capitalizedTags = uniqueTags.map(tag =>
+    return uniqueTags.map(tag =>
       tag
         .split(' ')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(' ')
     );
-    return capitalizedTags;
   };
 
   const title = movieEnvelope?.title ?? 'Unknown Movie';
@@ -208,37 +241,18 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   const director = movieEnvelope?.director;
 
   const imdbRating = movieEnvelope?.imdbRating
-    ? Number(movieEnvelope.imdbRating) / 2 // Convert 10-point to 5-point scale
+    ? Number(movieEnvelope.imdbRating) / 2
     : null;
-
   const imdbRatingCount = movieEnvelope?.numRatings
     ? Number(movieEnvelope.numRatings)
     : null;
 
   const handleReviewPress = (post: Post) => {
-    // TODO: Navigate to post detail page (review)
     console.log('Review pressed:', post.id, 'Movie:', post.movieId);
-    console.log('Would navigate to PostDetail with:', {
-      postId: post.id,
-      movieId: post.movieId,
-      type: 'LONG',
-      hasStars: true,
-    });
-    // navigation.navigate('PostDetail', { postId: post.id, movieId: post.movieId });
   };
 
   const handlePostPress = (post: Post) => {
-    // TODO: Navigate to post detail page (short post or long post without stars)
     console.log('Post pressed:', post.id, 'Movie:', post.movieId);
-    console.log('Would navigate to PostDetail with:', {
-      postId: post.id,
-      movieId: post.movieId,
-      type: post.type,
-      hasStars: post.stars !== null && post.stars !== undefined,
-      hasImages: post.imageUrls && post.imageUrls.length > 0,
-      imageCount: post.imageUrls?.length || 0,
-    });
-    // navigation.navigate('PostDetail', { postId: post.id, movieId: post.movieId });
   };
 
   const handleAddPost = () => {
@@ -259,264 +273,294 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   const formatCount = (count: number): string => {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(2)}M`;
-    }
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(2)}k`;
-    }
+    if (count >= 1000000) return `${(count / 1000000).toFixed(2)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(2)}k`;
     return count.toString();
   };
 
   const handleComment = (post: Post) => {
-    // TODO: Navigate to post detail page to view/add comments
     console.log('Comment button pressed for post:', post.id);
-    console.log('Would navigate to PostDetail with:', {
-      postId: post.id,
-      movieId: post.movieId,
-      type: post.type,
-      focusCommentInput: true, // Auto-focus comment input when navigating from comment button
-    });
-    // navigation.navigate('PostDetail', { postId: post.id, movieId: post.movieId, focusCommentInput: true });
   };
 
-  // Return all posts about this movie (already sorted by createdAt desc from backend)
-  const getFeedItems = (): FeedItem[] => {
-    return posts.map(post => ({
+  const getFeedItems = (): FeedItem[] =>
+    posts.map(post => ({
       type: 'post' as const,
       data: post,
       date: post.createdAt,
     }));
+
+  /** ---- Bookmark handlers ---- */
+
+  const openBookmarkModal = () => {
+    setBookmarkSelection(bookmarkStatus ?? 'TO_WATCH');
+    setShowBookmarkModal(true);
   };
 
+  const handleBookmarkSave = async () => {
+    try {
+      const res = await getUserProfile();
+      const profile = res.userProfile;
+      if (!profile) return;
+
+      let toWatch = [...(profile.bookmarkedToWatch ?? [])];
+      let watched = [...(profile.bookmarkedWatched ?? [])];
+
+      // Strip this movie out from both lists first
+      toWatch = toWatch.filter(id => id !== movieId);
+      watched = watched.filter(id => id !== movieId);
+
+      if (bookmarkSelection === 'TO_WATCH') {
+        if (!toWatch.includes(movieId)) toWatch.push(movieId);
+      } else if (bookmarkSelection === 'WATCHED') {
+        if (!watched.includes(movieId)) watched.push(movieId);
+      } else {
+        // null => stays removed from both
+      }
+
+      console.log('[FE] handleBookmarkSave selection:', bookmarkSelection);
+      console.log('[FE] sending bookmark update:', {
+        bookmarkedToWatch: toWatch,
+        bookmarkedWatched: watched,
+      });
+
+      await updateUserProfile({
+        bookmarkedToWatch: toWatch,
+        bookmarkedWatched: watched,
+      });
+
+      setBookmarkStatus(bookmarkSelection);
+      setShowBookmarkModal(false);
+    } catch (err) {
+      console.error('Failed to save bookmark:', err);
+    }
+  };
+
+  /** ---- Feed item renderer (with spoiler logic) ---- */
+
   const renderFeedItem = (item: FeedItem, index: number) => {
-    if (item.type === 'post') {
-      const post = item.data as Post;
-      const username = post.UserProfile?.username || 'Unknown';
-      const movieImagePath = post.movie?.imageUrl || movieEnvelope?.imageUrl;
-      const moviePosterUrl = getMoviePosterUrl(movieImagePath);
+    if (item.type !== 'post') return null;
 
-      // Unified spoiler flag for this post
-      const containsSpoilers = Boolean(
-        (post as any).containsSpoilers ??
-        (post as any).hasSpoilers ??
-        (post as any).spoiler
-      );
+    const post = item.data;
+    const username = post.UserProfile?.username || 'Unknown';
+    const movieImagePath = post.movie?.imageUrl || movieEnvelope?.imageUrl;
+    const moviePosterUrlItem = getMoviePosterUrl(movieImagePath);
 
-      // Is this post allowed to be fully visible?
-      const isRevealed = showSpoilers || isPostRevealed(post.id);
+    // Unified spoiler flag for this post
+    const containsSpoilers = Boolean(
+      (post as any).containsSpoilers ??
+      (post as any).hasSpoilers ??
+      (post as any).spoiler
+    );
 
-      // 🔒 If post has spoilers and is not revealed yet: show overlay *for all types*
-      if (containsSpoilers && !isRevealed) {
-        return (
-          <React.Fragment key={`post-${post.id}`}>
-            <View
-              style={
-                post.stars !== null && post.stars !== undefined
-                  ? styles.reviewItemContainer
-                  : styles.postContainer
-              }
-            >
-              <UserBar
-                name={username}
-                username={username}
-                userId={post.userId}
-              />
+    // Is this post allowed to be fully visible?
+    const isRevealed = showSpoilers || isPostRevealed(post.id);
 
-              <TouchableOpacity
-                style={styles.spoilerOverlayCard}
-                activeOpacity={0.85}
-                onPress={() => revealPost(post.id)}
-              >
-                <Ionicons name="eye-outline" size={20} color="#561202" />
-                <Text style={styles.spoilerOverlayTitle}>
-                  This post may contain spoilers
-                </Text>
-                <Text style={styles.spoilerOverlayText}>
-                  Tap to reveal just this post, or turn on “Show spoilers” to
-                  reveal all.
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {index < getFeedItems().length - 1 && (
-              <View style={styles.divider} />
-            )}
-          </React.Fragment>
-        );
-      }
+    const allFeedItems = getFeedItems();
 
-      // ⭐ If post has stars, render as review (now fully revealed)
-      if (post.stars !== null && post.stars !== undefined) {
-        return (
-          <React.Fragment key={`post-${post.id}`}>
-            <View style={styles.reviewItemContainer}>
-              <UserBar
-                name={username}
-                username={username}
-                userId={post.userId}
-              />
-              <Text style={styles.reviewShareText}>
-                Check out this new review that I just dropped!
-              </Text>
-              <ReviewPost
-                userName={username}
-                username={username}
-                date={formatDate(post.createdAt)}
-                reviewerName={username}
-                movieTitle={title}
-                rating={post.stars}
-                userId={post.userId}
-                reviewerUserId={post.userId}
-                movieImageUrl={moviePosterUrl}
-                onPress={() => handleReviewPress(post)}
-                spoiler={containsSpoilers} // pill on review card
-              />
-            </View>
-            {index < getFeedItems().length - 1 && (
-              <View style={styles.divider} />
-            )}
-          </React.Fragment>
-        );
-      }
-
-      // 🧾 Otherwise: SHORT / picture posts (also now fully visible)
-      const hasImage = post.imageUrls && post.imageUrls.length > 0;
-
-      // === Always build reaction state & handler (needed even if hidden behind spoiler overlay) ===
-      const reactions = [
-        {
-          emoji: '🌶️',
-          count: post.reactionCounts?.SPICY || 0,
-          selected: post.userReactions?.includes('SPICY') || false,
-        },
-        {
-          emoji: '✨',
-          count: post.reactionCounts?.STAR_STUDDED || 0,
-          selected: post.userReactions?.includes('STAR_STUDDED') || false,
-        },
-        {
-          emoji: '🧠',
-          count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
-          selected: post.userReactions?.includes('THOUGHT_PROVOKING') || false,
-        },
-        {
-          emoji: '🧨',
-          count: post.reactionCounts?.BLOCKBUSTER || 0,
-          selected: post.userReactions?.includes('BLOCKBUSTER') || false,
-        },
-      ];
-
-      const handleReaction = async (reactionIndex: number) => {
-        if (!user?.id) return;
-
-        const reactionTypes: Array<
-          'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
-        > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
-
-        const reactionType = reactionTypes[reactionIndex];
-
-        try {
-          // Optimistic update
-          setPosts(prev =>
-            prev.map(p => {
-              if (p.id !== post.id) return p;
-
-              const wasSelected =
-                p.userReactions?.includes(reactionType) || false;
-              const counts = {
-                SPICY: p.reactionCounts?.SPICY ?? 0,
-                STAR_STUDDED: p.reactionCounts?.STAR_STUDDED ?? 0,
-                THOUGHT_PROVOKING: p.reactionCounts?.THOUGHT_PROVOKING ?? 0,
-                BLOCKBUSTER: p.reactionCounts?.BLOCKBUSTER ?? 0,
-              };
-
-              // update count
-              counts[reactionType] = Math.max(
-                0,
-                counts[reactionType] + (wasSelected ? -1 : 1)
-              );
-
-              // update selected list
-              let newUserReactions = [...(p.userReactions || [])];
-              if (wasSelected) {
-                newUserReactions = newUserReactions.filter(
-                  r => r !== reactionType
-                );
-              } else {
-                newUserReactions.push(reactionType);
-              }
-
-              return {
-                ...p,
-                reactionCounts: counts,
-                userReactions: newUserReactions,
-              };
-            })
-          );
-
-          await togglePostReaction(post.id, user.id, reactionType);
-        } catch (err) {
-          console.error('Reaction error:', err);
-        }
-      };
-
+    // 🔒 If post has spoilers and is not revealed yet: show overlay *for all types*
+    if (containsSpoilers && !isRevealed) {
       return (
         <React.Fragment key={`post-${post.id}`}>
-          <View style={styles.postContainer}>
+          <View
+            style={
+              post.stars !== null && post.stars !== undefined
+                ? styles.reviewItemContainer
+                : styles.postContainer
+            }
+          >
+            <UserBar name={username} username={username} userId={post.userId} />
+
             <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => handlePostPress(post)}
+              style={styles.spoilerOverlayCard}
+              activeOpacity={0.85}
+              onPress={() => revealPost(post.id)}
             >
-              {hasImage ? (
-                <PicturePost
-                  userName={username}
-                  username={username}
-                  date={formatDate(post.createdAt)}
-                  content={post.content}
-                  imageUrls={post.imageUrls || []}
-                  userId={post.userId}
-                  spoiler={containsSpoilers} // pill on picture post
-                />
-              ) : (
-                <TextPost
-                  userName={username}
-                  username={username}
-                  date={formatDate(post.createdAt)}
-                  content={post.content}
-                  userId={post.userId}
-                  spoiler={containsSpoilers} // pill on text post
-                />
-              )}
+              <Ionicons name="eye-outline" size={20} color="#561202" />
+              <Text style={styles.spoilerOverlayTitle}>
+                This post may contain spoilers
+              </Text>
+              <Text style={styles.spoilerOverlayText}>
+                Tap to reveal just this post, or turn on “Show spoilers” to
+                reveal all.
+              </Text>
             </TouchableOpacity>
-            <View style={styles.interactionWrapper}>
-              <InteractionBar
-                initialComments={post.commentCount || 0}
-                reactions={reactions}
-                onCommentPress={() => handleComment(post)}
-                onReactionPress={handleReaction}
-              />
-            </View>
           </View>
-          {index < getFeedItems().length - 1 && <View style={styles.divider} />}
+          {index < allFeedItems.length - 1 && <View style={styles.divider} />}
         </React.Fragment>
       );
     }
 
-    return null;
+    // ⭐ Review posts (with stars)
+    if (post.stars !== null && post.stars !== undefined) {
+      return (
+        <React.Fragment key={`post-${post.id}`}>
+          <View style={styles.reviewItemContainer}>
+            <UserBar name={username} username={username} userId={post.userId} />
+            <Text style={styles.reviewShareText}>
+              Check out this new review that I just dropped!
+            </Text>
+            <ReviewPost
+              userName={username}
+              username={username}
+              date={formatDate(post.createdAt)}
+              reviewerName={username}
+              movieTitle={title}
+              rating={post.stars}
+              userId={post.userId}
+              reviewerUserId={post.userId}
+              movieImageUrl={moviePosterUrlItem}
+              onPress={() => handleReviewPress(post)}
+              spoiler={containsSpoilers}
+            />
+          </View>
+          {index < allFeedItems.length - 1 && <View style={styles.divider} />}
+        </React.Fragment>
+      );
+    }
+
+    // 🧾 Short / picture posts
+    const hasImage = post.imageUrls && post.imageUrls.length > 0;
+
+    const reactions = [
+      {
+        emoji: '🌶️',
+        count: post.reactionCounts?.SPICY || 0,
+        selected: post.userReactions?.includes('SPICY') || false,
+      },
+      {
+        emoji: '✨',
+        count: post.reactionCounts?.STAR_STUDDED || 0,
+        selected: post.userReactions?.includes('STAR_STUDDED') || false,
+      },
+      {
+        emoji: '🧠',
+        count: post.reactionCounts?.THOUGHT_PROVOKING || 0,
+        selected: post.userReactions?.includes('THOUGHT_PROVOKING') || false,
+      },
+      {
+        emoji: '🧨',
+        count: post.reactionCounts?.BLOCKBUSTER || 0,
+        selected: post.userReactions?.includes('BLOCKBUSTER') || false,
+      },
+    ];
+
+    const handleReaction = async (reactionIndex: number) => {
+      if (!user?.id) return;
+
+      const reactionTypes: Array<
+        'SPICY' | 'STAR_STUDDED' | 'THOUGHT_PROVOKING' | 'BLOCKBUSTER'
+      > = ['SPICY', 'STAR_STUDDED', 'THOUGHT_PROVOKING', 'BLOCKBUSTER'];
+
+      const reactionType = reactionTypes[reactionIndex];
+
+      try {
+        setPosts(prevPosts =>
+          prevPosts.map(p => {
+            if (p.id !== post.id) return p;
+
+            const wasSelected =
+              p.userReactions?.includes(reactionType) || false;
+            const newReactionCounts = { ...(p.reactionCounts || {}) };
+
+            if (wasSelected) {
+              newReactionCounts[reactionType] = Math.max(
+                0,
+                (newReactionCounts[reactionType] || 0) - 1
+              );
+            } else {
+              newReactionCounts[reactionType] =
+                (newReactionCounts[reactionType] || 0) + 1;
+            }
+
+            let newUserReactions = [...(p.userReactions || [])];
+            if (wasSelected) {
+              newUserReactions = newUserReactions.filter(
+                r => r !== reactionType
+              );
+            } else {
+              newUserReactions.push(reactionType);
+            }
+
+            return {
+              ...p,
+              reactionCounts: newReactionCounts,
+              userReactions: newUserReactions,
+            } as Post;
+          })
+        );
+
+        await togglePostReaction(post.id, user.id, reactionType);
+      } catch (error) {
+        console.error('Error toggling reaction:', error);
+        try {
+          const postsResponse = await getPosts({
+            movieId,
+            currentUserId: user?.id,
+          });
+          setPosts(postsResponse || []);
+        } catch (reloadError) {
+          console.error('Error reloading posts:', reloadError);
+        }
+      }
+    };
+
+    return (
+      <React.Fragment key={`post-${post.id}`}>
+        <View style={styles.postContainer}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => handlePostPress(post)}
+          >
+            {hasImage ? (
+              <PicturePost
+                userName={username}
+                username={username}
+                date={formatDate(post.createdAt)}
+                content={post.content}
+                imageUrls={post.imageUrls || []}
+                userId={post.userId}
+                spoiler={containsSpoilers}
+              />
+            ) : (
+              <TextPost
+                userName={username}
+                username={username}
+                date={formatDate(post.createdAt)}
+                content={post.content}
+                userId={post.userId}
+                spoiler={containsSpoilers}
+              />
+            )}
+          </TouchableOpacity>
+          <View style={styles.interactionWrapper}>
+            <InteractionBar
+              initialComments={post.commentCount || 0}
+              reactions={reactions}
+              onCommentPress={() => handleComment(post)}
+              onReactionPress={handleReaction}
+            />
+          </View>
+        </View>
+        {index < allFeedItems.length - 1 && <View style={styles.divider} />}
+      </React.Fragment>
+    );
   };
 
   const feedItems = getFeedItems();
-
   const moviePosterUrl = getMoviePosterUrl(movieEnvelope?.imageUrl);
+  const isBookmarked = bookmarkStatus !== null;
 
   return (
     <View style={styles.mainContainer}>
       <ScrollView style={styles.container}>
-        {/* Hero Section with Poster Background */}
+        {/* Hero Section */}
         <View style={styles.heroWrapper}>
           <ImageBackground
             source={{ uri: moviePosterUrl }}
@@ -535,7 +579,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               style={styles.gradient}
             >
               <View style={styles.heroContent}>
-                {/* Movie Title + metadata */}
                 <Text style={styles.title}>{title}</Text>
                 {(releaseYear || director) && (
                   <View style={styles.metaContainer}>
@@ -546,7 +589,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                     </Text>
                   </View>
                 )}
-
                 {description && (
                   <Text style={styles.description} numberOfLines={3}>
                     {description}
@@ -556,7 +598,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
             </LinearGradient>
           </ImageBackground>
 
-          {/* Back Button overlaying hero */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
@@ -574,7 +615,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           </View>
         )}
 
-        {/* Ratings Container */}
+        {/* Ratings + Bookmark */}
         <View style={styles.ratingsContainer}>
           <View style={styles.ratingsRow}>
             <View style={styles.ratingsContentWrapper}>
@@ -612,30 +653,33 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
               </View>
             </View>
 
-            {/* Bookmark Button */}
+            {/* Bookmark Button -> opens modal */}
             <TouchableOpacity
-              style={styles.bookmarkButton}
-              onPress={() => {
-                // TODO: Implement bookmark functionality
-                console.log('Bookmark pressed for movie:', movieId);
-              }}
+              style={[
+                styles.bookmarkButton,
+                isBookmarked && {
+                  backgroundColor: '#AB2504',
+                  borderColor: '#801C03',
+                  borderWidth: 1.5,
+                },
+              ]}
+              onPress={openBookmarkModal}
+              activeOpacity={0.85}
             >
               <Svg width="16" height="18" viewBox="0 0 16 18" fill="none">
                 <Path
                   d="M0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H8V2H2V14.95L7 12.8L12 14.95V8H14V18L7 15L0 18ZM12 6V4H10V2H12V0H14V2H16V4H14V6H12Z"
-                  fill="#AB2504"
+                  fill={isBookmarked ? '#FFFFFF' : '#AB2504'}
                 />
               </Svg>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Filter Bar: Spoiler Toggle and Sort Dropdown */}
+        {/* Filter Bar */}
         <View style={styles.filterBar}>
-          {/* Spoiler Toggle */}
           <SpoilerButton isSpoiler={showSpoilers} onToggle={setShowSpoilers} />
 
-          {/* Sort Dropdown */}
           <TouchableOpacity
             style={styles.sortDropdown}
             onPress={() => setShowSortDropdown(!showSortDropdown)}
@@ -681,7 +725,6 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
             />
           </TouchableOpacity>
 
-          {/* Dropdown Menu */}
           {showSortDropdown && (
             <View style={styles.dropdownMenu}>
               <TouchableOpacity
@@ -699,6 +742,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                 </Svg>
                 <Text style={styles.dropdownItemText}>Trending</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={styles.dropdownItem}
                 onPress={() => {
@@ -714,6 +758,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                 </Svg>
                 <Text style={styles.dropdownItemText}>New</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[styles.dropdownItem, styles.dropdownItemLast]}
                 onPress={() => {
@@ -733,14 +778,14 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           )}
         </View>
 
-        {/* AI Consensus / Sentiment Analysis */}
+        {/* AI Consensus */}
         <AiConsensus
           summary={summary}
           summaryLoading={summaryLoading}
           summaryError={summaryError}
         />
 
-        {/* Feed Items */}
+        {/* Feed */}
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#000" />
@@ -751,7 +796,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : feedItems.length > 0 ? (
-          feedItems.map((item, index) => renderFeedItem(item, index))
+          feedItems.map(renderFeedItem)
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.placeholderText}>
@@ -760,11 +805,10 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
           </View>
         )}
 
-        {/* Bottom padding for fixed button */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Fixed Add Button */}
+      {/* Add Post button */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={handleAddPost}
@@ -782,41 +826,37 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
         </Svg>
       </TouchableOpacity>
 
-      {/* Post Type Selection Modal */}
+      {/* Post type modal */}
       {showPostModal && (
         <CreatePostModal
           onSelect={handlePostTypeSelect}
           onClose={() => setShowPostModal(false)}
         />
       )}
+
+      {/* Bookmark modal */}
+      {showBookmarkModal && (
+        <BookmarkModal
+          selection={bookmarkSelection}
+          onChangeSelection={setBookmarkSelection}
+          onSave={handleBookmarkSave}
+          onClose={() => setShowBookmarkModal(false)}
+        />
+      )}
     </View>
   );
 }
 
-const { width } = Dimensions.get('window');
+/* ================= Styles ================= */
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F5F5F5' },
   container: { flex: 1, backgroundColor: '#F5F5F5' },
-  heroWrapper: {
-    position: 'relative',
-    width: '100%',
-  },
-  heroContainer: {
-    width: '100%',
-    minHeight: width * 1.2,
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  gradient: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  heroContent: {
-    paddingBottom: 24,
-  },
+  heroWrapper: { position: 'relative', width: '100%' },
+  heroContainer: { width: '100%', minHeight: width * 1.2 },
+  heroImage: { width: '100%', height: '100%' },
+  gradient: { flex: 1, justifyContent: 'flex-end' },
+  heroContent: { paddingBottom: 24 },
   title: {
     fontSize: 24,
     fontWeight: '500',
@@ -828,10 +868,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
-  metaContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
+  metaContainer: { paddingHorizontal: 16, paddingBottom: 12 },
   metaText: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.9)',
@@ -849,10 +886,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  tagsSection: {
-    backgroundColor: '#ffffff',
-    paddingTop: 8,
-  },
+  tagsSection: { backgroundColor: '#ffffff', paddingTop: 8 },
   ratingsContainer: {
     backgroundColor: '#FFF',
     paddingHorizontal: 16,
@@ -869,28 +903,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  labelsColumn: {
-    marginRight: 16,
-    gap: 16,
-  },
-  ratingLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#000',
-  },
-  starsColumn: {
-    gap: 4,
-  },
-  starRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  ratingCount: {
-    fontSize: 12,
-    color: 'black',
-    fontWeight: '400',
-  },
+  labelsColumn: { marginRight: 16, gap: 16 },
+  ratingLabel: { fontSize: 15, fontWeight: '500', color: '#000' },
+  starsColumn: { gap: 4 },
+  starRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ratingCount: { fontSize: 12, color: 'black', fontWeight: '400' },
   loadingContainer: {
     paddingVertical: 32,
     alignItems: 'center',
@@ -903,21 +920,13 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 8,
   },
-  errorText: {
-    fontSize: 16,
-    color: '#FF3B30',
-    textAlign: 'center',
-  },
+  errorText: { fontSize: 16, color: '#FF3B30', textAlign: 'center' },
   emptyContainer: {
     backgroundColor: '#FFF',
     padding: 32,
     marginTop: 8,
   },
-  placeholderText: {
-    fontSize: 16,
-    color: '#999',
-    textAlign: 'center',
-  },
+  placeholderText: { fontSize: 16, color: '#999', textAlign: 'center' },
   reviewItemContainer: {
     backgroundColor: '#FFF',
     paddingHorizontal: width * 0.04,
@@ -938,11 +947,7 @@ const styles = StyleSheet.create({
     marginTop: width * 0.03,
     marginBottom: width * 0.04,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 0,
-  },
+  divider: { height: 1, backgroundColor: '#E0E0E0', marginVertical: 0 },
   backButton: {
     position: 'absolute',
     top: 50,
@@ -990,11 +995,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: '#FFF',
   },
-  sortText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#561202',
-  },
+  sortText: { fontSize: 14, fontWeight: '400', color: '#561202' },
   dropdownMenu: {
     position: 'absolute',
     top: 52,
@@ -1028,24 +1029,6 @@ const styles = StyleSheet.create({
   dropdownItemLast: {
     borderBottomWidth: 0,
   },
-  spoilerHiddenBox: {
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: '#FFF4E5',
-    borderWidth: 1,
-    borderColor: '#F5C518',
-    marginTop: 8,
-  },
-  spoilerHiddenTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#561202',
-    marginBottom: 4,
-  },
-  spoilerHiddenText: {
-    fontSize: 13,
-    color: '#7A4A24',
-  },
   spoilerOverlayCard: {
     marginTop: 12,
     padding: 16,
@@ -1068,7 +1051,6 @@ const styles = StyleSheet.create({
     color: '#7A4A24',
     textAlign: 'center',
   },
-
   addButton: {
     position: 'absolute',
     bottom: 48,
