@@ -7,7 +7,6 @@ import {
   ImageBackground,
   Dimensions,
   SafeAreaView,
-  Image,
   StyleSheet,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -16,12 +15,38 @@ import tw from 'twrnc';
 import { LinearGradient } from 'expo-linear-gradient';
 import SearchBar from '../components/SearchBar';
 import TabToggle from '../components/TabToggle';
-import SectionHeader from '../components/SectionHeader';
 import Carousel from '../components/Carousel';
+import TextPost from '../components/TextPost';
+import PicturePost from '../components/PicturePost';
+import ReviewPost from '../components/ReviewPost';
+import InteractionBar from '../components/InteractionBar';
+import UserBar from '../components/UserBar';
 
 export type HomeScreenProps = {
   user?: any;
   onSignOut?: () => Promise<void>;
+};
+
+type Post = {
+  id: string;
+  type: 'text' | 'picture' | 'review';
+  userName: string;
+  username: string;
+  date: string;
+  content: string;
+  imageUrls?: string[];
+  movieTitle?: string;
+  rating?: number;
+  movieImageUrl?: string;
+  userId?: string;
+  reviewerName?: string;
+  reviewerUserId?: string;
+  commentCount?: number;
+  reactions?: Array<{
+    emoji: string;
+    count: number;
+    selected: boolean;
+  }>;
 };
 
 export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
@@ -32,104 +57,216 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
   const inactiveNavColor = '#979797';
   const navOptions = ['For You', 'Friends', 'Trending'];
   const navTabs = navOptions.map(label => ({ key: label, label }));
-  const postsByTab: Record<
-    string,
-    {
-      id: string;
-      userName: string;
-      username: string;
-      date: string;
-      content: string;
-      imageUri?: string;
-    }[]
-  > = {
+
+  const postsByTab: Record<string, Post[]> = {
     'For You': [
       {
         id: 'fy-1',
-        userName: 'Lena Morales',
-        username: 'lenam',
+        type: 'review',
+        userName: 'Arjun Kapoor',
+        username: 'arjunk',
         date: '2h ago',
-        content:
-          'Caught a surprise Q&A with the director last night—this shot of the neon skyline was unreal.',
-        imageUri:
-          'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80',
+        content: 'Check out this new review that I just dropped!',
+        reviewerName: 'Arjun Kapoor',
+        reviewerUserId: 'user-1',
+        movieTitle: 'RRR',
+        rating: 5,
+        movieImageUrl:
+          'https://image.tmdb.org/t/p/original/wE0I6efAW4cDDmZQWtwZMOW44EJ.jpg',
+        userId: 'user-1',
+        commentCount: 24,
+        reactions: [
+          { emoji: '🌶️', count: 12, selected: false },
+          { emoji: '✨', count: 18, selected: false },
+          { emoji: '🧠', count: 8, selected: false },
+          { emoji: '🧨', count: 45, selected: true },
+        ],
       },
       {
         id: 'fy-2',
-        userName: 'Khalid Noor',
-        username: 'knoor',
+        type: 'text',
+        userName: 'Priya Sharma',
+        username: 'priyasharma',
         date: '3h ago',
         content:
-          'If you loved slow-burn thrillers, add “North Passage” to your list. No jumpscares—just dread.',
+          'Just watched 3 Idiots for the 10th time and it still makes me cry. Aamir Khan\'s performance is timeless. "All is well" will forever be iconic! 🎓',
+        userId: 'user-2',
+        commentCount: 15,
+        reactions: [
+          { emoji: '🌶️', count: 5, selected: false },
+          { emoji: '✨', count: 23, selected: true },
+          { emoji: '🧠', count: 17, selected: false },
+          { emoji: '🧨', count: 9, selected: false },
+        ],
       },
       {
         id: 'fy-3',
-        userName: 'Ava Chen',
-        username: 'ava.chen',
+        type: 'picture',
+        userName: 'Raj Malhotra',
+        username: 'rajm',
         date: '5h ago',
         content:
-          'Festival reminder: short docs block starts at 7pm. Best seat is back row, right of center.',
-        imageUri:
-          'https://images.unsplash.com/photo-1464375117522-1311d6a5b81f?auto=format&fit=crop&w=1600&q=80',
+          'Found this hidden gem of a theater in Mumbai that still shows classic Bollywood films. Caught a screening of Sholay last night - the experience was magical! 🎬',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=1600&q=80',
+          'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80',
+        ],
+        userId: 'user-3',
+        commentCount: 8,
+        reactions: [
+          { emoji: '🌶️', count: 3, selected: false },
+          { emoji: '✨', count: 12, selected: false },
+          { emoji: '🧠', count: 4, selected: false },
+          { emoji: '🧨', count: 6, selected: false },
+        ],
+      },
+      {
+        id: 'fy-4',
+        type: 'review',
+        userName: 'Kavya Reddy',
+        username: 'kavyar',
+        date: '6h ago',
+        content: 'Check out this new review that I just dropped!',
+        reviewerName: 'Kavya Reddy',
+        reviewerUserId: 'user-4',
+        movieTitle: 'Baahubali 2: The Conclusion',
+        rating: 4.5,
+        movieImageUrl:
+          'https://image.tmdb.org/t/p/original/9oKwLM9XlhVGGNnKkOJ8ovjQ3cG.jpg',
+        userId: 'user-4',
+        commentCount: 32,
+        reactions: [
+          { emoji: '🌶️', count: 8, selected: false },
+          { emoji: '✨', count: 28, selected: false },
+          { emoji: '🧠', count: 12, selected: false },
+          { emoji: '🧨', count: 56, selected: false },
+        ],
       },
     ],
     Friends: [
       {
         id: 'fr-1',
-        userName: 'Miguel Soto',
-        username: 'migs',
+        type: 'picture',
+        userName: 'Aisha Khan',
+        username: 'aishak',
         date: '1h ago',
         content:
-          'Double-feature night: classic noir then animated short. Snacks ready, lights off.',
-        imageUri:
-          'https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=1600&q=80',
+          "Movie night with the squad! We're doing a Shahrukh Khan marathon - starting with Dilwale Dulhania Le Jayenge. Who else is a SRK fan? 👑",
+        imageUrls: [
+          'https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=1600&q=80',
+        ],
+        userId: 'user-5',
+        commentCount: 11,
+        reactions: [
+          { emoji: '🌶️', count: 4, selected: false },
+          { emoji: '✨', count: 19, selected: true },
+          { emoji: '🧠', count: 2, selected: false },
+          { emoji: '🧨', count: 7, selected: false },
+        ],
       },
       {
         id: 'fr-2',
-        userName: 'Priya Patel',
-        username: 'priyap',
+        type: 'text',
+        userName: 'Vikram Singh',
+        username: 'vikrams',
         date: '4h ago',
         content:
-          'Posted my review of “Riverlights.” Score’s great but the third act needed another pass.',
+          "Andhadhun is a masterpiece! The way Sriram Raghavan keeps you guessing till the very end is brilliant. If you haven't seen it yet, what are you waiting for? 🎹",
+        userId: 'user-6',
+        commentCount: 21,
+        reactions: [
+          { emoji: '🌶️', count: 14, selected: false },
+          { emoji: '✨', count: 8, selected: false },
+          { emoji: '🧠', count: 31, selected: true },
+          { emoji: '🧨', count: 5, selected: false },
+        ],
       },
       {
         id: 'fr-3',
-        userName: 'Jonas Meyer',
-        username: 'jonas.m',
+        type: 'review',
+        userName: 'Meera Patel',
+        username: 'meerap',
         date: '6h ago',
-        content:
-          'Anyone heading to the rooftop screening tomorrow? I’ve got two extra tickets.',
+        content: 'Check out this new review that I just dropped!',
+        reviewerName: 'Meera Patel',
+        reviewerUserId: 'user-7',
+        movieTitle: 'Dangal',
+        rating: 5,
+        movieImageUrl:
+          'https://image.tmdb.org/t/p/original/9bCNo1FXwW9r1v9w5mYYxY8b5sO.jpg',
+        userId: 'user-7',
+        commentCount: 18,
+        reactions: [
+          { emoji: '🌶️', count: 6, selected: false },
+          { emoji: '✨', count: 15, selected: false },
+          { emoji: '🧠', count: 22, selected: false },
+          { emoji: '🧨', count: 11, selected: false },
+        ],
       },
     ],
     Trending: [
       {
         id: 'tr-1',
-        userName: 'Spotlight Daily',
-        username: 'spotlight',
+        type: 'text',
+        userName: 'Bollywood Insider',
+        username: 'bollyinsider',
         date: 'Just now',
         content:
-          'Box office watch: “Starfall” just crossed the $150M mark domestically.',
+          "Box office update: Jawan crosses ₹1000 crore worldwide! Shah Rukh Khan proves he's still the king! 👑💰",
+        userId: 'user-8',
+        commentCount: 67,
+        reactions: [
+          { emoji: '🌶️', count: 23, selected: false },
+          { emoji: '✨', count: 45, selected: false },
+          { emoji: '🧠', count: 12, selected: false },
+          { emoji: '🧨', count: 89, selected: true },
+        ],
       },
       {
         id: 'tr-2',
-        userName: 'Festival Lens',
-        username: 'festivalens',
+        type: 'picture',
+        userName: 'Cinema Chronicles',
+        username: 'cinemachronicles',
         date: '50m ago',
         content:
-          'This candid from the Venice premiere is everywhere for a reason.',
-        imageUri:
-          'https://images.unsplash.com/photo-1520699514109-9012a284e1d9?auto=format&fit=crop&w=1600&q=80',
+          'Behind the scenes from the Pathaan shoot! The action sequences were filmed across 8 countries. Indian cinema is truly going global! 🌍',
+        imageUrls: [
+          'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1600&q=80',
+        ],
+        userId: 'user-9',
+        commentCount: 43,
+        reactions: [
+          { emoji: '🌶️', count: 18, selected: false },
+          { emoji: '✨', count: 52, selected: false },
+          { emoji: '🧠', count: 9, selected: false },
+          { emoji: '🧨', count: 71, selected: false },
+        ],
       },
       {
         id: 'tr-3',
-        userName: 'Cinema Beat',
-        username: 'cinemabeat',
+        type: 'review',
+        userName: 'Rohan Verma',
+        username: 'rohanv',
         date: '2h ago',
-        content:
-          'Editor’s pick: five micro-budget films that punch way above their weight.',
+        content: 'Check out this new review that I just dropped!',
+        reviewerName: 'Rohan Verma',
+        reviewerUserId: 'user-10',
+        movieTitle: 'Tumbbad',
+        rating: 4.5,
+        movieImageUrl:
+          'https://image.tmdb.org/t/p/original/wDlMQdNQJqFn1pekaXGqxqC9pBg.jpg',
+        userId: 'user-10',
+        commentCount: 29,
+        reactions: [
+          { emoji: '🌶️', count: 31, selected: true },
+          { emoji: '✨', count: 19, selected: false },
+          { emoji: '🧠', count: 42, selected: false },
+          { emoji: '🧨', count: 14, selected: false },
+        ],
       },
     ],
   };
+
   const heroSlides = [
     {
       id: 'spider-verse',
@@ -177,11 +314,16 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
       id: 'wonder-woman',
       uri: 'https://image.tmdb.org/t/p/original/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg',
       title: 'Wonder Woman',
-      subtitle: 'Diana crosses No Man’s Land.',
+      subtitle: "Diana crosses No Man's Land.",
     },
   ];
-  const [hiddenHeroIds, setHiddenHeroIds] = React.useState<Set<string>>(new Set());
-  const visibleHeroSlides = heroSlides.filter(slide => !hiddenHeroIds.has(slide.id));
+
+  const [hiddenHeroIds, setHiddenHeroIds] = React.useState<Set<string>>(
+    new Set()
+  );
+  const visibleHeroSlides = heroSlides.filter(
+    slide => !hiddenHeroIds.has(slide.id)
+  );
   const hideSlideOnError = (id: string) => {
     setHiddenHeroIds(prev => {
       const next = new Set(prev);
@@ -200,29 +342,88 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
         colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.15)']}
         style={{ flex: 1, padding: 16, justifyContent: 'flex-end' }}
       >
-        <Text style={tw`text-white text-xl font-semibold mb-1`}>{slide.title}</Text>
+        <Text style={tw`text-white text-xl font-semibold mb-1`}>
+          {slide.title}
+        </Text>
         <Text style={tw`text-white text-sm`}>{slide.subtitle}</Text>
       </LinearGradient>
     </ImageBackground>
   ));
-  const quickActionButtons = [
-    {
-      label: 'Browse Movies',
-      icon: <Feather name="film" size={18} color="#FFF" />,
-      onPress: () => router.push('movies'),
-    },
-    {
-      label: 'Find Events',
-      icon: <Feather name="map-pin" size={18} color="#FFF" />,
-      onPress: () => router.push('events'),
-    },
-    {
-      label: 'Profile',
-      icon: <Feather name="user" size={18} color="#FFF" />,
-      onPress: () => router.push('profile'),
-    },
-  ];
+
   const [activeNav, setActiveNav] = React.useState(navOptions[0]);
+
+  const renderPost = (post: Post, index: number, totalPosts: number) => {
+    if (post.type === 'review') {
+      return (
+        <React.Fragment key={post.id}>
+          <View style={styles.reviewItemContainer}>
+            <UserBar
+              name={post.userName}
+              username={post.username}
+              userId={post.userId}
+            />
+            <Text style={styles.reviewShareText}>{post.content}</Text>
+            <ReviewPost
+              userName={post.reviewerName || post.userName}
+              username={post.username}
+              date={post.date}
+              reviewerName={post.reviewerName || post.userName}
+              movieTitle={post.movieTitle || ''}
+              rating={post.rating || 0}
+              userId={post.reviewerUserId || post.userId}
+              reviewerUserId={post.reviewerUserId || post.userId}
+              movieImageUrl={post.movieImageUrl || ''}
+            />
+          </View>
+          {index < totalPosts - 1 && <View style={styles.divider} />}
+        </React.Fragment>
+      );
+    } else if (post.type === 'picture') {
+      return (
+        <React.Fragment key={post.id}>
+          <View style={styles.postContainer}>
+            <PicturePost
+              userName={post.userName}
+              username={post.username}
+              date={post.date}
+              content={post.content}
+              imageUrls={post.imageUrls || []}
+              userId={post.userId}
+            />
+            <View style={styles.interactionWrapper}>
+              <InteractionBar
+                initialComments={post.commentCount || 0}
+                reactions={post.reactions}
+              />
+            </View>
+          </View>
+          {index < totalPosts - 1 && <View style={styles.divider} />}
+        </React.Fragment>
+      );
+    } else {
+      // text post
+      return (
+        <React.Fragment key={post.id}>
+          <View style={styles.postContainer}>
+            <TextPost
+              userName={post.userName}
+              username={post.username}
+              date={post.date}
+              content={post.content}
+              userId={post.userId}
+            />
+            <View style={styles.interactionWrapper}>
+              <InteractionBar
+                initialComments={post.commentCount || 0}
+                reactions={post.reactions}
+              />
+            </View>
+          </View>
+          {index < totalPosts - 1 && <View style={styles.divider} />}
+        </React.Fragment>
+      );
+    }
+  };
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
@@ -261,37 +462,11 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
         />
 
         {/* Feed area under nav */}
-        <View style={tw`mt-6 px-5`}>
-          <View style={{ marginTop: 0 }}>
-            {postsByTab[activeNav].map(post => (
-              <View key={post.id} style={styles.postCard}>
-                <View style={styles.postHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={styles.avatarPlaceholder}>
-                      <Text style={styles.avatarInitials}>
-                        {post.userName
-                          .split(' ')
-                          .map(part => part[0])
-                          .join('')
-                          .slice(0, 2)}
-                      </Text>
-                    </View>
-                    <View style={{ marginLeft: 10 }}>
-                      <Text style={styles.author}>{post.userName}</Text>
-                      <Text style={styles.metaText}>@{post.username} · {post.date}</Text>
-                    </View>
-                  </View>
-                </View>
-                <Text style={styles.postText}>{post.content}</Text>
-                {post.imageUri && (
-                  <Image
-                    source={{ uri: post.imageUri }}
-                    style={styles.postImage}
-                    resizeMode="cover"
-                  />
-                )}
-              </View>
-            ))}
+        <View style={tw`mt-6`}>
+          <View style={{ backgroundColor: '#FFF' }}>
+            {postsByTab[activeNav].map((post, index) =>
+              renderPost(post, index, postsByTab[activeNav].length)
+            )}
           </View>
         </View>
 
@@ -316,52 +491,32 @@ export default function HomeScreen({ user, onSignOut }: HomeScreenProps) {
   );
 }
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
-  postCard: {
+  reviewItemContainer: {
     backgroundColor: '#FFF',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
+    paddingHorizontal: width * 0.04,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.04,
   },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  postContainer: {
+    backgroundColor: '#FFF',
+    paddingTop: width * 0.04,
   },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F4F4F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+  interactionWrapper: {
+    paddingHorizontal: width * 0.04,
+    paddingBottom: width * 0.04,
   },
-  avatarInitials: {
-    fontWeight: '700',
-    color: '#D62E05',
+  reviewShareText: {
+    fontSize: width * 0.04,
+    color: '#000',
+    marginTop: width * 0.03,
+    marginBottom: width * 0.04,
   },
-  author: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  metaText: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  postText: {
-    fontSize: 14,
-    color: '#111827',
-    lineHeight: 20,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  postImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 12,
-    backgroundColor: '#E5E7EB',
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 0,
   },
 });
