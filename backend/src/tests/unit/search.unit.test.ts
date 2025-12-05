@@ -2,6 +2,9 @@ import { searchMovies, searchUsers, searchReviews, searchPosts } from "../../con
 import { Request, Response } from "express";
 import { prisma } from "../../services/db";
 
+// Mock fetch globally before tests
+global.fetch = jest.fn();
+
 describe("Search Controller Unit Tests", () => {
     let mockRequest: Partial<Request>;
     let mockResponse: Partial<Response>;
@@ -19,6 +22,9 @@ describe("Search Controller Unit Tests", () => {
 
         mockResponse = responseObject;
         jest.clearAllMocks();
+        
+        // Reset fetch mock before each test
+        (global.fetch as jest.Mock).mockReset();
     });
 
     afterEach(() => {
@@ -91,10 +97,10 @@ describe("Search Controller Unit Tests", () => {
                 expect.objectContaining({
                     type: "movies",
                     query: "fight",
-                    count: 3,  // Changed to 3
+                    count: 3,
                     sources: {
-                        local: 3,  // All 3 from local
-                        tmdb: 0,   // None from TMDB
+                        local: 3,
+                        tmdb: 0,
                     },
                 })
             );
@@ -113,8 +119,27 @@ describe("Search Controller Unit Tests", () => {
                     languages: [],
                     numRatings: "0",
                 },
+                {
+                    movieId: "uuid-2",
+                    title: "Test Movie 2",
+                    description: "Test 2",
+                    imdbRating: BigInt(80),
+                    localRating: "0",
+                    languages: [],
+                    numRatings: "0",
+                },
+                {
+                    movieId: "uuid-3",
+                    title: "Test Movie 3",
+                    description: "Test 3",
+                    imdbRating: BigInt(85),
+                    localRating: "0",
+                    languages: [],
+                    numRatings: "0",
+                },
             ];
 
+            // Mock 3 movies to avoid TMDB fallback
             jest.spyOn(prisma.movie, "findMany").mockResolvedValueOnce(mockMovies as any);
 
             await searchMovies(mockRequest as Request, mockResponse as Response);
@@ -286,38 +311,53 @@ describe("Search Controller Unit Tests", () => {
         });
 
         it("should search posts successfully", async () => {
-            mockRequest.query = { q: "cinema" };
+    mockRequest.query = { q: "cinema" };
 
-            const mockPosts = [
-                {
-                    id: "post-uuid",
-                    userId: "user-uuid",
-                    content: "I love cinema!",
-                    type: "SHORT",
-                    votes: 5,
-                    createdAt: new Date(),
-                    user: {
-                        userId: "user-uuid",
-                        username: "john_doe",
-                    },
-                    _count: {
-                        comments: 3,
-                    },
-                },
-            ];
+    const mockPosts = [
+        {
+            id: "post-uuid",
+            userId: "user-uuid",
+            movieId: "movie-uuid",
+            content: "I love cinema!",
+            type: "SHORT",
+            stars: null,
+            spoiler: false,
+            tags: [],
+            imageUrls: [],
+            repostedPostId: null,
+            createdAt: new Date(),
+            UserProfile: {
+                userId: "user-uuid",
+                username: "john_doe",
+            },
+            movie: {
+                movieId: "movie-uuid",
+                title: "Test Movie",
+                imageUrl: "test.jpg",
+            },
+            _count: {
+                Comment: 3,
+            },
+        },
+    ];
 
-            jest.spyOn(prisma.post, "findMany").mockResolvedValueOnce(mockPosts as any);
+    jest.spyOn(prisma.post, "findMany").mockResolvedValueOnce(mockPosts as any);
 
-            await searchPosts(mockRequest as Request, mockResponse as Response);
+    await searchPosts(mockRequest as Request, mockResponse as Response);
 
-            expect(responseObject.json).toHaveBeenCalledWith(
+    expect(responseObject.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+            type: "posts",
+            count: 1,
+            results: expect.arrayContaining([
                 expect.objectContaining({
-                    type: "posts",
-                    count: 1,
-                    results: mockPosts,
+                    id: "post-uuid",
+                    content: "I love cinema!",
                 })
-            );
-        });
+            ]),
+        })
+    );
+});
 
         it("should filter by post type", async () => {
             mockRequest.query = { q: "discussion", type: "LONG" };

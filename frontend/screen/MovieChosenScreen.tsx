@@ -280,9 +280,15 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
   };
 
   const formatCount = (count: number): string => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(2)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(2)}k`;
-    return count.toString();
+
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(2)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(2)}k`;
+    }
+    return String(count);
+
   };
 
   const handleComment = (post: Post) => {
@@ -614,7 +620,7 @@ export default function MovieChosenScreen({ movieId }: MovieChosenScreenProps) {
                 {(releaseYear || director) && (
                   <View style={styles.metaContainer}>
                     <Text style={styles.metaText}>
-                      {releaseYear && releaseYear}
+                      {releaseYear ? `${releaseYear}` : ''}
                       {releaseYear && director && ' • '}
                       {director && `Directed by: ${director}`}
                     </Text>

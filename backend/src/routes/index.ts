@@ -16,7 +16,7 @@ import { getComment, createComment, updateComment, deleteComment, getMovieCommen
 import { createRating, getRatings, getRatingById, deleteRating, updateRating,getMovieRatings } from "../controllers/ratings";
 import { getAllMovies, getMoviesAfterYear, getRandomTenMovies } from "../controllers/movies";
 import { createPost, getPostById, getPosts, updatePost, deletePost, getPostReposts, toggleReaction, getPostReactions } from "../controllers/post.js";
-import { searchMovies, searchUsers, searchReviews, searchPosts } from "../controllers/search.js";
+import { searchMovies, searchUsers, searchReviews, searchPosts, searchEvents } from "../controllers/search.js";
 import { getHomeFeed } from "../controllers/feed";
 import { getMovieSummaryHandler } from "../controllers/movies.js";
 import { translateText, getSupportedLanguages } from "../controllers/translate";
@@ -124,5 +124,6 @@ router.get("/api/search/movies", searchMovies)
 router.get("/api/search/users", searchUsers)
 router.get("/api/search/reviews", searchReviews)
 router.get("/api/search/posts", searchPosts)
+router.get("/api/search/events", searchEvents)
 
 export default router;

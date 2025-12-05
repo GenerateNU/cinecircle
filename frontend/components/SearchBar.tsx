@@ -10,6 +10,7 @@ type SearchBarProps = {
     onPress?: () => void;
     editable?: boolean;
     onSubmitEditing?: () => void;
+    onSearchPress?: () => void; 
 };
 
 export default function SearchBar({ 

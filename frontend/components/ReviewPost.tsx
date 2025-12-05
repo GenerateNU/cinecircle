@@ -150,27 +150,18 @@ export default function ReviewPost({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    borderRadius: width * 0.03,
+    borderRadius: width * 0.04,
     overflow: 'hidden',
     backgroundColor: '#000',
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    // Elevation for Android
-    elevation: 8,
+    marginBottom: width * 0.04, // Space between posts
   },
   imageBackground: {
     width: '100%',
-    minHeight: width * 0.8,
+    aspectRatio: 16/9, // ← Changed to wider aspect ratio like the image
     justifyContent: 'flex-end',
   },
   image: {
-    borderRadius: width * 0.03,
+    borderRadius: width * 0.04,
   },
   fallbackBackground: {
     backgroundColor: '#1a1a1a',
@@ -208,19 +199,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: width * 0.6,
+    height: '100%', // ← Cover entire image with gradient
   },
   contentContainer: {
     padding: width * 0.04,
-    paddingBottom: width * 0.05,
   },
   movieTitle: {
-    fontSize: width * 0.055,
+    fontSize: width * 0.045, // ← Slightly smaller
     fontWeight: '700',
     color: '#FFFFFF',
-    marginTop: width * 0.03,
-    marginBottom: width * 0.02,
-    flexShrink: 1,
+    marginTop: width * 0.02,
+    marginBottom: width * 0.015,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -228,5 +217,14 @@ const styles = StyleSheet.create({
   ratingContainer: {
     marginTop: width * 0.01,
     alignItems: 'flex-start',
+  },
+  reviewText: {
+    fontSize: width * 0.035,
+    color: '#FFFFFF',
+    marginTop: width * 0.025,
+    lineHeight: width * 0.05,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 });

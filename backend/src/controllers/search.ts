@@ -9,6 +9,7 @@ type MovieResult = {
     localRating: string | null;
     languages: any;
     numRatings: string | null;
+    imageUrl: string | null;
     source: "local" | "tmdb";
 };
 
@@ -38,6 +39,7 @@ async function searchTMDB(query: string): Promise<any[]> {
         title: movie.title,
         overview: movie.overview,
         vote_average: movie.vote_average,
+        poster_path: movie.poster_path, 
         spoken_languages: [],
     }));
 }
@@ -104,6 +106,7 @@ export const searchMovies = async (req: Request, res: Response) => {
                 localRating: true,
                 languages: true,
                 numRatings: true,
+                imageUrl: true,
             },
         });
 
@@ -161,6 +164,7 @@ export const searchMovies = async (req: Request, res: Response) => {
                             localRating: saved.localRating,
                             languages: saved.languages,
                             numRatings: saved.numRatings,
+                            imageUrl: saved.imageUrl,
                             source: "tmdb" as const,
                         });
                     } catch (saveErr) {
@@ -240,6 +244,16 @@ export const searchUsers = async (req: Request, res: Response) => {
                 OR: orClauses,
             },
             take: limitNum,
+
+            select: {
+                userId: true,
+                username: true,
+                favoriteGenres: true,       
+                secondaryLanguage: true,  
+                favoriteMovies: true,
+                createdAt: true,
+                profilePicture: true,     
+            },
         });
 
         const toStrings = (val?: string[] | null) =>
@@ -326,7 +340,7 @@ export const searchReviews = async (req: Request, res: Response) => {
             where: whereClause,
             take: limitNum,
             orderBy: {
-                votes: "desc" // sorting by most votes to least, essentially most relevant
+                date: "desc" // sorting by most votes to least, essentially most relevant
             },
                 include: {
                     UserProfile: { 
@@ -364,7 +378,6 @@ export const searchReviews = async (req: Request, res: Response) => {
 export const searchPosts = async (req: Request, res: Response) => {
     const { q, type, limit = "10" } = req.query;
 
-    // Validate query parameter
     if (!q || typeof q !== "string") {
         return res.status(400).json({ message: "Query parameter 'q' is required" });
     }
@@ -378,7 +391,6 @@ export const searchPosts = async (req: Request, res: Response) => {
     }
 
     try {
-        // Build where clause dynamically
         const whereClause: any = {
             content: {
                 contains: q,
@@ -386,7 +398,6 @@ export const searchPosts = async (req: Request, res: Response) => {
             }
         };
 
-        // Add optional type filter
         if (type && (type === "SHORT" || type === "LONG")) {
             whereClause.type = type;
         }
@@ -395,36 +406,102 @@ export const searchPosts = async (req: Request, res: Response) => {
             where: whereClause,
             take: limitNum,
             orderBy: {
-                votes: "desc" // sorting by most votes to least, essentially most relevant
+                createdAt: "desc"
             },
             include: {
-    UserProfile: { 
-        select: {
-            userId: true,
-            username: true,
-        },
-    },
-    _count: {
-        select: {
-            Comment: true 
-        }
-    }
-},
+                UserProfile: { 
+                    select: {
+                        userId: true,
+                        username: true,
+                    },
+                },
+                movie: true,  // Just include all movie fields
+                _count: {
+                    select: {
+                        Comment: true 
+                    }
+                }
+            },
         });
+
+        // Serialize the response - convert all BigInts and handle _count
+        const serializedPosts = JSON.parse(
+            JSON.stringify(posts, (key, value) =>
+                typeof value === 'bigint' ? Number(value) : value
+            )
+        );
 
         return res.json({
             type: "posts",
             query: q,
-            count: posts.length,
+            count: serializedPosts.length,
             filters: {
                 postType: type || "any",
             },
-            results: posts,
+            results: serializedPosts,
         });
     } catch (error) {
         console.error("searchPosts error:", error);
         return res.status(500).json({
             message: "Failed to search posts",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
+
+/**
+ * Search events by title or description
+ * GET /search/events?q={query}&limit=10
+ */
+export const searchEvents = async (req: Request, res: Response) => {
+    const { q, limit = "10" } = req.query;
+
+    if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Query parameter 'q' is required" });
+    }
+
+    const limitNum = parseInt(limit as string);
+
+    if (limitNum > 50) {
+        return res.status(400).json({
+            message: "limit cannot exceed 50"
+        });
+    }
+
+    try {
+        const events = await prisma.local_event.findMany({
+            where: {
+                OR: [
+                    {
+                        title: {
+                            contains: q,
+                            mode: "insensitive"
+                        }
+                    },
+                    {
+                        description: {
+                            contains: q,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
+            },
+            take: limitNum,
+            orderBy: {
+                time: "asc" // Show upcoming events first
+            },
+        });
+
+        return res.json({
+            type: "events",
+            query: q,
+            count: events.length,
+            results: events,
+        });
+    } catch (error) {
+        console.error("searchEvents error:", error);
+        return res.status(500).json({
+            message: "Failed to search events",
             error: error instanceof Error ? error.message : String(error),
         });
     }

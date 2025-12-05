@@ -53,49 +53,19 @@ export default function SearchScreen() {
   }, [selectedCategory, searchQuery]);
 
   const handleSearch = async () => {
-    const query = searchQuery.trim();
-    if (!query) return;
+  const query = searchQuery.trim();
+  if (!query) return;
 
-    if (selectedCategory === 'users') {
-      try {
-        setStatusMessage('');
-        const results = await searchUsers(query, 5);
-        const normalized = query.toLowerCase();
-        const match =
-          results.find((u) => (u.username || '').toLowerCase() === normalized) ||
-          results[0];
-
-        if (!match?.userId) {
-          setStatusMessage('No user found for that username.');
-          return;
-        }
-
-        router.push({
-          pathname: '/profilePage/user/[userId]',
-          params: {
-            userId: match.userId,
-            username: match.username || query,
-            name: match.name || match.username || query,
-            profilePic: match.profilePicture || '',
-            origin: params.origin,
-          },
-        });
-      } catch (err: any) {
-        console.error('Failed to search users', err);
-        setStatusMessage(err?.message || 'Failed to search users.');
-      }
-      return;
-    }
-
-    router.push({
-      pathname: '/search/results',
-      params: {
-        query,
-        category: selectedCategory,
-        origin: params.origin,
-      },
-    });
-  };
+  // Navigate to results page for ALL categories
+  router.push({
+    pathname: '/search/results',
+    params: {
+      query,
+      category: selectedCategory,
+      origin: params.origin,
+    },
+  });
+};
 
   return (
     <SafeAreaView style={styles.container}>

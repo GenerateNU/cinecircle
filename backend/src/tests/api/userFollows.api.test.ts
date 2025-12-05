@@ -177,12 +177,18 @@ describe('Follow Controller', () => {
       const dbError = new Error('Database error');
       (prisma.userFollow.findMany as jest.Mock).mockRejectedValue(dbError);
 
-      await getFollowers(mockReq as Request, mockRes as Response);
+      // Suppress console.error for this test
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await getFollowing(mockReq as Request, mockRes as Response);
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: 'Failed to get followers',
+        message: 'Failed to get following',
       });
+
+      // Restore console.error
+      consoleErrorSpy.mockRestore();
     });
 
     it('should return empty array when user has no followers', async () => {
@@ -202,8 +208,10 @@ describe('Follow Controller', () => {
     });
 
     it('should return 500 on database error', async () => {
-      const dbError = new Error('Database error');
-      (prisma.userFollow.findMany as jest.Mock).mockRejectedValue(dbError);
+  const dbError = new Error('Database error');
+  (prisma.userFollow.findMany as jest.Mock).mockRejectedValue(dbError);
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       await getFollowing(mockReq as Request, mockRes as Response);
 
@@ -211,6 +219,8 @@ describe('Follow Controller', () => {
       expect(jsonMock).toHaveBeenCalledWith({
         message: 'Failed to get following',
       });
+
+      consoleErrorSpy.mockRestore();
     });
 
     it('should return empty array when user is not following anyone', async () => {

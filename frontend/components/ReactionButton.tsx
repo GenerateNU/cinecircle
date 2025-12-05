@@ -28,7 +28,7 @@ export default function ReactionButton({
           <Text
             style={[styles.reactionCount, selected && styles.selectedCount]}
           >
-            {count}
+            {String(count)}
           </Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -39,7 +39,7 @@ export default function ReactionButton({
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <View style={styles.reactionButton}>
         <Text style={styles.reactionEmoji}>{emoji}</Text>
-        <Text style={styles.reactionCount}>{count}</Text>
+        <Text style={styles.reactionCount}>{String(count)}</Text> 
       </View>
     </TouchableOpacity>
   );
