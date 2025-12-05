@@ -3854,6 +3854,33 @@ export interface components {
         GetMovieSummaryEnvelope: {
             summary: components["schemas"]["MovieSummary"];
         };
+        PostFormData: {
+            movieId: string;
+            content: string;
+            /** @enum {string} */
+            type: "SHORT" | "LONG";
+            stars?: number | null;
+            spoiler?: boolean;
+            tags?: string[];
+            imageUrls?: string[];
+            repostedPostId?: string | null;
+        };
+        LongPostFormData: {
+            movieId: string;
+            content: string;
+            rating?: number;
+            title?: string;
+            subtitle?: string;
+            tags?: string[];
+            spoiler?: boolean;
+            imageUrls?: string[];
+        };
+        ShortPostFormData: {
+            movieId: string;
+            content: string;
+            spoiler?: boolean;
+            imageUrls?: string[];
+        };
         ChunkSummary: {
             pros: string[];
             cons: string[];

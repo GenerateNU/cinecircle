@@ -19,15 +19,17 @@ export default function StarRating({
   size = 24
 }: StarRatingProps) {
   const [internalRating, setInternalRating] = useState(initialRating);
-  
+
   const rating = controlledRating !== undefined ? controlledRating : internalRating;
   const isInteractive = onRatingChange !== undefined;
 
   const handleStarPress = (selectedRating: number) => {
     if (!isInteractive) return;
-    
-    setInternalRating(selectedRating);
-    onRatingChange(selectedRating);
+
+    const newRating = selectedRating === rating ? 0 : selectedRating;
+
+    setInternalRating(newRating);
+    onRatingChange(newRating);
   };
 
   const getStarFillPercentage = (starNumber: number) => {
@@ -94,7 +96,7 @@ export default function StarRating({
         const starNumber = index + 1;
         const fillPercentage = getStarFillPercentage(starNumber);
         const StarContainer = isInteractive ? TouchableOpacity : View;
-        
+
         return (
           <StarContainer
             key={index}
