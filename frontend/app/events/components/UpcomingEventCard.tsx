@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { styles } from '../styles/UpcomingEventCard.styles';
+import { styles } from '../../../styles/events/UpcomingEventCard.styles';
 import type { LocalEvent } from '../../../services/eventsService';
 
 interface UpcomingEventCardProps {

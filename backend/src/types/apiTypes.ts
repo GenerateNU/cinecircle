@@ -53,6 +53,8 @@ export type UpdateUserProfileInput = {
   city?: string;
   favoriteGenres?: string[];
   favoriteMovies?: string[];
+  privateAccount?: boolean;
+  spoiler?: boolean;
 };
 
 export type UpdateUserProfileResponse = { message: string; data: UserProfile };

@@ -8,11 +8,11 @@ import {
   FlatList,
 } from 'react-native';
 import tw from 'twrnc';
-import { User } from '../_types';
+import { User } from '../../../lib/profilePage/_types';
 import { Feather } from '@expo/vector-icons';
 import { getPosts } from '../../../services/postsService';
 import type { components } from '../../../types/api-generated';
-import { formatCount } from '../_utils';
+import { formatCount } from '../../../lib/profilePage/_utils';
 
 type Props = {
   user: User;

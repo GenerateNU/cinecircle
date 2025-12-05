@@ -28,6 +28,8 @@ export type UserProfile = {
   city: string | null;
   favoriteGenres: string[];
   favoriteMovies: string[];
+  privateAccount: boolean;
+  spoiler: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

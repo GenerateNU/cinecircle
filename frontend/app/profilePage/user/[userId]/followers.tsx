@@ -10,7 +10,7 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import tw from 'twrnc';
 import { Ionicons } from '@expo/vector-icons';
-import { getFollowers } from '../followServiceProxy';
+import { getFollowers } from '../../../../lib/profilePage/followServiceProxy';
 import type { components } from '../../../../types/api-generated';
 
 type FollowEdge = components['schemas']['FollowEdge'];
