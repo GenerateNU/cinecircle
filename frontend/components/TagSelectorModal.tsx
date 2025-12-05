@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
+  ScrollView,
 } from 'react-native';
 
 import Tag from './Tag';
@@ -164,22 +165,24 @@ export default function TagSelectorModal({
               onChangeText={setQuery}
             />
 
-            <FlatList
-              data={filtered}
-              keyExtractor={item => item}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.pillContainer}
               keyboardShouldPersistTaps="handled"
-              renderItem={({ item }) => {
+            >
+              {filtered.map((item) => {
                 const isPressed = selected.includes(item);
                 return (
                   <Tag
+                    key={item}
                     label={item}
                     pressed={isPressed}
                     onPress={() => toggleTag(item)}
                   />
                 );
-              }}
-            />
+              })}
+            </ScrollView>
           </Animated.View>
         </KeyboardAvoidingView>
       </View>
@@ -246,7 +249,9 @@ const styles = StyleSheet.create({
 
   pillContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+    flexWrap: 'nowrap',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
   },
 });

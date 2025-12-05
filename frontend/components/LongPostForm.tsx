@@ -12,6 +12,7 @@ import MovieSelectorModal from "./MovieSelectorModal";
 import StarRating from "./StarRating";
 import CreatePostToolBar from "./CreatePostToolBar";
 import TagModal from './TagSelectorModal'
+import Tag from './Tag'
 
 interface LongPostFormProps {
   onSubmit: (data: any) => void;
@@ -111,9 +112,14 @@ const LongPostForm = forwardRef(({ onSubmit, onToolbarAction }: LongPostFormProp
 
       <View style={styles.tagRow}>
         {selectedTags.map((t) => (
-          <View key={t} style={styles.tagChip}>
-            <Text style={styles.tagChipText}>{t}</Text>
-          </View>
+          <Tag
+            key={t}
+            label={t}
+            onPress={() => {
+              const updated = selectedTags.filter(tag => tag !== t);
+              setSelectedTags(updated);
+            }}
+          />
         ))}
       </View>
 
@@ -197,17 +203,8 @@ const styles = StyleSheet.create({
 
   tagRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     gap: 8,
     marginTop: 8,
-  },
-  tagChip: {
-    backgroundColor: "#D5ECEF",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  tagChipText: {
-    fontFamily: "Figtree_500Medium",
   },
 });
