@@ -40,49 +40,67 @@ export default function OtherUserProfile() {
     params.username?.trim() || params.userId || params.name || 'user';
 
   useEffect(() => {
-    const maybeResolve = async () => {
+    const fetchUserProfile = async () => {
       const query = params.username || params.userId || params.name;
       if (!query) return;
+
       try {
+        // First, try to find the user by ID if we have a valid UUID
+        if (isValidUuid(query)) {
+          const response = await getUserProfileById(query);
+          if (response?.userProfile) {
+            setResolvedUserId(response.userProfile.userId);
+            setProfileData(response.userProfile);
+            return;
+          }
+        }
+
+        // If no user found by ID or not a valid UUID, try searching by username
         const results = await searchUsers(String(query), 5);
         const normalized = String(query).toLowerCase();
-        const match =
-          results.find((u) => (u.username || '').toLowerCase() === normalized) ||
-          results[0];
+        const match = results.find((u) => 
+          (u.username || '').toLowerCase() === normalized || 
+          u.userId === query
+        ) || results[0];
+
         if (match?.userId) {
-          if (isValidUuid(match.userId)) {
+          // Now fetch the full profile using the user ID
+          const response = await getUserProfileById(match.userId);
+          if (response?.userProfile) {
+            setResolvedUserId(response.userProfile.userId);
+            setProfileData(response.userProfile);
+          } else {
+            // Fallback to basic info if full profile fetch fails
             setResolvedUserId(match.userId);
+            setProfileData({
+              userId: match.userId,
+              username: match.username || '',
+              onboardingCompleted: false,
+              primaryLanguage: 'English',
+              secondaryLanguage: [],
+              profilePicture: match.profilePicture || null,
+              country: null,
+              city: null,
+              displayName: match.displayName || match.username || null,
+              favoriteGenres: [],
+              favoriteMovies: [],
+              bio: match.bio || null,
+              eventsSaved: [],
+              eventsAttended: [],
+              privateAccount: false,
+              spoiler: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              bookmarkedToWatch: [],
+              bookmarkedWatched: []
+            });
           }
-          // Capture profile data (events, favorites, etc.) when available
-          const safeProfile: components['schemas']['UserProfile'] = {
-            userId: match.userId,
-            username: match.username ?? null,
-            onboardingCompleted: Boolean(match.onboardingCompleted),
-            primaryLanguage: match.primaryLanguage ?? 'English',
-            secondaryLanguage: match.secondaryLanguage ?? [],
-            profilePicture: match.profilePicture ?? null,
-            country: match.country ?? null,
-            city: match.city ?? null,
-            displayName: match.displayName ?? match.username ?? null,
-            favoriteGenres: match.favoriteGenres ?? [],
-            favoriteMovies: match.favoriteMovies ?? [],
-            bio: match.bio ?? null,
-            moviesToWatch: match.moviesToWatch ?? [],
-            moviesCompleted: match.moviesCompleted ?? [],
-            eventsSaved: match.eventsSaved ?? [],
-            eventsAttended: match.eventsAttended ?? [],
-            privateAccount: Boolean(match.privateAccount),
-            spoiler: Boolean(match.spoiler),
-            createdAt: match.createdAt ?? new Date().toISOString(),
-            updatedAt: match.updatedAt ?? new Date().toISOString(),
-          };
-          setProfileData(safeProfile);
-        }
+        } 
       } catch (err) {
         console.error('Failed to resolve userId from username search:', err);
       }
     };
-    maybeResolve();
+    fetchUserProfile();
   }, [initialUserId, params.name, params.userId, params.username]);
 
   // Once we know the userId, fetch the full profile (including events) directly

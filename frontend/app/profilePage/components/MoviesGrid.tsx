@@ -121,6 +121,14 @@ const MoviesGrid = (props: Props | undefined) => {
     }
   }, []);
 
+  const hydrateFromProfile = useCallback(async () => {
+    try {
+      await fetchMoviesForUser();
+    } catch (error) {
+      console.error('Error hydrating profile:', error);
+    }
+  }, [fetchMoviesForUser]);
+
   useEffect(() => {
     hydrateFromProfile();
   }, [hydrateFromProfile]);
