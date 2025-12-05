@@ -1,4 +1,3 @@
-/** 
 import React from 'react';
 import { View, Text } from 'react-native';
 import { styles } from '../styles/LocationSection.styles';
@@ -24,7 +23,7 @@ export default function LocationSection({
   return (
     <View style={styles.container}>
       <Text style={[styles.title, styles[`${size}Title`]]}>Location</Text>
-      {/* <Text style={[styles.address, styles[`${size}Address`]]}>{location}</Text> *//** }
+      {/* <Text style={[styles.address, styles[`${size}Address`]]}>{location}</Text> */}
       <View style={[styles.mapContainer, styles[size]]}>
         <MapView
           style={styles.map}
@@ -45,4 +44,3 @@ export default function LocationSection({
     </View>
   );
 }
-*/
