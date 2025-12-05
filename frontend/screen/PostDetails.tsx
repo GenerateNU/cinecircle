@@ -239,13 +239,15 @@ export default function PostDetails({ postId }: PostDetailsProps) {
                 userId={post.userId}
               />
             ) : (
-              <TextPost
-                userName={userName}
-                username={username}
-                date={formatDate(post.createdAt)}
-                content={post.content}
-                userId={post.userId}
-              />
+              <View style={styles.textPostWrapper}>
+                <TextPost
+                  userName={userName}
+                  username={username}
+                  date={formatDate(post.createdAt)}
+                  content={post.content}
+                  userId={post.userId}
+                />
+              </View>
             )}
 
             {/* Interaction Bar */}
@@ -285,9 +287,11 @@ export default function PostDetails({ postId }: PostDetailsProps) {
 }
 
 const styles = StyleSheet.create({
+  textPostWrapper: {
+    marginBottom: -width * 0.05,
+  },
   interactionWrapper: {
     paddingHorizontal: width * 0.04,
     paddingTop: width * 0.02,
-    paddingBottom: width * 0.02,
   },
 });
